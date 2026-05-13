@@ -26,8 +26,7 @@ trans<:: : ∀{T1 T2 T3 : Tp} →
           T1 <:: T3
 trans<:: d Refl = d
 trans<:: Refl d = d
-trans<::(Fun d1 d2) (Fun d3 d4) =
-  Fun (trans<:: d3 d1) (trans<:: d2 d4)
+trans<::(Fun d1 d2) (Fun d3 d4) = Fun (trans<:: d3 d1) (trans<:: d2 d4)
 trans<:: (Roll1 d1) (Roll2 d2) = Cov (trans<:: d1 d2)
 trans<:: (Roll2 d1) (Roll1 d2) = Refl
 trans<:: (Roll2 d1) (Cov d2) = Roll2 (trans<:: d1 d2)
