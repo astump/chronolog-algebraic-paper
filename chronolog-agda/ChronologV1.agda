@@ -1,5 +1,10 @@
 module ChronologV1 (Name : Set) where
 
+open import Data.List
+open import Data.Maybe
+open import Relation.Binary.PropositionalEquality using (_≡_)
+open import Axiom.Extensionality.Propositional using (Extensionality)
+
 --------------------------------------------------------------------------------
 
 infixr 9 _⇒_
@@ -49,7 +54,16 @@ unroll = Unroll ReflD
 
 --------------------------------------------------------------------------------
 
-TyMap : Set
-TyMap = Name → Ty
+Sub : Set
+Sub = Name → Ty′
 
--- chronolog : 
+data Constraint : Set where
+    _<:?_ : Ty′ → Ty′ → Constraint
+
+
+xxx : ? ∈ ?
+
+postulate
+    solve : List Constraint → Maybe Sub
+
+    solve-correct : ∀ {cs : List Constraint} {s : Sub} → solve cs ≡ just s
