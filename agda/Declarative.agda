@@ -15,11 +15,14 @@ data _<:_ : Tp → Tp → Set where
   Unroll : D <: F D
   Cov : ∀{T1 T2 : Tp} → T1 <: T2 → F T1 <: F T2
   Trans : ∀{T1 T2 T3 : Tp} → T1 <: T2 → T2 <: T3 → T1 <: T3
+  Cata : ∀{X : Tp} → Alg X <: D ⇒ X
+  Alg : ∀{T1 T2 : Tp} → T1 <: T2 → Alg T1 <: Alg T2
 
 refl<: : ∀{T} → T <: T
 refl<: {D} = Refl
 refl<: {F T} = Cov (refl<:{T})
 refl<: {T ⇒ T'} = Fun (refl<:{T}) (refl<:{T'})
+refl<: {Alg X} = Alg (refl<:{X})
 
 roll1 : ∀{T : Tp} →
         T <: D → 
