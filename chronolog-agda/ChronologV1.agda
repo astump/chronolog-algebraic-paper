@@ -22,15 +22,15 @@ data _<:_ : Ty → Ty → Set where
     Arrow : ∀ {X X′ Y Y′} → X′ <: X → Y <: Y′ → X `→ Y <: X′ `→ Y′
     Roll : ∀ {X} → X <: `D → `F X <: `D
     Unroll : ∀ {X} → `D <: X → `D <: `F X
-    Covariance : ∀ {X Y} → X <: Y → `F X <: `F Y
-    Catamorphism : ∀ {X} → `A X <: `D `→ X
-    Algebra : ∀ {X Y} → X <: Y → `A X <: `A Y
+    Cov : ∀ {X Y} → X <: Y → `F X <: `F Y
+    Cata : ∀ {X} → `A X <: `D `→ X
+    Alg : ∀ {X Y} → X <: Y → `A X <: `A Y
 
 refl<: : ∀ {X} → X <: X
 refl<: {`C} = ReflC
 refl<: {`D} = ReflD
-refl<: {`F X} = Covariance refl<:
-refl<: {`A X} = Algebra refl<:
+refl<: {`F X} = Cov refl<:
+refl<: {`A X} = Alg refl<:
 refl<: {X `→ Y} = Arrow refl<: refl<:
 
 roll : `F `D <: `D
