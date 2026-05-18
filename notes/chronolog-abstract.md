@@ -95,3 +95,23 @@ consider the case when we're only solving one constraint, right? Does that
 naturally extend to completeness of solving a set of constraints? Well, let's
 just try proving completeness of solving a single constraint and see how far
 that gets.
+
+**Outline of algorithm:**
+
+- Inner loop:
+  - The inner loop step function tries to make progress on the state by filling
+    in a derivation hole.
+  - The inner loop step function will continue to make progress by filling in
+    holes until it either fails or becomes stagnant.
+  - The inner loop step function fails when a derivation hole's constraint is
+    not refinable by any subtyping rule and the constraint is not suspended.
+  - The inner loop step function stagnates when all derivation holes constraints
+    are suspended.
+- Outer loop:
+  - The outer loop runs the inner loop and then tries to apply metavariable
+    substitutions to refine the derivation.
+
+**Outline of proof:** One iteration of the outer loop will always make progress
+on an incomplete derivation if we assume that there exists a solution
+derivation. Essentially, the outer loop will refine a partial derivation that is
+a prefix of the solution derivation.
