@@ -115,3 +115,12 @@ that gets.
 on an incomplete derivation if we assume that there exists a solution
 derivation. Essentially, the outer loop will refine a partial derivation that is
 a prefix of the solution derivation.
+
+- The inner loop will continue to make progress until there are only suspended
+  goals left.
+- The outer loop can refine all cases of suspended goals to be more specific so
+  that the inner loop can continue making progress.
+- This process will terminate because the only way it could possibly be infinite
+  is if it was rolling and unrolling over and over, but the inner loop will
+  never take a step that completes a roll and unroll, and the outer loop cannot
+  introduce a roll or unroll.
