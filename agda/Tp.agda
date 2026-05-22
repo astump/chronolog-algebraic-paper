@@ -1,6 +1,7 @@
 module Tp where
 open import lib
 
+{- D is the sole datatype, with signature functor F -}
 data Tp : Set where
   F_ : Tp → Tp
   _⇒_ : Tp → Tp → Tp
