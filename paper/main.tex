@@ -56,6 +56,7 @@
 \usepackage{algpseudocode}%
 \usepackage{listings}%
 \usepackage{stmaryrd}
+\usepackage{xspace}
 
 \include{definitions}
 %%%%
@@ -95,7 +96,11 @@
 \usepackage{amsmath}
 \usepackage{mathpartir}
 
-\newcommand{\alg}{\Rightarrow}
+\newcommand{\sAlg}{\Rightarrow}
+\newcommand{\sArr}{\to}
+\newcommand{\sLet}{\text{let}~}
+\newcommand{\sIn}{~\text{in}~}
+\newcommand{\sCoerce}{\text{coerce}~}
 
 \begin{document}
 
@@ -180,6 +185,74 @@ to obtain a recursive function from an algebra.
 
 \section{Syntax} % Henry (maybe Aaron helping with prose)
 
+\newcommand{\sCata}{\text{cata}}
+\newcommand{\sRoll}{\text{roll}}
+\newcommand{\sUnroll}{\text{unroll}}
+\newcommand{\sCov}{\text{cov}}
+\newcommand{\sIdData}{\text{idData}}
+\newcommand{\sIdOmega}{\text{idOmega}}
+\newcommand{\sSubArr}{\text{subArr}}
+\newcommand{\sSubAlg}{\text{subAlg}}
+
+\begin{figure}[H]
+  \centering
+
+  \begin{align*}
+    \begin{array}{rrcl}
+      \text{(Type variables)} &
+      Y &\in& \mathscr{Y}
+      \\[1em]
+      \text{(Term variables)} &
+      x &\in& \mathscr{X}
+      \\[1em]
+      % TODO: better name for this
+      \text{(Recursion type constants)} &
+      R &\in& \mathscr{R}
+      \\[1em]
+      \text{(Datatypes)} &
+      \langle D , \langle k, \langle \overline{A,} \rangle \rangle \rangle & \in &
+      \mathscr{D}
+      \\[1em]
+      %
+      \text{(Types)} &
+      A, B
+      & ::= &
+      Y \mid
+      \mu D \mid
+      D ~ A \mid
+      A \sArr B \mid
+      A \sAlg B
+      \\[1em]
+      %
+      \text{(Terms)} &
+      a, b, f
+      & ::= &
+      x \mid
+      D.k(\overline{a,}) \mid
+      \lambda (x : A) . b \mid
+      (f ~ a) \mid
+      \omega(D, B, R, f, x) . b \mid
+      \\[0.5em] &&&
+      \gamma(D, B) a . \{ \overline{k(\overline{x}) \mapsto b ~ |} \} \mid
+      \sLet x : A = a \sIn b \mid
+      \sCoerce c ~ a
+      \\[1em]
+      \text{(Coercions)} &
+      c, c_1, c_2
+      & ::= &
+      \sCata ~ D \mid
+      \sRoll ~ D ~ c \mid
+      \sUnroll ~ D ~ c \mid
+      \sCov ~ D ~ c \mid
+      \sIdData ~ D \mid
+      \\[0.5em] &&&
+      \sIdOmega ~ R \mid
+      \sSubArr ~ c_1 ~ c_2 \mid
+      \sSubAlg ~ D ~ c
+    \end{array}
+  \end{align*}
+\end{figure}
+
 \section{Constraint-Generating Typing} % Henry
 
 \begin{itemize}
@@ -187,10 +260,6 @@ to obtain a recursive function from an algebra.
   \item The meta-function $\textsf{freshenFunctorParam}(A)$ replaces all instances of the functor parameter type in $A$ with a fresh type variable.
   \item The meta-function $\textsf{typeOfCoercion}(c)$ calculates the pair of the domain and codomain of a coercion.
 \end{itemize}
-
-\newcommand{\sLet}{\text{let}~}
-\newcommand{\sIn}{~\text{in}~}
-\newcommand{\sCoerce}{\text{coerce}~}
 
 \begin{figure}[H]
   \centering
@@ -200,60 +269,60 @@ to obtain a recursive function from an algebra.
     \inferrule[InferVar]{
       (x : A) \in \Gamma
     }{
-      \Gamma \vdash x : A ~|~ \varnothing
+      \Gamma \vdash x : A \mid \varnothing
     }
 
     \inferrule[InferCon]{
       \langle D , V \rangle \in \mathscr{D} \quad
       \langle c , \langle \dots A'_i, \dots \rangle \rangle \in V
       \\\\
-      (\forall i)~ \Gamma \vdash a_i : A_i ~|~ \mathcal{C}_{a_i}
+      (\forall i)~ \Gamma \vdash a_i : A_i \mid \mathcal{C}_{a_i}
     }{
-      \Gamma \vdash D.c(\dots a_i, \dots) ~|~ \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i <: \textsf{freshenFunctorParam}(A'_i) \})
+      \Gamma \vdash D.c(\dots a_i, \dots) \mid \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i <: \textsf{freshenFunctorParam}(A'_i) \})
     }
 
     \inferrule[InferLam]{
-      \Gamma, (x : A) \vdash b : B ~|~ \mathcal{C}_b
+      \Gamma, (x : A) \vdash b : B \mid \mathcal{C}_b
     }{
-      \Gamma \vdash \lambda (x : A) . b : A \to B ~|~ \mathcal{C}_b
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B \mid \mathcal{C}_b
     }
 
     \inferrule[InferApp]{
       A', B ~\text{are fresh type variables}
       \\\\
-      \Gamma \vdash f : F ~|~ \mathcal{C}_f \quad
-      \Gamma \vdash a : A ~|~ \mathcal{C}_a
+      \Gamma \vdash f : F \mid \mathcal{C}_f \quad
+      \Gamma \vdash a : A \mid \mathcal{C}_a
     }{
-      \Gamma \vdash (f ~ a) : B ~|~ \mathcal{C}_f \{ F <: A' \to B \} \cup \mathcal{C}_a \cup \{ A <: A' \}
+      \Gamma \vdash (f ~ a) : B \mid \mathcal{C}_f \{ F <: A' \sArr B \} \cup \mathcal{C}_a \cup \{ A <: A' \}
     }
 
     \inferrule[InferGamma]{
       \langle D , V \rangle \in \mathscr{D} \\\\
-      (\forall i)~ \langle c_i , \langle \dots A'_{ij}, \dots \rangle \rangle \in V
+      (\forall i)~ \langle c_i , \langle \dots A_{ij}, \dots \rangle \rangle \in V
       \\\\
-      (\forall i)~ \Gamma, \dots x_{ij} : A'_{ij} \dots \vdash b_i : B_i ~|~ \mathcal{C}_{b_i}
+      (\forall i)~ \Gamma, \dots x_{ij} : A_{ij} \dots \vdash b_i : B_i \mid \mathcal{C}_{b_i}
     }{
-      \Gamma \vdash \gamma(D, B) a . \{ \dots ~ c_i(\dots x_{ij}, \dots) \mapsto b_i | ~ \dots \} ~|~ \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <: B \})
+      \Gamma \vdash \gamma(D, B) a . \{ \dots ~ c_i(\dots x_{ij}, \dots) \mapsto b_i | ~ \dots \} \mid \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <: B \})
     }
 
     \inferrule[InferOmega]{
-      \Gamma, (R : \ast), (f : R \to A), (x : D ~ R) \vdash b : B ~|~ \mathcal{C}_b
+      \Gamma, (R : \ast), (f : R \sArr A), (x : D ~ R) \vdash b : B \mid \mathcal{C}_b
     }{
-      \Gamma \vdash \omega(D, B, R, f, x) . b : D \alg B ~|~ \mathcal{C}_b
+      \Gamma \vdash \omega(D, B, R, f, x) . b : D \sAlg B \mid \mathcal{C}_b
     }
 
     \inferrule[InferLet]{
-      \Gamma \vdash a : A ~|~ \mathcal{C}_a \quad
-      \Gamma, (x : A') \vdash b : B ~|~ \mathcal{C}_b
+      \Gamma \vdash a : A \mid \mathcal{C}_a \quad
+      \Gamma, (x : A') \vdash b : B \mid \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet x : A' = a \sIn b : B ~|~ \mathcal{C}_a \cup \{ A <: A' \} \cup \mathcal{C}_a
+      \Gamma \vdash \sLet x : A' = a \sIn b : B \mid \mathcal{C}_a \cup \{ A <: A' \} \cup \mathcal{C}_a
     }
 
     \inferrule[InferCoerce]{
       \langle A', B \rangle := \textsf{typeOfCoercion}(c) \\\\
-      \Gamma \vdash a : A ~|~ \mathcal{C}_a
+      \Gamma \vdash a : A \mid \mathcal{C}_a
     }{
-      \Gamma \vdash \sCoerce c ~ a : B ~|~ \mathcal{C}_a \cup \{ A <: A' \}
+      \Gamma \vdash \sCoerce c ~ a : B \mid \mathcal{C}_a \cup \{ A <: A' \}
     }
 
   \end{mathpar}
@@ -267,10 +336,9 @@ to obtain a recursive function from an algebra.
 \subsection{Declarative}
 
 \newcommand{\declcata}[1]{
-    \inferrule[#1]{ }{
-      D \alg A <: D \to A
-    }}
-
+  \inferrule[#1]{ }{
+    D \sAlg A <: D \sArr A
+}}
 
 \begin{figure}[H]
   \centering
@@ -288,7 +356,7 @@ to obtain a recursive function from an algebra.
 
     \inferrule[ReflTyVar]
     {
-\ 
+      \
     }
     {
       R <: R
@@ -300,7 +368,7 @@ to obtain a recursive function from an algebra.
       B <: B'
     }
     {
-      A \to B <: A' \to B'
+      A \sArr B <: A' \sArr B'
     }
 
     \inferrule[Cov]{
@@ -312,7 +380,7 @@ to obtain a recursive function from an algebra.
     \inferrule[Alg]{
       A <: A'
     }{
-      D \alg A <: D \alg A'
+      D \sAlg A <: D \sAlg A'
     }
 
     \inferrule[Roll]{ }{
@@ -323,7 +391,7 @@ to obtain a recursive function from an algebra.
       D <: D ~ D
     }
 
-\declcata{Cata}
+    \declcata{Cata}
 
     \inferrule[Trans]{
       A <: A' \quad
@@ -344,7 +412,7 @@ in the body of our Mendler algebras.  \textsc{Arr} is the usual
 subtyping rule for function types, which is contravariant in the
 domain and covariant in the codomain.  \textsc{Cov} expresses that the
 signature functor is indeed a (covariant) functor.  \textsc{Alg}
-expresses that algebra types $D \alg A$ are covariant in their
+expresses that algebra types $D \sAlg A$ are covariant in their
 carriers $A$.  \textsc{Roll} and \textsc{Unroll} together express that
 $\mu F$ is equivalent to $F\ (\mu F)$.  \textsc{Cata} expresses that
 an algebra can be coerced to a function, namely the algebra's
@@ -358,13 +426,12 @@ the definition of subtyping as a partial order.
 \subsection{Algorithmic}
 
 \newcommand{\decproccata}[1]{
-    \inferrule[#1]{
-      B <:: D \quad
-      A <:: C
-    }{
-      D \alg A <:: B \to C
-    }}
-
+  \inferrule[#1]{
+    B <:: D \quad
+    A <:: C
+  }{
+    D \sAlg A <:: B \sArr C
+}}
 
 \begin{figure}[H]
   \centering
@@ -381,7 +448,7 @@ the definition of subtyping as a partial order.
     }
 
     \inferrule[ReflTyVar]
-    { \ 
+    { \
     }
     {
       R <:: R
@@ -393,7 +460,7 @@ the definition of subtyping as a partial order.
       B <:: B'
     }
     {
-      A \to B <:: A' \to B'
+      A \sArr B <:: A' \sArr B'
     }
 
     \inferrule[Cov]{
@@ -405,7 +472,7 @@ the definition of subtyping as a partial order.
     \inferrule[Alg]{
       A <:: A'
     }{
-      D \alg A <:: D \alg A'
+      D \sAlg A <:: D \sAlg A'
     }
 
     \inferrule[Roll1]{
@@ -420,7 +487,7 @@ the definition of subtyping as a partial order.
       D <:: D ~ A
     }
 
-\decproccata{Cata}
+    \decproccata{Cata}
 
   \end{mathpar}
 
@@ -437,9 +504,9 @@ A consequence of this is that now several rules that did not have
 premises in the declarative formulation, here do.  For example,
 compare the declarative (on the left) and algorithmic \textsc{Cata} rules:
 \[
-\begin{array}{lll}
-  \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
-\end{array}
+  \begin{array}{lll}
+    \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
+  \end{array}
 \]
 \noindent The algorithmic rule needs to take into account subtyping
 relationships between the components in the conclusion, because
@@ -454,7 +521,7 @@ functor.
 \end{theorem}
 
 \begin{lemma}[Decrease]
-\label{lem:decrease}
+  \label{lem:decrease}
   For all rules of Figure~\ref{fig:algorithmic-subtyping-rules}, the sizes
   of the constraints in the premises are less than the size of the constraint
   in the conclusion.
