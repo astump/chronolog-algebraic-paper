@@ -1,9 +1,9 @@
-abstract.pdf: abstract.tex Makefile definitions.tex paper.bib
+main.pdf: main.tex Makefile definitions.tex paper.bib
 	rm -f *.aux
-	pdflatex -shell-escape abstract
-	bibtex abstract
-	pdflatex -shell-escape abstract
-	pdflatex -shell-escape abstract
+	pdflatex -shell-escape main
+	bibtex main
+	pdflatex -shell-escape main
+	pdflatex -shell-escape main
 
 clean:
 	rm -f *.aux *.log *.pyg *.out *.bbl *.blg

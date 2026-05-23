@@ -55,6 +55,9 @@
 \usepackage{algorithmicx}%
 \usepackage{algpseudocode}%
 \usepackage{listings}%
+\usepackage{stmaryrd}
+
+\include{definitions}
 %%%%
 
 %%%%%=============================================================================%%%%
@@ -138,6 +141,27 @@
 % Mendler-style algebra
 % Burden of inserting roll/unroll and cata
 % We will reduce this burden using coercive subtyping to infer the coercions
+
+Strong functional programming is a form of pure functional programming
+where all functions are statically required to terminate on all
+inputs.  One way to achieve this is through an algebraic approach:
+datatypes are least fixed points $\mu F$ of signature functors $F$,
+and recursive functions are least fixed points $\cata{a}$ of algebras
+$a$.  The functions are called catamorphisms.  The signature functor
+can be seen as describing one layer of the data.  The least fixed
+point then describes data consisting of any finite number of layers.
+We may unroll $\mu F$ to $F\ (\mu F)$, and roll it back again.  Such
+transformations are needed to allow construction of data by applying
+constructors of the signature functor, and destruction by
+pattern-matching against those constructors.  Algebras interpret the
+operations declared for one layer of the data, and catamorphisms then
+apply algebras across all the layers.  There is no other mechanism for
+recursion or looping in the language.  All functions written in this
+style are guaranteed to terminate.
+
+One hindrance to algebraic programming is the need to apply functions
+for rolling and unrolling signature functors, and to apply $\cata{-}$
+to obtain a recursive function from an algebra.
 
 \section{Motivating example} % Henry
 
@@ -388,8 +412,21 @@
 % remind the version with coercions
 % show without coercions
 
+\section{Related Work} % Aaron
+
+Turner introduced the term \emph{strong functional programming},
+presented several arguments in favor of the approach, and proposed an
+\emph{elementary} way to realize such a language, in the form of
+static checks for structural recursion~\cite{turner95}.  Mendler
+proposed a recursor using an abstract type to ensure that recursive
+calls are permitted only on subdata for an inductive
+type~\cite{mendler91}.
+
 \section{Conclusion and future work} % Aaron
 
 % Richer patterns of recursion, as in POPL 2023 paper
+
+%\bibliographystyle{plain}
+\bibliography{paper.bib}
 
 \end{document}
