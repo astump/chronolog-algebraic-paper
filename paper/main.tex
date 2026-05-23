@@ -78,6 +78,7 @@
 \newtheorem{theorem}{Theorem}%  meant for continuous numbers
 %%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
 %% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{lemma}[theorem]{Lemma}%
 \newtheorem{proposition}[theorem]{Proposition}%
 %%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
 
@@ -265,12 +266,18 @@ to obtain a recursive function from an algebra.
 
 \subsection{Declarative}
 
+\newcommand{\declcata}[1]{
+    \inferrule[#1]{ }{
+      D \alg A <: D \to A
+    }}
+
+
 \begin{figure}[H]
   \centering
 
   \begin{mathpar}
 
-    \inferrule[SubData]
+    \inferrule[ReflData]
     {
       % D is a datatype
       \langle D, \_ \rangle \in \mathscr{D}
@@ -279,10 +286,9 @@ to obtain a recursive function from an algebra.
       D <: D
     }
 
-    \inferrule[Omega]
+    \inferrule[ReflTyVar]
     {
-      % R is an omega var
-      \text{TODO: require that R is an omega var}
+\ 
     }
     {
       R <: R
@@ -317,9 +323,7 @@ to obtain a recursive function from an algebra.
       D <: D ~ D
     }
 
-    \inferrule[Cata]{ }{
-      D \alg A <: D \to A
-    }
+\declcata{Cata}
 
     \inferrule[Trans]{
       A <: A' \quad
@@ -333,77 +337,143 @@ to obtain a recursive function from an algebra.
   \label{fig:declarative-subtyping-rules}
 \end{figure}
 
+Figure~\ref{fig:declarative-subtyping-rules} shows the declarative
+subtyping rules.  We have reflexivity rules \textsc{ReflData} and
+\textsc{ReflR} for datatypes and for the abstract types $R$ introduced
+in the body of our Mendler algebras.  \textsc{Arr} is the usual
+subtyping rule for function types, which is contravariant in the
+domain and covariant in the codomain.  \textsc{Cov} expresses that the
+signature functor is indeed a (covariant) functor.  \textsc{Alg}
+expresses that algebra types $D \alg A$ are covariant in their
+carriers $A$.  \textsc{Roll} and \textsc{Unroll} together express that
+$\mu F$ is equivalent to $F\ (\mu F)$.  \textsc{Cata} expresses that
+an algebra can be coerced to a function, namely the algebra's
+catamorphism.  Finally, there is the \textsc{Trans} rule, completing
+the definition of subtyping as a partial order.
+
+\begin{theorem}[Reflexivity]
+  For all types $A$, $A <: A$.
+\end{theorem}
+
 \subsection{Algorithmic}
+
+\newcommand{\decproccata}[1]{
+    \inferrule[#1]{
+      B <:: D \quad
+      A <:: C
+    }{
+      D \alg A <:: B \to C
+    }}
+
 
 \begin{figure}[H]
   \centering
 
   \begin{mathpar}
 
-    \inferrule[DecSubData]
+    \inferrule[ReflData]
     {
       % D is a datatype
       \langle D, \_ \rangle \in \mathscr{D}
     }
     {
-      D <: D
+      D <:: D
     }
 
-    \inferrule[DecOmega]
-    {
-      % R is an omega var
-      \text{TODO: require that R is an omega var}
+    \inferrule[ReflTyVar]
+    { \ 
     }
     {
-      R <: R
+      R <:: R
     }
 
-    \inferrule[DecArr]
+    \inferrule[Arr]
     {
-      A' <: A \quad
-      B <: B'
+      A' <:: A \quad
+      B <:: B'
     }
     {
-      A \to B <: A' \to B'
+      A \to B <:: A' \to B'
     }
 
-    \inferrule[DecCov]{
-      A <: A'
+    \inferrule[Cov]{
+      A <:: A'
     }{
-      D ~ A <: D ~ A'
+      D ~ A <:: D ~ A'
     }
 
-    \inferrule[DecAlg]{
-      A <: A'
+    \inferrule[Alg]{
+      A <:: A'
     }{
-      D \alg A <: D \alg A'
+      D \alg A <:: D \alg A'
     }
 
-    \inferrule[DecRoll]{
-      A <: D
+    \inferrule[Roll1]{
+      A <:: D
     }{
-      D ~ A <: D
+      D ~ A <:: D
     }
 
-    \inferrule[DecUnroll]{
-      D <: A
+    \inferrule[Roll2]{
+      D <:: A
     }{
-      D <: D ~ A
+      D <:: D ~ A
     }
 
-    \inferrule[DecCata]{
-      B <: D \quad
-      A <: C
-    }{
-      D \alg A <: B \to C
-    }
+\decproccata{Cata}
+
   \end{mathpar}
 
   \caption{Algorithmic subtyping rules.}
   \label{fig:algorithmic-subtyping-rules}
 \end{figure}
 
+Figure~\ref{fig:algorithmic-subtyping-rules} presents the algorithmic
+subtyping rules.  We use similar names as for the declarative rules,
+but distinguish the algorithmic judgment by writing $A <:: B$ (where
+the declarative judgment is written $A <: B$). Critically, the
+algorithmically problematic \textsc{Trans} rule is not present.
+A consequence of this is that now several rules that did not have
+premises in the declarative formulation, here do.  For example,
+compare the declarative (on the left) and algorithmic \textsc{Cata} rules:
+\[
+\begin{array}{lll}
+  \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
+\end{array}
+\]
+\noindent The algorithmic rule needs to take into account subtyping
+relationships between the components in the conclusion, because
+transitivity is not available to take those into account outside a use
+of this rule.  We see a similar change from the declarative
+(\textsc{Roll} and \textsc{Unroll}) to the algorithmic (\textsc{Roll1}
+and \textsc{Roll2}) rules for rolling and unrolling the signature
+functor.
+
+\begin{theorem}[Reflexivity]
+  For all types $A$, $A <:: A$.
+\end{theorem}
+
+\begin{lemma}[Decrease]
+\label{lem:decrease}
+  For all rules of Figure~\ref{fig:algorithmic-subtyping-rules}, the sizes
+  of the constraints in the premises are less than the size of the constraint
+  in the conclusion.
+\end{lemma}
+
+\begin{theorem}[Decidability]
+  It is decidable whether or not two types are in the algorithmic subtyping
+  relation.
+\end{theorem}
+\begin{proof}
+  Bottom-up application of the rules to ground types is guaranteed to terminate,
+  by Lemma~\ref{lem:decrease}.  Therefore, proof search may be used as a decision
+  procedure for algorithmic subtyping of ground types.
+\end{proof}
+
 \subsection{Equivalence of declarative and algorithmic subtyping}
+
+\subsection{Formalization in Agda}
+\label{sec:agda}
 
 \section{Implementation with Chronolog} % Henry
 
