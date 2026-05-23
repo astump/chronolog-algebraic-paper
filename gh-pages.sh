@@ -3,6 +3,11 @@
 # Exit immediately if any command fails
 set -e
 
+# Prevent infinite loops when the script itself runs 'git push'
+if [[ -n "$GH_PAGES_DEPLOYING" ]]; then
+    exit 0
+fi
+
 # Clean up any broken or lingering worktrees from previous failed runs
 git worktree prune
 
@@ -30,3 +35,8 @@ git push origin gh-pages
 # Clean up the temporary worktree
 cd -
 git worktree remove "$TARGET_DIR"
+
+echo "✅ Deployment successful!"
+
+exit 0
+
