@@ -29,7 +29,7 @@ cp -r paper/main.pdf "$TARGET_DIR"
 # Navigate to the worktree to commit and push changes
 cd "$TARGET_DIR"
 git add -A
-git commit -m "Deploy to GitHub Pages: $(date)"
+git commit --allow-empty -m "Deploy to GitHub Pages: $(date)"
 git push origin gh-pages
 
 # Clean up the temporary worktree
