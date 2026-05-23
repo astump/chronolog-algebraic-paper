@@ -1,5 +1,9 @@
 \documentclass{acmart}
 
+\usepackage{amsmath}
+% \usepackage{amssymb}
+\usepackage{mathpartir}
+
 \begin{document}
 
 \title{Coercive Subtyping via Logic Programming for Painless Mendler-style Algebraic Programming}
@@ -23,18 +27,18 @@
 }
 
 \begin{CCSXML}
-<ccs2012>
-<concept>
-<concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
-<concept_desc>Software and its engineering~Functional languages</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
-<concept_desc>Software and its engineering~Recursion</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
+  <ccs2012>
+  <concept>
+  <concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
+  <concept_desc>Software and its engineering~Functional languages</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  <concept>
+  <concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
+  <concept_desc>Software and its engineering~Recursion</concept_desc>
+  <concept_significance>500</concept_significance>
+  </concept>
+  </ccs2012>
 \end{CCSXML}
 
 \ccsdesc[500]{Software and its engineering~Functional languages}
@@ -43,7 +47,7 @@
 \keywords{strong functional programming, type-based termination, Mendler-style recursion}
 
 \begin{abstract}
-This paper presents a system for more convenient algebraic programming, a form of total functional programming where datatypes are defined as least fixed points of covariant signature functors, and recursive functions are defined as algebras. This approach requires the use of certain combinators to roll and unroll fixed points, and to convert algebras to functions which can be applied to recurse over data. These combinators are a burden for programming in this style. To alleviate that burden, in this paper we propose to insert them automatically, using coercive subtyping. The type checker generates subtyping constraints, which are then solved with the help of a custom logic programming engined called Chronolog. The subtyping axioms are given to Chronolog as rules, which uses them to solve the subtyping constraints. To avoid infinite applications of rules for unrolling signature functors, Chronolog provides a mechanism for suspending and resuming certain forms of goals. The subtyping axioms presented to Chronolog are an algorithmic version of the usual declarative rules for algebraic programming. We prove equivalence of the declarative and algorithmic rules, in Agda. We present numerous examples of algebraic programs written in our system.
+  This paper presents a system for more convenient algebraic programming, a form of total functional programming where datatypes are defined as least fixed points of covariant signature functors, and recursive functions are defined as algebras. This approach requires the use of certain combinators to roll and unroll fixed points, and to convert algebras to functions which can be applied to recurse over data. These combinators are a burden for programming in this style. To alleviate that burden, in this paper we propose to insert them automatically, using coercive subtyping. The type checker generates subtyping constraints, which are then solved with the help of a custom logic programming engined called Chronolog. The subtyping axioms are given to Chronolog as rules, which uses them to solve the subtyping constraints. To avoid infinite applications of rules for unrolling signature functors, Chronolog provides a mechanism for suspending and resuming certain forms of goals. The subtyping axioms presented to Chronolog are an algorithmic version of the usual declarative rules for algebraic programming. We prove equivalence of the declarative and algorithmic rules, in Agda. We present numerous examples of algebraic programs written in our system.
 \end{abstract}
 
 \maketitle
@@ -75,11 +79,85 @@ This paper presents a system for more convenient algebraic programming, a form o
 
 \section{Subtyping} % Aaron
 
-  \subsection{Declarative}
+\subsection{Declarative}
 
-  \subsection{Algorithmic}
+\begin{enumerate}
+  \item $\mathcal{D}$ is the set of datatype definitions, which are pairs of $\langle D , V \rangle$ where $D$ is an identifier and $V$ is a set of constructor signatures.
+\end{enumerate}
 
-  \subsection{Equivalence of declarative and algorithmic subtyping}
+\newcommand{\alg}{\Rightarrow}
+
+\begin{figure}[t]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[SubData]
+    {
+      % D is a datatype
+      \langle D, \_ \rangle \in \mathcal{D}
+    }
+    {
+      D <: D
+    }
+
+    \inferrule[SubOmega]
+    {
+      % R is an omega var
+      \text{TODO: require that R is an omega var}
+    }
+    {
+      R <: R
+    }
+
+    \inferrule[SubArr]
+    {
+      A' <: A \quad
+      B <: B'
+    }
+    {
+      A \to B <: A' \to B'
+    }
+
+    \inferrule[SubCov]{
+      A <: A'
+    }{
+      D ~ A <: D ~ A'
+    }
+
+    \inferrule[SubAlg]{
+      A <: A'
+    }{
+      D \alg A <: D \alg A'
+    }
+
+    \inferrule[Roll]{ }{
+      D ~ D <: D
+    }
+
+    \inferrule[Unroll]{ }{
+      D <: D ~ D
+    }
+
+    \inferrule[Cata]{ }{
+      D \alg A <: D \to A
+    }
+
+    \inferrule[Trans]{
+      A <: A' \quad
+      A' < A''
+    }{
+      A <: A''
+    }
+  \end{mathpar}
+
+  \caption{Declarative subtyping rules.}
+  \label{fig:declarative-subtyping-rules}
+\end{figure}
+
+\subsection{Algorithmic}
+
+\subsection{Equivalence of declarative and algorithmic subtyping}
 
 \section{Implementation with Chronolog} % Henry
 
