@@ -4,6 +4,8 @@
 % \usepackage{amssymb}
 \usepackage{mathpartir}
 
+\newcommand{\alg}{\Rightarrow}
+
 \begin{document}
 
 \title{Coercive Subtyping via Logic Programming for Painless Mendler-style Algebraic Programming}
@@ -77,15 +79,92 @@
 
 \section{Constraint-Generating Typing} % Henry
 
+\begin{itemize}
+  \item The meta-function $\textsf{freshenFunctorParam}(A)$ replaces all instances of the functor parameter type in $A$ with a fresh type variable.
+  \item The meta-function $\textsf{typeOfCoercion}(c)$ calculates the pair of the domain and codomain of a coercion.
+\end{itemize}
+
+\newcommand{\sLet}{\text{let}~}
+\newcommand{\sIn}{~\text{in}~}
+\newcommand{\sCoerce}{\text{coerce}~}
+
+\begin{figure}[t]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[InferVar]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A ~|~ \varnothing
+    }
+
+    \inferrule[InferCon]{
+      \langle D , V \rangle \in \mathscr{D} \quad
+      \langle c , \langle \dots A'_i, \dots \rangle \rangle \in V
+      \\\\
+      (\forall i)~ \Gamma \vdash a_i : A_i ~|~ \mathcal{C}_{a_i}
+    }{
+      \Gamma \vdash D.c(\dots a_i, \dots) ~|~ \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i <: \textsf{freshenFunctorParam}(A'_i) \})
+    }
+
+    \inferrule[InferLam]{
+      \Gamma, (x : A) \vdash b : B ~|~ \mathcal{C}_b
+    }{
+      \Gamma \vdash \lambda (x : A) . b : A \to B ~|~ \mathcal{C}_b
+    }
+
+    \inferrule[InferApp]{
+      A', B ~\text{are fresh type variables}
+      \\\\
+      \Gamma \vdash f : F ~|~ \mathcal{C}_f \quad
+      \Gamma \vdash a : A ~|~ \mathcal{C}_a
+    }{
+      \Gamma \vdash (f ~ a) : B ~|~ \mathcal{C}_f \{ F <: A' \to B \} \cup \mathcal{C}_a \cup \{ A <: A' \}
+    }
+
+    \inferrule[InferGamma]{
+      \langle D , V \rangle \in \mathscr{D} \\\\
+      (\forall i)~ \langle c_i , \langle \dots A'_{ij}, \dots \rangle \rangle \in V
+      \\\\
+      (\forall i)~ \Gamma, \dots x_{ij} : A'_{ij} \dots \vdash b_i : B_i ~|~ \mathcal{C}_{b_i}
+    }{
+      \Gamma \vdash \gamma(D, B) a . \{ \dots ~ c_i(\dots x_{ij}, \dots) \mapsto b_i | ~ \dots \} ~|~ \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <: B \})
+    }
+
+    \inferrule[InferOmega]{
+      \Gamma, (R : \ast), (f : R \to A), (x : D ~ R) \vdash b : B ~|~ \mathcal{C}_b
+    }{
+      \Gamma \vdash \omega(D, B, R, f, x) . b : D \alg B ~|~ \mathcal{C}_b
+    }
+
+    \inferrule[InferLet]{
+      \Gamma \vdash a : A ~|~ \mathcal{C}_a \quad
+      \Gamma, (x : A') \vdash b : B ~|~ \mathcal{C}_b
+    }{
+      \Gamma \vdash \sLet x : A' = a \sIn b : B ~|~ \mathcal{C}_a \cup \{ A <: A' \} \cup \mathcal{C}_a
+    }
+
+    \inferrule[InferCoerce]{
+      \langle A', B \rangle := \textsf{typeOfCoercion}(c) \\\\
+      \Gamma \vdash a : A ~|~ \mathcal{C}_a
+    }{
+      \Gamma \vdash \sCoerce c ~ a : B ~|~ \mathcal{C}_a \cup \{ A <: A' \}
+    }
+
+  \end{mathpar}
+
+  \caption{Subtype constraint generation rules.}
+  \label{fig:subtype-constraint-generation-rules}
+\end{figure}
+
 \section{Subtyping} % Aaron
 
 \subsection{Declarative}
 
-\begin{enumerate}
-  \item $\mathcal{D}$ is the set of datatype definitions, which are pairs of $\langle D , V \rangle$ where $D$ is an identifier and $V$ is a set of constructor signatures.
-\end{enumerate}
-
-\newcommand{\alg}{\Rightarrow}
+\begin{itemize}
+  \item $\mathscr{D}$ is the set of datatype definitions, which are pairs of $\langle D , V \rangle$ where $D$ is an identifier and $V$ is a set of constructor signatures.
+\end{itemize}
 
 \begin{figure}[t]
   \centering
@@ -95,7 +174,7 @@
     \inferrule[SubData]
     {
       % D is a datatype
-      \langle D, \_ \rangle \in \mathcal{D}
+      \langle D, \_ \rangle \in \mathscr{D}
     }
     {
       D <: D
@@ -165,7 +244,7 @@
     \inferrule[DecSubData]
     {
       % D is a datatype
-      \langle D, \_ \rangle \in \mathcal{D}
+      \langle D, \_ \rangle \in \mathscr{D}
     }
     {
       D <: D
