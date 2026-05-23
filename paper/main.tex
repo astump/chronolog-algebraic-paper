@@ -80,6 +80,7 @@
 \section{Constraint-Generating Typing} % Henry
 
 \begin{itemize}
+  \item $\mathscr{D}$ is the set of datatype definitions, which are pairs of $\langle D , V \rangle$ where $D$ is an identifier and $V$ is a set of constructor signatures.
   \item The meta-function $\textsf{freshenFunctorParam}(A)$ replaces all instances of the functor parameter type in $A$ with a fresh type variable.
   \item The meta-function $\textsf{typeOfCoercion}(c)$ calculates the pair of the domain and codomain of a coercion.
 \end{itemize}
@@ -88,7 +89,7 @@
 \newcommand{\sIn}{~\text{in}~}
 \newcommand{\sCoerce}{\text{coerce}~}
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -162,11 +163,7 @@
 
 \subsection{Declarative}
 
-\begin{itemize}
-  \item $\mathscr{D}$ is the set of datatype definitions, which are pairs of $\langle D , V \rangle$ where $D$ is an identifier and $V$ is a set of constructor signatures.
-\end{itemize}
-
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -236,7 +233,7 @@
 
 \subsection{Algorithmic}
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
