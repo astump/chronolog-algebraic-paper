@@ -1,52 +1,62 @@
-\documentclass{acmart}
+\documentclass[runningheads]{llncs}
+
+\usepackage{stmaryrd}
+
+\include{definitions}
 
 \begin{document}
 
 \title{Coercive Subtyping via Logic Programming for Painless Mendler-style Algebraic Programming}
 
-\author{Henry Blanchette}
-\email{blancheh@umd.edu}
-\affiliation{%
-  \institution{The University of Maryland}
-  \city{College Park}
-  \state{Maryland}
-  \country{USA}
-}
+%% \author{Henry Blanchette}
+%% \email{blancheh@umd.edu}
+%% \affiliation{%
+%%   \institution{The University of Maryland}
+%%   \city{College Park}
+%%   \state{Maryland}
+%%   \country{USA}
+%% }
 
-\author{Aaron Stump}
-\email{stumpaa@bc.edu}
-\affiliation{%
-  \institution{Boston College}
-  \city{Boston}
-  \state{Massachusetts}
-  \country{USA}
-}
+%% \author{Aaron Stump}
+%% \email{stumpaa@bc.edu}
+%% \affiliation{%
+%%   \institution{Boston College}
+%%   \city{Boston}
+%%   \state{Massachusetts}
+%%   \country{USA}
+%% }
 
-\begin{CCSXML}
-<ccs2012>
-<concept>
-<concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
-<concept_desc>Software and its engineering~Functional languages</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-<concept>
-<concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
-<concept_desc>Software and its engineering~Recursion</concept_desc>
-<concept_significance>500</concept_significance>
-</concept>
-</ccs2012>
-\end{CCSXML}
+%% \begin{CCSXML}
+%% <ccs2012>
+%% <concept>
+%% <concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
+%% <concept_desc>Software and its engineering~Functional languages</concept_desc>
+%% <concept_significance>500</concept_significance>
+%% </concept>
+%% <concept>
+%% <concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
+%% <concept_desc>Software and its engineering~Recursion</concept_desc>
+%% <concept_significance>500</concept_significance>
+%% </concept>
+%% </ccs2012>
+%% \end{CCSXML}
 
-\ccsdesc[500]{Software and its engineering~Functional languages}
-\ccsdesc[300]{Software and its engineering~Recursion}
+%% \ccsdesc[500]{Software and its engineering~Functional languages}
+%% \ccsdesc[300]{Software and its engineering~Recursion}
+%%
+%% \keywords{strong functional programming, type-based termination, Mendler-style recursion}
 
-\keywords{strong functional programming, type-based termination, Mendler-style recursion}
-
-\begin{abstract}
-TODO: abstract
-\end{abstract}
 
 \maketitle
+
+\begin{abstract}
+  The paper proposes coercive subtyping to infer combinators needed
+  for algebraic programming.  
+
+\keywords{Strong functional programming, Mendler-style recursion, coercive subtyping}
+\end{abstract}
+
+
 
 \section{Introduction} % Aaron
 
@@ -54,6 +64,28 @@ TODO: abstract
 % Mendler-style algebra
 % Burden of inserting roll/unroll and cata
 % We will reduce this burden using coercive subtyping to infer the coercions
+
+Strong functional programming is a form of pure functional programming
+where all functions are statically required to terminate on all
+inputs.  One way to achieve this is through an algebraic approach:
+datatypes are least fixed points $\mu F$ of signature functors $F$,
+and recursive functions are least fixed points $\cata{a}$ of algebras
+$a$.  The functions are called catamorphisms.  The signature functor
+can be seen as describing one layer of the data.  The least fixed
+point then describes data consisting of any finite number of layers.
+We may unroll $\mu F$ to $F\ (\mu F)$, and roll it back again.  Such
+transformations are needed to allow construction of data by applying
+constructors of the signature functor, and destruction by
+pattern-matching against those constructors.  Algebras interpret the
+operations declared for one layer of the data, and catamorphisms then
+apply algebras across all the layers.  There is no other mechanism for
+recursion or looping in the language.  All functions written in this
+style are guaranteed to terminate.
+
+One hindrance to algebraic programming is the need to apply functions
+for rolling and unrolling signature functors, and to apply $\cata{-}$
+to obtain a recursive function from an algebra.
+
 
 \section{Motivating example} % Henry
 
@@ -88,8 +120,21 @@ TODO: abstract
 % remind the version with coercions
 % show without coercions
 
+\section{Related Work} % Aaron
+
+Turner introduced the term \emph{strong functional programming},
+presented several arguments in favor of the approach, and proposed an
+\emph{elementary} way to realize such a language, in the form of
+static checks for structural recursion~\cite{turner95}.  Mendler
+proposed a recursor using an abstract type to ensure that recursive
+calls are permitted only on subdata for an inductive
+type~\cite{mendler91}.
+
 \section{Conclusion and future work} % Aaron
 
 % Richer patterns of recursion, as in POPL 2023 paper
+
+\bibliographystyle{plain}
+\bibliography{paper.bib}
 
 \end{document}
