@@ -101,7 +101,7 @@
       D <: D
     }
 
-    \inferrule[SubOmega]
+    \inferrule[Omega]
     {
       % R is an omega var
       \text{TODO: require that R is an omega var}
@@ -110,7 +110,7 @@
       R <: R
     }
 
-    \inferrule[SubArr]
+    \inferrule[Arr]
     {
       A' <: A \quad
       B <: B'
@@ -119,13 +119,13 @@
       A \to B <: A' \to B'
     }
 
-    \inferrule[SubCov]{
+    \inferrule[Cov]{
       A <: A'
     }{
       D ~ A <: D ~ A'
     }
 
-    \inferrule[SubAlg]{
+    \inferrule[Alg]{
       A <: A'
     }{
       D \alg A <: D \alg A'
@@ -156,6 +156,74 @@
 \end{figure}
 
 \subsection{Algorithmic}
+
+\begin{figure}[t]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[DecSubData]
+    {
+      % D is a datatype
+      \langle D, \_ \rangle \in \mathcal{D}
+    }
+    {
+      D <: D
+    }
+
+    \inferrule[DecOmega]
+    {
+      % R is an omega var
+      \text{TODO: require that R is an omega var}
+    }
+    {
+      R <: R
+    }
+
+    \inferrule[DecArr]
+    {
+      A' <: A \quad
+      B <: B'
+    }
+    {
+      A \to B <: A' \to B'
+    }
+
+    \inferrule[DecCov]{
+      A <: A'
+    }{
+      D ~ A <: D ~ A'
+    }
+
+    \inferrule[DecAlg]{
+      A <: A'
+    }{
+      D \alg A <: D \alg A'
+    }
+
+    \inferrule[DecRoll]{
+      A <: D
+    }{
+      D ~ A <: D
+    }
+
+    \inferrule[DecUnroll]{
+      A <: D
+    }{
+      D <: D ~ A
+    }
+
+    \inferrule[DecCata]{
+      B <: D \quad
+      A <: C
+    }{
+      D \alg A <: B \to C
+    }
+  \end{mathpar}
+
+  \caption{Algorithmic subtyping rules.}
+  \label{fig:algorithmic-subtyping-rules}
+\end{figure}
 
 \subsection{Equivalence of declarative and algorithmic subtyping}
 
