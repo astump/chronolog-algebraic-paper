@@ -109,17 +109,16 @@
 \newcommand{\sFunctorConSig}[3]{(#1) \sArr \sFunctorApp{#2}{#3}}
 \newcommand{\sCoerceSig}[2]{#1 <:: #2}
 % terms
-\newcommand{\sLet}{\text{let}~}
-\newcommand{\sIn}{~\text{in}~}
-\newcommand{\sCoerce}{\text{coerce}~}
+\newcommand{\sLet}[3]{\text{let}~ #1 = #2 ~\text{in}~ #3}
+\newcommand{\sCoerce}[2]{\text{coerce}~ #1 ~ #2}
 % coercions
-\newcommand{\sCata}{\text{cata}}
-\newcommand{\sRoll}{\text{roll}}
-\newcommand{\sUnroll}{\text{unroll}}
-\newcommand{\sCov}{\text{cov}}
-\newcommand{\sIdData}{\text{idData}}
-\newcommand{\sSubArr}{\text{subArr}}
-\newcommand{\sSubAlg}{\text{subAlg}}
+\newcommand{\sCata}[2]{\text{cata}~ #1 ~ #2}
+\newcommand{\sRoll}[1]{\text{roll}~ #1}
+\newcommand{\sUnroll}[1]{\text{unroll}~ #1}
+\newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
+\newcommand{\sSubData}[1]{\text{idData}[#1]}
+\newcommand{\sSubArr}[2]{\text{subArr}~ #1 ~ #2}
+\newcommand{\sSubAlg}[2]{\text{subAlg}[#1] ~ #2}
 % constructors
 \newcommand{\sTrue}{\textit{true}}
 \newcommand{\sFalse}{\textit{false}}
@@ -221,6 +220,10 @@ to obtain a recursive function from an algebra.
   % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
   \begin{align*}
     \begin{array}{rrcl}
+      \text{(Datatype Names)} &
+      D &\in& \textbf{DatatypeNames}
+      \\[1em]
+      %
       \text{(Term variables)} &
       x &\in& \textbf{TermVars}
       \\[1em]
@@ -243,7 +246,7 @@ to obtain a recursive function from an algebra.
       \text{(Types)} &
       A, B
       & ::= &
-      Y \mid
+      R \mid
       \sMu{D} \mid
       \sFunctorApp{D}{A} \mid
       A \sArr B \mid
@@ -260,21 +263,21 @@ to obtain a recursive function from an algebra.
       \omega f(x) . b \mid
       \\[0.5em] &&&
       \gamma a . \{ \overline{k(\overline{x}) \mapsto b ~ |} \} \mid
-      \sLet x = a \sIn b \mid
-      \sCoerce c ~ a
+      \sLet{x}{a}{b} \mid
+      \sCoerce{c}{a}
       \\[1em]
       \text{(Coercions)} &
       c, c_1, c_2
       & ::= &
       r \mid
-      \sCata ~ D \mid
-      \sRoll ~ c \mid
-      \sUnroll ~ c \mid
-      \sCov ~ D ~ c \mid
-      \sIdData ~ D \mid
+      \sCata{c_1}{c_2} \mid
+      \sRoll{c} \mid
+      \sUnroll{c} \mid
+      \sSubCov{D}{c} \mid
+      \sSubData{D} \mid
       \\[0.5em] &&&
-      \sSubArr ~ c_1 ~ c_2 \mid
-      \sSubAlg ~ D ~ c
+      \sSubArr{c_1}{c_2} \mid
+      \sSubAlg{D}{c}
     \end{array}
   \end{align*}
 \end{figure}
@@ -338,7 +341,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
       \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet x = a \sIn b : B \gsep \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
+      \Gamma \vdash \sLet{x}{a}{b} : B \gsep \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
     }
 
     % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
@@ -346,7 +349,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
     }{
-      \Gamma \vdash \sCoerce c ~ a : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
+      \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
     }
 
   \end{mathpar}
@@ -369,47 +372,47 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     \inferrule[ReflDataCoe]{
       \isDatatype{D}
     }{
-      \Gamma \vdash \sIdData ~ D : \sCoerceSig{\sMu{D}}{\sMu{D}}
+      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
     }
 
     \inferrule[ArrCoe]{
       \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
       \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
     }{
-      \Gamma \vdash \sSubArr ~ c_1 ~ c_2 : \sCoerceSig{A \sArr B}{A' <:: B'}
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' <:: B'}
     }
 
     \inferrule[CovCoe]{
       \Gamma \vdash c : \sCoerceSig{A}{A'}
     }{
-      \Gamma \vdash \sCov ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
     }
 
     \inferrule[AlgCoe]{
       \Gamma \vdash c : \sCoerceSig{A}{A'}
     }{
-      \Gamma \vdash \sSubAlg ~ D ~ c : \sCoerceSig{D \sAlg A}{D \sAlg A'}
+      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
     }
 
     \inferrule[Roll1Coe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
     }{
-      \Gamma \vdash \sRoll ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
     \inferrule[Roll2Coe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
     }{
-      \Gamma \vdash \sUnroll ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
     \inferrule[CataCoe]{
       \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
       \Gamma \vdash c_2 : \sCoerceSig{A}{C}
     }{
-      \Gamma \vdash \sCata ~ c_1 ~ c_2 : \sCoerceSig{D \sAlg B}{B \sArr C}
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg B}{B \sArr C}
     }
   \end{mathpar}
 
