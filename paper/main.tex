@@ -314,7 +314,6 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }
 
-    % [TODO]: The current way this is set up, it allows you to always have the option to put the coercion on the argument, or by using the covariance coercion to put it on the domain of the function. I don't think it's good to always have this option, so one way to resolve this would be to only allow putting the co-version on the codomain of a function and never on the domain. I don't think it's good to always have this option, so one way to resolve this would be to only allow putting the co-version on the codomain of a function and never on the domain. Then at Applications, you can always allow wrapping a coercion around the argument.
     \inferrule[InferApp]{
       \Gamma \vdash f : A \sArr B \gsep \mathcal{A}_f \implies  \mathcal{C}_f \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
@@ -389,27 +388,27 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     \inferrule[CovCoe]{
       \Gamma \vdash c : \sCoerceSig{A}{A'}
     }{
-      \Gamma \vdash \sCov : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+      \Gamma \vdash \sCov ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
     }
 
     \inferrule[AlgCoe]{
       \Gamma \vdash c : \sCoerceSig{A}{A'}
     }{
-      \Gamma \vdash \sSubAlg ~ D \sCoerceSig{D \sAlg A}{D \sAlg A'}
+      \Gamma \vdash \sSubAlg ~ D ~ c : \sCoerceSig{D \sAlg A}{D \sAlg A'}
     }
 
     \inferrule[Roll1Coe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
     }{
-      \Gamma \vdash \sRoll ~ D ~ c \vdash \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+      \Gamma \vdash \sRoll ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
     \inferrule[Roll2Coe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
     }{
-      \Gamma \vdash \sUnroll ~ D ~ c \vdash \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+      \Gamma \vdash \sUnroll ~ c : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
     \inferrule[CataCoe]{
@@ -420,8 +419,8 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
   \end{mathpar}
 
-  \caption{Coercion type inference rules.}
-  \label{fig:coercion-type-inference-rules}
+  \caption{Coercion type checking rules.}
+  \label{fig:coercion-type-checking-rules}
 \end{figure}
 
 \begin{figure}[H]
