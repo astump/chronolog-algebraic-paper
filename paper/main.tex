@@ -344,13 +344,14 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash \sLet{x}{a}{b} : B \gsep \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
     }
 
-    % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
-    \inferrule[InferCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    }{
-      \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    }
+    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
+    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
+    % \inferrule[InferCoe]{
+    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
+    %   \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }{
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }
 
   \end{mathpar}
 
