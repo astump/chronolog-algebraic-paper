@@ -237,11 +237,6 @@ to obtain a recursive function from an algebra.
       %
       \text{(Type variables)} &
       R &\in& \mathscr{R}
-      % [Note from Henry]: this is unneeded since we have an \isDatatype{D} judgment now
-      % \\[1em]
-      % \text{(Datatypes)} &
-      % \langle D , \langle k, \langle \overline{A,} \rangle \rangle \rangle & \in &
-      % \mathscr{D}
       \\[1em]
       %
       \text{(Contexts)} &
@@ -343,7 +338,6 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       % [Todo from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
       \Gamma, (R : \ast), (r : \sCoerceSig{R}{R}), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
-      % \Gamma \vdash \omega(D, B, R, f, x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
       \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
     }
 
@@ -448,15 +442,6 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \sMu{D} <: \sMu{D}
     }
 
-    % [Note from Henry] this isn't needed anymore because the subtype constraint generation rules introduce an assumption at each omega that corresponds to this rule instantiated for the introduced omega type
-    % \inferrule[ReflTyVar]
-    % {
-    %   \
-    % }
-    % {
-    %   R <: R
-    % }
-
     \inferrule[Arr]
     {
       A' <: A \quad
@@ -540,14 +525,6 @@ the definition of subtyping as a partial order.
     {
       D <:: D
     }
-
-    % [Note from Henry] this isn't needed anymore because the subtype constraint generation rules introduce an assumption at each omega that corresponds to this rule instantiated for the introduced omega type
-    % \inferrule[ReflTyVar]
-    % { \
-    % }
-    % {
-    %   R <:: R
-    % }
 
     \inferrule[Arr]
     {
