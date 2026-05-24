@@ -313,6 +313,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }
 
+    % [TODO]: The current way this is set up, it allows you to always have the option to put the coercion on the argument, or by using the covariance coercion to put it on the domain of the function. I don't think it's good to always have this option, so one way to resolve this would be to only allow putting the co-version on the codomain of a function and never on the domain. I don't think it's good to always have this option, so one way to resolve this would be to only allow putting the co-version on the codomain of a function and never on the domain. Then at Applications, you can always allow wrapping a coercion around the argument.
     \inferrule[InferApp]{
       \freshTypeMetavariables{A', B}
       \\\\
@@ -325,12 +326,13 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     \inferrule[InferGamma]{
       \freshTypeMetavariables{B}
       \\\\
+      % [Note]: the type inference rules for constructors take care of introducing a fresh Y
       (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{Y} \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
       \\\\
       (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
     }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : B \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \{ A <:: \sMu{D} \} \cup \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <:: B \})
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : B \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \{ A <:: \sFunctorApp{D}{Y} \} \cup \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <:: B \})
     }
 
     % [Bookmark] This is where the assumption about omega type R is introduced.
@@ -349,7 +351,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
-    \inferrule[InferCoerce]{
+    \inferrule[InferCoe]{
       \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
     }{
@@ -364,7 +366,64 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
 \begin{figure}[H]
   \centering
-  [TODO] Rules for inferring coercion types, $c : A \sArr B$
+
+  \begin{mathpar}
+
+    \inferrule[VarCoe]{
+      (r : \sCoerceSig{A}{B}) \in \Gamma
+    }{
+      \Gamma \vdash r : \sCoerceSig{A}{B}
+    }
+
+    \inferrule[ReflDataCoe]{
+      \isDatatype{D}
+    }{
+      \Gamma \vdash \sIdData ~ D : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+
+    \inferrule[ArrCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
+    }{
+      \Gamma \vdash \sSubArr ~ c_1 ~ c_2 : \sCoerceSig{A \sArr B}{A' <:: B'}
+    }
+
+    \inferrule[CovCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sCov : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+    }
+
+    \inferrule[AlgCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubAlg ~ D \sCoerceSig{D \sAlg A}{D \sAlg A'}
+    }
+
+    \inferrule[Roll1Coe]{
+      \isDatatype{D} \qquad
+      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
+    }{
+      \Gamma \vdash \sRoll ~ D ~ c \vdash \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[Roll2Coe]{
+      \isDatatype{D} \qquad
+      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
+    }{
+      \Gamma \vdash \sRoll ~ D ~ c \vdash \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[CataCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
+    }{
+      \Gamma \vdash \sCata ~ c_1 ~ c_2 : \sCoerceSig{D \sAlg B}{B \sArr C}
+    }
+  \end{mathpar}
+
+  \caption{Coercion type inference rules.}
+  \label{fig:coercion-type-inference-rules}
 \end{figure}
 
 \begin{figure}[H]
@@ -418,6 +477,9 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \sCons : \sFunctorConSig{\sNat, Y}{\sNatList}{Y}
     }
   \end{mathpar}
+
+  \caption{Datatype constructor type inference rules.}
+  \label{fig:datatype-contructor-type-inference-rules}
 \end{figure}
 
 \section{Subtyping} % Aaron
@@ -426,7 +488,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
 \newcommand{\declcata}[1]{
   \inferrule[#1]{ }{
-    D \sAlg A <: D \sArr A
+    D \sAlg A <: \sMu{D} \sArr A
 }}
 
 \begin{figure}[H]
@@ -523,7 +585,7 @@ the definition of subtyping as a partial order.
       \isDatatype{D}
     }
     {
-      D <:: D
+      \sMu{D} <:: \sMu{D}
     }
 
     \inferrule[Arr]
@@ -550,7 +612,7 @@ the definition of subtyping as a partial order.
     \inferrule[Roll1]{
       A <:: \sMu{D}
     }{
-      \sFunctorApp{D}{A} <:: D
+      \sFunctorApp{D}{A} <:: \sMu{D}
     }
 
     \inferrule[Roll2]{
