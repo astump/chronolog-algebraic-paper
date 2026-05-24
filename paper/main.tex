@@ -233,6 +233,8 @@ to obtain a recursive function from an algebra.
       \text{(Types)} &
       A, B
       & ::= &
+      % [Note] this can only appear in datatype definitions
+      \iota \mid
       Y \mid
       \sMu{D} \mid
       \sFApp{D}{A} \mid
@@ -273,11 +275,9 @@ to obtain a recursive function from an algebra.
 
 \begin{itemize}
   \item $\mathscr{D}$ is the set of datatype definitions, which are pairs of $\langle D , \mathscr{V} \rangle$ where $D$ is an identifier and $\mathscr{V}$ is a set of constructor signatures of the form $\langle k , \langle \overline{A,} \rangle \rangle$ where $k$ is the constructor name and each $A$ is a constructor parameter type. The constructor parameter types can refer to $D$ itself, but the meta-function $\textsf{freshenFunctorParam}(A)$ substitutes those appearances of $D$ with a fresh type variable.
-  \item The meta-function $\textsf{freshenFunctorParam}(A)$ replaces all instances of the functor parameter type in $A$ with a fresh type variable.
-  \item The meta-function $\textsf{typeOfCoercion}(c)$ calculates the pair of the domain and codomain of a coercion.
 \end{itemize}
 
-The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}, \mathcal{C}$ are sets of constraints of the form $A <:: B$.
+The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}, \mathcal{C}$ are sets of constraints of the form $A <:: B$. This judgment states that in context $\Gamma$, the term $a$ is inferred to have type $A$ under the constraint that the assumptions $\mathcal{A}$ imply the requirements $\mathcal{C}$.
 
 \begin{figure}[H]
   \centering
@@ -291,12 +291,16 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferCon]{
+      Y ~\text{is a fresh type variable}
+      \\\\
       \langle D , \mathscr{V} \rangle \in \mathscr{D} \quad
       \langle k , \langle \overline{A'_i,} \rangle \rangle \in \mathscr{V}
       \\\\
+      (\forall i)~ A''_i := A'_i[ \iota \mapsto Y ]
+      \\\\
       (\forall i)~ \Gamma \vdash a_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
     }{
-      \Gamma \vdash D.k(\overline{a}) \gsep \bigcup_i \mathcal{A}_{a_i} \implies \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i <:: \textsf{freshenFunctorParam}(A'_i) \})
+      \Gamma \vdash D.k(\overline{a}) : \sFApp{D}{Y} \gsep \bigcup_i \mathcal{A}_{a_i} \implies \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i <:: A''_i \})
     }
 
     \inferrule[InferLam]{
@@ -315,20 +319,27 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferGamma]{
+      B, Y_i ~\text{are fresh type variables}
+      \\\\
       \langle D , \mathscr{V} \rangle \in \mathscr{D}
       \\\\
       (\forall i)~ \langle k_i , \langle \overline{A_{ij},} \rangle \rangle \in \mathscr{V}
+      \\\\
+      (\forall i)~ A'_{ij} := A_{ij} [\iota \mapsto Y_i]
       \\\\
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
       \\\\
       (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
     }{
       % \Gamma \vdash \gamma(D, B) a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \{ A <:: \sMu{D} \} \cup \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <:: B \})
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \{ A <:: \sMu{D} \} \cup \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <:: B \})
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : B \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \{ A <:: \sMu{D} \} \cup \bigcup_i (\mathcal{C}_{b_i} \cup \{ B_i <:: B \})
     }
 
     % [Bookmark] This is where the assumption about omega type R is introduced.
     \inferrule[InferOmega]{
+      % [TODO] should this be "type variable" and then refer the the substitutable type variables as "type metavariables"?
+      R ~\text{is a fresh type constant}
+      \\\\
       \Gamma, (R : \ast), (f : R \sArr A), (x : \sFApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
       % \Gamma \vdash \omega(D, B, R, f, x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
@@ -343,7 +354,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferCoerce]{
-      \langle A', B \rangle := \textsf{typeOfCoercion}(c) \\\\
+      c : A' \sArr B \quad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
     }{
       \Gamma \vdash \sCoerce c ~ a : B \gsep \mathcal{A}_a \implies \mathcal{C}_a \cup \{ A <:: A' \}
@@ -353,6 +364,16 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
   \caption{Subtype constraint generation rules.}
   \label{fig:subtype-constraint-generation-rules}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  [TODO] Rules for inferring coercion types, $c : A \sArr B$
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  [TODO] Helper relation for inferring types of constructors of datatype, $k : (\overline{A_i}) \sArr \sFApp{D}{Y}$, where $Y$ is a fresh type metavariable.
 \end{figure}
 
 \section{Subtyping} % Aaron
