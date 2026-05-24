@@ -314,7 +314,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferApp]{
-      A', B ~\text{are fresh type variables}
+      \freshTypeMetavariables{A', B}
       \\\\
       \Gamma \vdash f : F \gsep \mathcal{A}_f \implies  \mathcal{C}_f \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
