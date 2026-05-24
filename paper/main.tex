@@ -221,22 +221,16 @@ to obtain a recursive function from an algebra.
   % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
   \begin{align*}
     \begin{array}{rrcl}
-      % [Note from Henry]: actually we don't want this in the syntax since these are only metavariables, not part of syntax
-      % %
-      % \text{(Type variables)} &
-      % Y &\in& \mathscr{Y}
-      % \\[1em]
-      %
       \text{(Term variables)} &
-      x &\in& \mathscr{X}
+      x &\in& \textbf{TermVars}
       \\[1em]
       %
       \text{(Coercion variables)} &
-      r &\in& \mathscr{C}
+      r &\in& \textbf{CoercionVars}
       \\[1em]
       %
       \text{(Type variables)} &
-      R &\in& \mathscr{R}
+      R &\in& \textbf{TypeVars}
       \\[1em]
       %
       \text{(Contexts)} &
