@@ -98,6 +98,9 @@
 \newcommand{\gsep}{\mspace{8mu}\lvert\mspace{8mu}}
 
 % types
+\newcommand{\sBool}{\textit{Bool}}
+\newcommand{\sNat}{\textit{Nat}}
+\newcommand{\sNatList}{\textit{NatList}}
 \newcommand{\sAlg}{\Rightarrow}
 \newcommand{\sArr}{\to}
 % terms
@@ -113,9 +116,19 @@
 \newcommand{\sIdOmega}{\text{idOmega}}
 \newcommand{\sSubArr}{\text{subArr}}
 \newcommand{\sSubAlg}{\text{subAlg}}
-% \newcommand{\sFApp}[2]{#1 ~ #2} % spaced
-\newcommand{\sFApp}[2]{#1(#2)} % parenthesized
+\newcommand{\sFApp}[2]{#1 ~ #2} % spaced
+% \newcommand{\sFApp}[2]{#1(#2)} % parenthesized
 \newcommand{\sMu}[1]{\mu #1}
+% constructors
+\newcommand{\sTrue}{\textit{true}}
+\newcommand{\sFalse}{\textit{false}}
+\newcommand{\sZero}{\textit{zero}}
+\newcommand{\sSuc}{\textit{suc}}
+\newcommand{\sNil}{\textit{nil}}
+\newcommand{\sCons}{\textit{cons}}
+
+% helpers
+\newcommand{\freshTypeMetavariable}[1]{#1 ~\text{fresh}}
 
 \begin{document}
 
@@ -373,7 +386,49 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
 \begin{figure}[H]
   \centering
-  [TODO] Helper relation for inferring types of constructors of datatype, $k : (\overline{A_i}) \sArr \sFApp{D}{Y}$, where $Y$ is a fresh type metavariable.
+  \begin{mathpar}
+    % Bool
+
+    \inferrule[Bool.true]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sTrue : () \sArr \sFApp{\sBool}{Y}
+    }
+
+    \inferrule[Bool.false]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sFalse : () \sArr \sFApp{\sBool}{Y}
+    }
+
+    % Nat
+
+    \inferrule[Nat.zero]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sZero : () \sArr \sFApp{\sNat}{Y}
+    }
+
+    \inferrule[Nat.suc]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sSuc : (Y) \sArr \sFApp{\sNat}{Y}
+    }
+
+    % NatList
+
+    \inferrule[NatList.nil]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sNil : () \sArr \sFApp{\sNatList}{Y}
+    }
+
+    \inferrule[NatList.cons]{
+      \freshTypeMetavariable{Y}
+    }{
+      \sCons : (\sNat, Y) \sArr \sFApp{\sNatList}{Y}
+    }
+  \end{mathpar}
 \end{figure}
 
 \section{Subtyping} % Aaron
