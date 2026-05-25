@@ -652,24 +652,30 @@ The constraint generation phase also performs type inference, however in contras
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
 A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
 
-Performing the constraint generation procedure on \texttt{sub : Nat → Nat ⇒ Nat} results in the following constrained typing judgment:
+For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
 
+% [TODO]: Make sure to update this if the constraint generation rules change.
 \begin{mathpar}
-  \varnothing \vdash \textit{sub} : \sMu\sNat \sArr \sNat \sAlg \sMu\sNat
-  \mid
   \{ R <:: R \}
   \implies
   \{
-    % X_1 is return of γ, and so is return of ω, and so is return of λ
+    % X is domain of λ m ...
+    % R is the recursive type var for omega
+    % Y is the output type of sub' n
+    % U is return of γ (and so is return of ω, and so is return of λ)
+    % W is the recursive param of Nat for the pattern match
+    % Z is the recursive param of Zero()
+    %
     % γ ...
-    ? \sArr ? \sAlg X_1 <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
+    X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
+    % γ sub' n' ...
+    \sFunctorApp{\sNat}{Y} <:: \sFunctorApp{\sNat}{W},
     % sub' n
-    R \sArr \sMu\sNat <:: R \sArr X_2,
-    % unroll (sub' n')
-    X_2 <:: \sFunctorApp{\sNat}{\sMu\sNat},
+    R \sArr \sMu\sNat <:: R \sArr \sFunctorApp{\sNat}{Y},
     % roll Zero()
-    \sFunctorApp{\sNat}{X_3} <:: X_1
+    \sFunctorApp{\sNat}{Z} <:: U,
     % m'
+    \sMu\sNat <:: U
   \}
 \end{mathpar}
 
