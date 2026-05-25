@@ -265,7 +265,6 @@ To summarize the contributions:
     declarative ones.  The proof is checked in Agda.
 \end{itemize}
 
-
 \section{Motivating example} % Henry
 
 % pick nice example
@@ -485,14 +484,14 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
     }
 
-    \inferrule[Roll1Coe]{
+    \inferrule[RollCoe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
     }{
       \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
-    \inferrule[Roll2Coe]{
+    \inferrule[UnrollCoe]{
       \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
     }{
