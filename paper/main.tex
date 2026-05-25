@@ -515,7 +515,7 @@ To summarize the contributions:
 
 % example: subs
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
   \begin{subfigure}[b]{0.95\textwidth}
     \centering
@@ -566,7 +566,7 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   Write prose (maybe Aaron helping with prose)
 }
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
@@ -681,9 +681,7 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
 
 \todoHenry{Prose}
 
-The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}, \mathcal{C}$ are sets of constraints of the form $A <:: B$. This judgment states that in context $\Gamma$, the term $a$ is inferred to have type $A$ under the constraint that the assumptions $\mathcal{A}$ imply the requirements $\mathcal{C}$.
-
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -773,7 +771,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
   \label{fig:constraint-generation-rules}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -835,7 +833,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
   \label{fig:coercion-type-checking-rules}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
   \begin{mathpar}
     % Bool
@@ -897,7 +895,7 @@ of rules are equivalent.
     D \sAlg A <: \sMu{D} \sArr A
 }}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -975,7 +973,7 @@ the definition of subtyping as a partial order.
     D \sAlg A <:: B \sArr C
 }}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
