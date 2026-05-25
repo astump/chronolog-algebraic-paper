@@ -119,12 +119,12 @@
 \newcommand{\sSubArr}[2]{\text{subArr}~ #1 ~ #2}
 \newcommand{\sSubAlg}[2]{\text{subAlg}[#1] ~ #2}
 % constructors
-\newcommand{\sTrue}{\textit{true}}
-\newcommand{\sFalse}{\textit{false}}
-\newcommand{\sZero}{\textit{zero}}
-\newcommand{\sSuc}{\textit{suc}}
-\newcommand{\sNil}{\textit{nil}}
-\newcommand{\sCons}{\textit{cons}}
+\newcommand{\sTrue}{\textit{True}}
+\newcommand{\sFalse}{\textit{False}}
+\newcommand{\sZero}{\textit{Zero}}
+\newcommand{\sSuc}{\textit{Suc}}
+\newcommand{\sNil}{\textit{Nil}}
+\newcommand{\sCons}{\textit{Cons}}
 
 % helpers
 \newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
@@ -278,6 +278,96 @@ To summarize the contributions:
 %
 % Can we use the algebraic style with lighter syntax?  This would make it more
 % feasible in practice.
+
+% % ----
+% % folded-out pred
+% % ----
+
+% \begin{figure}
+% \begin{verbatim}
+% pred = \a -> case a of
+%   Zero -> Zero
+%   Suc a' -> a'
+
+% sub = \a b -> case b of
+%   Zero -> a
+%   Suc b' -> pred (sub a b')
+% \end{verbatim}
+%   \caption{Haskell implementation of subtraction.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% pred = λ n . γ n .
+%   { Zero() → Zero()
+%   | Suc(n') → n' }
+
+% sub = λ m . ω sub' n .
+%   { Zero() → m
+%   | Suc(n') → pred (sub' n') }
+% \end{verbatim}
+%   \caption{Algebraic implementation subtraction, without coercions.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% pred = λ n . γ (unroll id) n .
+%   { Zero() → (roll id) Zero()
+%   | Suc(n') → n' }
+
+% sub = λ m . ω sub' n . γ n .
+%   { Zero() → m
+%   | Suc(n') → γ pred (sub' n') .
+%     { Zero() -> (roll id) Zero()
+%     | Suc(m') -> m' } }
+% \end{verbatim}
+%   \caption{Algebraic implementation subtraction, with coercions.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% ----
+% folded-in pred
+% ----
+\begin{figure}
+\begin{verbatim}
+sub :: Nat -> Nat -> Nat
+sub m n = case n of
+  Zero -> m
+  Suc n' -> case sub m n' of
+    Zero -> Zero
+    Sub m' -> m'
+\end{verbatim}
+  \caption{Haskell implementation of subtraction.}
+  \label{fig:example-subtraction-haskell}
+\end{figure}
+
+\begin{figure}
+\begin{verbatim}
+sub : Nat → Nat ⇒ Nat
+sub = λ m . ω sub' n .
+  { Zero() → m
+  | Suc(n') → γ sub' n' .
+    { Zero() → Zero()
+    | Suc(m') → m' } }
+\end{verbatim}
+  \caption{Algebraic implementation subtraction, without coercions.}
+  \label{fig:example-subtraction-haskell}
+\end{figure}
+
+\begin{figure}
+\begin{verbatim}
+sub : Nat → Nat ⇒ Nat
+sub = λ m . ω sub' n . γ n .
+  { Zero() → m
+  | Suc(n') → γ (unroll id) (sub' n') .
+    { Zero() → (roll id) Zero()
+    | Suc(m') → m' } }
+\end{verbatim}
+  \caption{Algebraic implementation subtraction, with coercions.}
+  \label{fig:example-subtraction-haskell}
+\end{figure}
 
 \section{Syntax} % Henry (maybe Aaron helping with prose)
 
@@ -517,11 +607,11 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
 
-    \inferrule[Bool.true]{ }{
+    \inferrule[Bool.True]{ }{
       \sTrue : \sFunctorConSig{}{\sBool}{A}
     }
 
-    \inferrule[Bool.false]{ }{
+    \inferrule[Bool.False]{ }{
       \sFalse : \sFunctorConSig{}{\sBool}{A}
     }
 
@@ -529,11 +619,11 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
 
-    \inferrule[Nat.zero]{ }{
+    \inferrule[Nat.Zero]{ }{
       \sZero : \sFunctorConSig{}{\sNat}{A}
     }
 
-    \inferrule[Nat.suc]{ }{
+    \inferrule[Nat.Suc]{ }{
       \sSuc : \sFunctorConSig{A}{\sNat}{A}
     }
 
@@ -541,11 +631,11 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
 
-    \inferrule[NatList.nil]{ }{
+    \inferrule[NatList.Nil]{ }{
       \sNil : \sFunctorConSig{}{\sNatList}{A}
     }
 
-    \inferrule[NatList.cons]{ }{
+    \inferrule[NatList.Cons]{ }{
       \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
     }
   \end{mathpar}
