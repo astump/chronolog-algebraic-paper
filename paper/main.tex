@@ -652,6 +652,27 @@ The constraint generation phase also performs type inference, however in contras
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
 A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
 
+Performing the constraint generation procedure on \texttt{sub : Nat → Nat ⇒ Nat} results in the following constrained typing judgment:
+
+\begin{mathpar}
+  \varnothing \vdash \textit{sub} : \sMu\sNat \sArr \sNat \sAlg \sMu\sNat
+  \mid
+  \{ R <:: R \}
+  \implies
+  \{
+    % X_1 is return of γ, and so is return of ω, and so is return of λ
+    % γ ...
+    ? \sArr ? \sAlg X_1 <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
+    % sub' n
+    R \sArr \sMu\sNat <:: R \sArr X_2,
+    % unroll (sub' n')
+    X_2 <:: \sFunctorApp{\sNat}{\sMu\sNat},
+    % roll Zero()
+    \sFunctorApp{\sNat}{X_3} <:: X_1
+    % m'
+  \}
+\end{mathpar}
+
 \todoHenry{Prose}
 
 The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}, \mathcal{C}$ are sets of constraints of the form $A <:: B$. This judgment states that in context $\Gamma$, the term $a$ is inferred to have type $A$ under the constraint that the assumptions $\mathcal{A}$ imply the requirements $\mathcal{C}$.
@@ -677,9 +698,10 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferLam]{
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \freshMetavariables{X} \qquad
+      \Gamma, (x : X) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
-      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma \vdash \lambda x . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }
 
     \inferrule[InferApp]{
