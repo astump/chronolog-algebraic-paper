@@ -545,7 +545,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[NatList.cons]{ }{
-      \sCons : \sFunctorConSig{\sNat, Y}{\sNatList}{A}
+      \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
     }
   \end{mathpar}
 
@@ -793,7 +793,7 @@ We formalize the above development in Agda as follows.  Types are
 represented by the Agda datatype \verb|Ty| in
 Figure~\ref{fig:synagda}.  For simplicity, we have single signature
 functor \verb|D| and its least fixed-point \verb|μD| (note that this
-is a single identifier in Agda, not an application of a \verb|μ|
+  is a single identifier in Agda, not an application of a \verb|μ|
 operator to \verb|D|).  Algebra types $D \To A$ are represented just
 as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda,
 like \verb|μD|.  Arrow types are represented $\arr{A}{B}$ (as other
@@ -807,13 +807,13 @@ data Tp : Set where
   D_ : Tp → Tp
   _⟶_ : Tp → Tp → Tp
   D⇒ : Tp → Tp
-  μD : Tp 
+  μD : Tp
 
 infixr 9 _⟶_
 infixr 10 D_
 \end{verbatim}
-\caption{Agda definition of types}
-\label{fig:synagda}
+  \caption{Agda definition of types}
+  \label{fig:synagda}
 \end{figure}
 
 Figures~\ref{fig:declagda} and~\ref{fig:algagda} show the
@@ -848,32 +848,32 @@ the presence of those does not arise.
 
 \begin{figure}
 \begin{verbatim}
-infix 5 _<:_ 
+infix 5 _<:_
 
 data _<:_ : Tp → Tp → Set where
   Refl : μD <: μD
-  Arr : {T1 T2 T1' T2' : Tp} → 
+  Arr : {T1 T2 T1' T2' : Tp} →
          T1' <: T1 →
          T2 <: T2' →
          T1 ⟶ T2 <: T1' ⟶ T2'
-  Roll : D μD <: μD  
+  Roll : D μD <: μD
   Unroll : μD <: D μD
   Cov : {T1 T2 : Tp} → T1 <: T2 → D T1 <: D T2
   Trans : {T1 T2 T3 : Tp} → T1 <: T2 → T2 <: T3 → T1 <: T3
   Cata : {X : Tp} → D⇒ X <: μD ⟶ X
   Alg : {T1 T2 : Tp} → T1 <: T2 → D⇒ T1 <: D⇒ T2
 \end{verbatim}
-\caption{Agda definition of declarative subtyping}
-\label{fig:declagda}
+  \caption{Agda definition of declarative subtyping}
+  \label{fig:declagda}
 \end{figure}
 
 \begin{figure}
 \begin{verbatim}
-infix 5 _<::_ 
+infix 5 _<::_
 
 data _<::_ : Tp → Tp → Set where
   Refl : μD <:: μD
-  Arr : {T1 T2 T1' T2' : Tp} → 
+  Arr : {T1 T2 T1' T2' : Tp} →
          T1' <:: T1 →
          T2 <:: T2' →
          T1 ⟶ T2 <:: T1' ⟶ T2'
@@ -884,10 +884,10 @@ data _<::_ : Tp → Tp → Set where
   Cata : {T T1 T2 : Tp} →
         T1 <:: μD →
         T <:: T2 →
-        D⇒ T <:: T1 ⟶ T2  
+        D⇒ T <:: T1 ⟶ T2
 \end{verbatim}
-\caption{Agda definition of algorithmic subtyping}
-\label{fig:algagda}
+  \caption{Agda definition of algorithmic subtyping}
+  \label{fig:algagda}
 \end{figure}
 
 \begin{figure}
@@ -898,7 +898,6 @@ completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \caption{Agda statements of soundness and completeness}
 \label{fig:algagda}
 \end{figure}
-
 
 
 \section{Implementation with Chronolog} % Henry
