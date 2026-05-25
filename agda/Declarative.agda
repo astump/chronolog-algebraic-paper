@@ -18,6 +18,7 @@ data _<:_ : Tp → Tp → Set where
   Cata : ∀{X : Tp} → D⇒ X <: μD ⟶ X
   Alg : ∀{T1 T2 : Tp} → T1 <: T2 → D⇒ T1 <: D⇒ T2
 
+-- not actually needed for soundness or completeness
 refl<: : ∀{T} → T <: T
 refl<: {μD} = Refl
 refl<: {D T} = Cov (refl<:{T})
