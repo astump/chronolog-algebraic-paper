@@ -9,9 +9,9 @@ soundness : ∀{T T' : Tp} →
             T <:: T' →
             T <: T'
 soundness Refl = Refl
-soundness (Fun d d₁) = Fun (soundness d) (soundness d₁)
-soundness (Roll1 d) = roll1 (soundness d)
-soundness (Roll2 d) = roll2 (soundness d)
+soundness (Arr d d₁) = Arr (soundness d) (soundness d₁)
+soundness (Roll d) = roll1 (soundness d)
+soundness (Unroll d) = roll2 (soundness d)
 soundness (Cov d) = Cov (soundness d)
 soundness (Alg d) = Alg (soundness d)
-soundness (Cata d d₁) = Trans Cata (Fun (soundness d) (soundness d₁))
+soundness (Cata d d₁) = Trans Cata (Arr (soundness d) (soundness d₁))

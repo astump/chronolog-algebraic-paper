@@ -9,7 +9,7 @@ completeness : ∀{T T' : Tp} →
                T <: T' →
                T <:: T'
 completeness Refl = Refl
-completeness (Fun d d₁) = Fun (completeness d) (completeness d₁)
+completeness (Arr d d₁) = Arr (completeness d) (completeness d₁)
 completeness Roll = roll
 completeness Unroll = unroll
 completeness (Cov d) = Cov (completeness d)
