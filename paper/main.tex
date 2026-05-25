@@ -62,6 +62,7 @@
 \usepackage{amsmath}
 \usepackage{mathpartir}
 \usepackage{subcaption}
+\usepackage{tcolorbox}
 
 %%%%
 
@@ -134,6 +135,21 @@
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
 % \newcommand{\atPos}[1]{^{#1}}
 \newcommand{\atPos}[1]{}
+
+% \newcommand{\todoHenry}[1]{\Colorbox{red!20}{#1}}
+\newcommand{\todoHenry}[1]{%
+  \begin{tcolorbox}[
+      colback=red!15,     % Light red background
+      colframe=red!50,    % Muted red border
+      arc=0mm,            % Sharp corners
+      boxrule=0.5pt,      % Border thickness
+      left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+      before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+    ]
+    \textbf{[TODO for Henry]:} \\[1em]
+    #1
+  \end{tcolorbox}%
+}
 
 \include{definitions}
 
@@ -268,18 +284,21 @@ To summarize the contributions:
     declarative ones.  The proof is checked in Agda.
 \end{itemize}
 
-\section{Motivating examples} % Henry
-% pick nice example
-%
-%   subtraction uses unroll, but not roll or cata
-%   length uses roll, but not unroll or cata
-%   write an outer function that subtracts some quantity from the length of a list
-%
-% here it is in Haskell
-% here it is in algebraic style with coercions
-%
-% Can we use the algebraic style with lighter syntax?  This would make it more
-% feasible in practice.
+\section{Motivating examples}
+
+\todoHenry{
+  pick nice example
+
+  subtraction uses unroll, but not roll or cata
+  length uses roll, but not unroll or cata
+  write an outer function that subtracts some quantity from the length of a list
+
+  here it is in Haskell
+  here it is in algebraic style with coercions
+
+  Can we use the algebraic style with lighter syntax?  This would make it more
+  feasible in practice.
+}
 
 % example: subtraction
 
@@ -496,8 +515,26 @@ To summarize the contributions:
 
 % example: subs
 
-\begin{figure}
+\begin{figure}[H]
   \centering
+  \begin{subfigure}[b]{0.95\textwidth}
+    \centering
+    \todoHenry{Haskell version}
+    \caption{Haskell}
+    \label{fig:example-subs-haskell}
+  \end{subfigure}
+
+  \vspace{1em}
+
+  \begin{subfigure}[b]{0.95\textwidth}
+    \centering
+    \todoHenry{Algebraic version without coercions}
+    \caption{Algebraic}
+    \label{fig:example-subs-algebraic-without-coercions}
+  \end{subfigure}
+
+  \vspace{1em}
+
   \begin{subfigure}[b]{0.95\textwidth}
     \centering
     \begin{verbatim}
@@ -508,19 +545,26 @@ sub = λ m . ω sub' n . γ n .
               { Zero() → (roll id) Zero()
               | Suc(m') → m' } }
 
-subs : NatList ⇒ NatList -> NatList
+subs : NatList ⇒ NatList → NatList
 subs = ω subs' l1 . λ l2 . γ l1 .
           { Nil → Nil
           | Cons(h1, t1) → γ (unroll id) l2 .
               { Nil → (roll id) Nil
-              | Cons(h2, t2) -> (roll id) Cons((cata (sub h1)) h2, subs' t1 t2) } }
+              | Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2) } }
     \end{verbatim}
-    \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with coercions.}
+    \caption{Algebraic with coercions}
     \label{fig:example-subs-algebraic-with-coercions}
   \end{subfigure}
+
+  \caption{Implementations of \texttt{sub} and \texttt{subs}.}
+  \label{fig:example-subs}
 \end{figure}
 
-\section{Syntax} % Henry (maybe Aaron helping with prose)
+\section{Syntax}
+
+\todoHenry{
+  Write prose (maybe Aaron helping with prose)
+}
 
 \begin{figure}[H]
   \centering
@@ -596,7 +640,9 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   \end{align*}
 \end{figure}
 
-\section{Constraint-Generating Typing} % Henry
+\section{Constraint-Generating Typing}
+
+\todoHenry{Prose}
 
 The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}, \mathcal{C}$ are sets of constraints of the form $A <:: B$. This judgment states that in context $\Gamma$, the term $a$ is inferred to have type $A$ under the constraint that the assumptions $\mathcal{A}$ imply the requirements $\mathcal{C}$.
 
@@ -1142,10 +1188,15 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 
 \section{Implementation with Chronolog} % Henry
 
+\todoHenry{Prose}
+
 \section{Returning to the Examples} % Henry
 
-% remind the version with coercions
-% show without coercions
+\todoHenry{
+  Prose
+  remind the version with coercions
+  show without coercions
+}
 
 \section{Related Work} % Aaron
 
