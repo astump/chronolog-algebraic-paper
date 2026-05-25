@@ -43,7 +43,7 @@
 
 \usepackage{graphicx}%
 \usepackage{multirow}%
-\usepackage{amsmath,amssymb,amsfonts}%
+\usepackage{amsmath,amssymb,amsfonts}
 \usepackage{amsthm}%
 \usepackage{mathrsfs}%
 \usepackage[title]{appendix}%
@@ -60,7 +60,6 @@
 \usepackage{amsmath}
 \usepackage{mathpartir}
 
-\include{definitions}
 %%%%
 
 %%%%%=============================================================================%%%%
@@ -130,6 +129,8 @@
 % helpers
 \newcommand{\freshTypeMetavariables}[1]{#1 ~\text{fresh}}
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
+
+\include{definitions}
 
 \begin{document}
 
@@ -369,7 +370,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash r : \sCoerceSig{A}{B}
     }
 
-    \inferrule[ReflDataCoe]{
+    \inferrule[ReflCoe]{
       \isDatatype{D}
     }{
       \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
@@ -490,7 +491,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
   \begin{mathpar}
 
-    \inferrule[ReflData]
+    \inferrule[Refl]
     {
       \isDatatype{D}
     }
@@ -542,9 +543,7 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 \end{figure}
 
 Figure~\ref{fig:declarative-subtyping-rules} shows the declarative
-subtyping rules.  We have reflexivity rules \textsc{ReflData} and
-\textsc{ReflR} for datatypes and for the abstract types $R$ introduced
-in the body of our Mendler algebras.  \textsc{Arr} is the usual
+subtyping rules.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
 subtyping rule for function types, which is contravariant in the
 domain and covariant in the codomain.  \textsc{Cov} expresses that the
 signature functor is indeed a (covariant) functor.  \textsc{Alg}
@@ -574,7 +573,7 @@ the definition of subtyping as a partial order.
 
   \begin{mathpar}
 
-    \inferrule[ReflData]
+    \inferrule[Refl]
     {
       \isDatatype{D}
     }
@@ -603,13 +602,13 @@ the definition of subtyping as a partial order.
       D \sAlg A <:: \sMu{D} \sAlg A'
     }
 
-    \inferrule[Roll1]{
+    \inferrule[Roll]{
       A <:: \sMu{D}
     }{
       \sFunctorApp{D}{A} <:: \sMu{D}
     }
 
-    \inferrule[Roll2]{
+    \inferrule[Unroll]{
       \sMu{D} <:: A
     }{
       \sMu{D} <:: \sFunctorApp{D}{A}
@@ -637,11 +636,11 @@ compare the declarative (on the left) and algorithmic \textsc{Cata} rules:
   \end{array}
 \]
 \noindent The algorithmic rule needs to take into account subtyping
-relationships between the components in the conclusion, because
-transitivity is not available to take those into account outside a use
-of this rule.  We see a similar change from the declarative
-(\textsc{Roll} and \textsc{Unroll}) to the algorithmic (\textsc{Roll1}
-and \textsc{Roll2}) rules for rolling and unrolling the signature
+relationships between the components in the conclusion, because there
+is no rule for transitivity.  In effect, transitivity needs to be
+built into all the other rules.  We see a similar change from the
+declarative to the algorithmic versions of the \textsc{Roll} and
+\textsc{Unroll} rules, for rolling and unrolling the signature
 functor.
 
 \begin{theorem}[Reflexivity]
@@ -669,6 +668,98 @@ functor.
 
 \subsection{Formalization in Agda}
 \label{sec:agda}
+
+We formalize the above development in Agda as follows.  Types are
+represented by the Agda datatype \verb|Ty| in
+Figure~\ref{fig:synagda}.  For simplicity, we have single signature
+functor \verb|D| and its least fixed-point \verb|μD| (note that this
+is a single identifier in Agda, not an application of a \verb|μ|
+operator to \verb|D|).  Algebra types $D \To A$ are represented just
+as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda,
+like \verb|μD|.  Arrow types are represented $\arr{A}{B}$ (as other
+arrow notations are already in use).  The figure declares some fixity
+information, for lighter notation where these operators are used
+later.
+
+\begin{figure}
+\begin{verbatim}
+data Tp : Set where
+  D_ : Tp → Tp
+  _⟶_ : Tp → Tp → Tp
+  D⇒ : Tp → Tp
+  μD : Tp 
+
+infixr 9 _⟶_
+infixr 10 D_
+\end{verbatim}
+\caption{Agda definition of types}
+\label{fig:synagda}
+\end{figure}
+
+Figures~\ref{fig:declagda} and~\ref{fig:algagda} show the
+representations of the declarative and algorithmic subtyping systems,
+respectively.  We follow a standard encoding strategy, where each set
+of rules is represented as an indexed inductive type.  Each rule
+becomes a constructor of the type.  For example, we have, for both
+types, \verb|Refl| of type \verb|μD <: μD|, which corresponds exactly
+to the \verb|Refl| rules of
+Figures~\ref{fig:declarative-subtyping-rules}
+and~\ref{fig:algorithmic-subtyping-rules}.  Conveniently, Agda allows
+reusing constructor names across datatypes.  Dependent typing
+is used for quantification.  For example, the \verb|Cata| constructor
+for declarative subtyping (in Figure~\ref{fig:declagda})
+has type
+\begin{verbatim}
+{X : Tp} → D⇒ X <: μD ⟶ X
+\end{verbatim}
+\noindent This is a dependent function type, stating that give \verb|X : Tp|,
+the \verb|Cata| constructor will return a proof of \verb|D⇒ X <: μD ⟶ X|,
+expressing the coercion from an algebra with carrier \verb|X| to its catamorphism.
+
+\begin{figure}
+\begin{verbatim}
+infix 5 _<:_ 
+
+data _<:_ : Tp → Tp → Set where
+  Refl : μD <: μD
+  Arr : {T1 T2 T1' T2' : Tp} → 
+         T1' <: T1 →
+         T2 <: T2' →
+         T1 ⟶ T2 <: T1' ⟶ T2'
+  Roll : D μD <: μD  
+  Unroll : μD <: D μD
+  Cov : {T1 T2 : Tp} → T1 <: T2 → D T1 <: D T2
+  Trans : {T1 T2 T3 : Tp} → T1 <: T2 → T2 <: T3 → T1 <: T3
+  Cata : {X : Tp} → D⇒ X <: μD ⟶ X
+  Alg : {T1 T2 : Tp} → T1 <: T2 → D⇒ T1 <: D⇒ T2
+\end{verbatim}
+\caption{Agda definition of declarative subtyping}
+\label{fig:declagda}
+\end{figure}
+
+\begin{figure}
+\begin{verbatim}
+infix 5 _<::_ 
+
+data _<::_ : Tp → Tp → Set where
+  Refl : μD <:: μD
+  Arr : {T1 T2 T1' T2' : Tp} → 
+         T1' <:: T1 →
+         T2 <:: T2' →
+         T1 ⟶ T2 <:: T1' ⟶ T2'
+  Roll : {T : Tp} → T <:: μD → D T <:: μD
+  Unroll : {T : Tp} → μD <:: T → μD <:: D T
+  Cov : {T1 T2 : Tp} → T1 <:: T2 → D T1 <:: D T2
+  Alg : {T1 T2 : Tp} → T1 <:: T2 → D⇒ T1 <:: D⇒ T2
+  Cata : {T T1 T2 : Tp} →
+        T1 <:: μD →
+        T <:: T2 →
+        D⇒ T <:: T1 ⟶ T2  
+\end{verbatim}
+\caption{Agda definition of algorithmic subtyping}
+\label{fig:algagda}
+\end{figure}
+
 
 \section{Implementation with Chronolog} % Henry
 

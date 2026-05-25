@@ -5,6 +5,11 @@
 
 % unicode
 \usepackage[utf8]{inputenc}
+
+
+\DeclareUnicodeCharacter{27F6}{\ensuremath{\longrightarrow}}
+\DeclareUnicodeCharacter{25B8}{\ensuremath{\blacktriangleright}}
+\DeclareUnicodeCharacter{3BC}{\ensuremath{\mu}}
 \DeclareUnicodeCharacter{3BB}{\ensuremath{\lambda}}
 \DeclareUnicodeCharacter{3B4}{\ensuremath{\delta}}
 \DeclareUnicodeCharacter{3C9}{\ensuremath{\omega}}
@@ -14,6 +19,8 @@
 \DeclareUnicodeCharacter{22B2}{\ensuremath{\lhd}}
 \DeclareUnicodeCharacter{2080}{\ensuremath{_0}}
 %\definecolor{darkred}{RGB}{100,10,10}
+
+\newcommand{\arr}[2]{#1 \mathbin{\longrightarrow} #2}
 
 \newcommand{\cata}[1]{\llparenthesis #1 \rrparenthesis}
 
