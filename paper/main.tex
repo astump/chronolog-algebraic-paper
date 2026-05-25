@@ -129,6 +129,8 @@
 % helpers
 \newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
+% \newcommand{\atPos}[1]{^{#1}}
+\newcommand{\atPos}[1]{}
 
 \include{definitions}
 
@@ -372,10 +374,10 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     \inferrule[InferCon]{
       % [Note] we need to freshen X here since the constructor rules dont deal with type variables
       \freshMetavariables{X} \qquad
-      k : \sFunctorConSig{\overline{A'_i,}}{D}{X} \qquad
-      (\forall i)~ \Gamma \vdash a_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
+      k : \sFunctorConSig{\overline{B_i,}}{D}{X} \qquad
+      (\forall i)~ \Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
     }{
-      \Gamma \vdash k(\overline{a,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <:: A'_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
+      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
     }
 
     \inferrule[InferLam]{
