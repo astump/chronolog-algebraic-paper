@@ -252,19 +252,19 @@ This proof of equivalence has been formalized and checked in Agda.
 
 To summarize the contributions:
 \begin{itemize}
-\item We propose a new approach to total algebraic programming,
-  where function calls for rolling and unrolling signature functors
-  and turning algebras into catamorphisms are inferred by coercive
-  subtyping.
-\item We realize this approach by generating subtyping constraints
-  during typing, and solving them using a constraint solver.  The
-  solver is a logic-programming engine, with a custom mechanism
-  to suspend goals that would other lead to divergence.
-\item We propose an algorithmic version of the subtyping
-  rules for this theory, and prove it equivalent to the
-  declarative ones.  The proof is checked in Agda.
+  \item We propose a new approach to total algebraic programming,
+    where function calls for rolling and unrolling signature functors
+    and turning algebras into catamorphisms are inferred by coercive
+    subtyping.
+  \item We realize this approach by generating subtyping constraints
+    during typing, and solving them using a constraint solver.  The
+    solver is a logic-programming engine, with a custom mechanism
+    to suspend goals that would other lead to divergence.
+  \item We propose an algorithmic version of the subtyping
+    rules for this theory, and prove it equivalent to the
+    declarative ones.  The proof is checked in Agda.
 \end{itemize}
-  
+
 
 \section{Motivating example} % Henry
 
@@ -336,7 +336,7 @@ To summarize the contributions:
       (f ~ a) \mid
       \omega f(x) . b \mid
       \\[0.5em] &&&
-      \gamma a . \{ \overline{k(\overline{x}) \mapsto b ~ |} \} \mid
+      \gamma a . \{ \overline{k(\overline{x,}) \mapsto b ~ |} \} \mid
       \sLet{x}{a}{b} \mid
       \sCoerce{c}{a}
       \\[1em]
@@ -734,7 +734,7 @@ signature functor.
 \end{lemma}
 
 \begin{theorem}[Decidability]
-\label{thm:dec}
+  \label{thm:dec}
   It is decidable whether or not two types are in the algorithmic subtyping
   relation.
 \end{theorem}
@@ -772,11 +772,11 @@ inductively proven lemmas.
 \end{lemma}
 
 \begin{lemma}[refl (algorithmic)]
-    $A <:: A$.
+  $A <:: A$.
 \end{lemma}
 
 \begin{lemma}[trans (algorithmic)]
-     If $A <:: B$ and $B <:: C$ then $A <:: C$.
+  If $A <:: B$ and $B <:: C$ then $A <:: C$.
 \end{lemma}
 
 \begin{lemma}[roll (algorithmic)]
@@ -786,7 +786,6 @@ inductively proven lemmas.
 \begin{lemma}[unroll (algorithmic)]
   $\mu\ D <: D\ \mu D$
 \end{lemma}
-
 
 \subsection{Formalization in Agda}
 \label{sec:agda}
@@ -897,10 +896,9 @@ data _<::_ : Tp → Tp → Set where
 Soundness    : {T T' : Tp} → T <:: T' → T <: T'
 Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \end{verbatim}
-\caption{Agda statements of soundness and completeness}
-\label{fig:algagda}
+  \caption{Agda statements of soundness and completeness}
+  \label{fig:algagda}
 \end{figure}
-
 
 \section{Implementation with Chronolog} % Henry
 
