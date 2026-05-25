@@ -640,7 +640,17 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   \end{align*}
 \end{figure}
 
-\section{Constraint-Generating Typing}
+\section{Typing with Constraints}
+
+Type checking consists of constraint generation phase and a constraint solving phase.
+Constraint generation for a well-formed and well-scoped term $a$ in context $\Gamma$ is performed by applying the constraint generation rules presented in figure \ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
+This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of assumed constraints and $\mathcal{C}$ is a set of required constraints.
+Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
+The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
+
+The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
+The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
+A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
 
 \todoHenry{Prose}
 
@@ -731,8 +741,8 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
   \end{mathpar}
 
-  \caption{Subtype constraint generation rules.}
-  \label{fig:subtype-constraint-generation-rules}
+  \caption{Constraint generation rules.}
+  \label{fig:constraint-generation-rules}
 \end{figure}
 
 \begin{figure}[H]
