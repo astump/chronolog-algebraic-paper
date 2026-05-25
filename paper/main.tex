@@ -127,7 +127,7 @@
 \newcommand{\sCons}{\textit{cons}}
 
 % helpers
-\newcommand{\freshTypeMetavariables}[1]{#1 ~\text{fresh}}
+\newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
 
 \include{definitions}
@@ -219,6 +219,7 @@ to obtain a recursive function from an algebra.
   \centering
 
   % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
+  % [TODO from Henry]: Somehow we need to say that type variables can *only* appear in subtyping constraints, since we don't want to claim the system supports polymorphism
   \begin{align*}
     \begin{array}{rrcl}
       \text{(Datatype Names)} &
@@ -233,8 +234,12 @@ to obtain a recursive function from an algebra.
       r &\in& \textbf{CoercionVars}
       \\[1em]
       %
+      \text{(Recursion Type variables)} &
+      R &\in& \textbf{RecTypeVars}
+      \\[1em]
+      %
       \text{(Type variables)} &
-      R &\in& \textbf{TypeVars}
+      X, Y &\in& \textbf{TypeVars}
       \\[1em]
       %
       \text{(Contexts)} &
@@ -247,6 +252,7 @@ to obtain a recursive function from an algebra.
       \text{(Types)} &
       A, B
       & ::= &
+      X \mid
       R \mid
       \sMu{D} \mid
       \sFunctorApp{D}{A} \mid
@@ -293,17 +299,18 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
   \begin{mathpar}
 
     \inferrule[InferVar]{
-      \freshTypeMetavariables{Y} \qquad
       (x : A) \in \Gamma
     }{
-      \Gamma \vdash x : A \gsep \varnothing \implies \{ A <:: Y \}
+      \Gamma \vdash x : A \gsep \varnothing \implies \varnothing
     }
 
     \inferrule[InferCon]{
-      k : \sFunctorConSig{\overline{A_i,}}{D}{Y} \qquad
+      % [Note] we need to freshen X here since the constructor rules dont deal with type variables
+      \freshMetavariables{X} \qquad
+      k : \sFunctorConSig{\overline{A'_i,}}{D}{X} \qquad
       (\forall i)~ \Gamma \vdash a_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
     }{
-      \Gamma \vdash k(\overline{a,}) : \sFunctorApp{D}{Y} \gsep \bigcup_i \mathcal{A}_{a_i} \implies \bigcup_{i} \mathcal{C}_{a_i}
+      \Gamma \vdash k(\overline{a,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <:: A'_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
     }
 
     \inferrule[InferLam]{
@@ -313,26 +320,40 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
     }
 
     \inferrule[InferApp]{
-      \Gamma \vdash f : A \sArr B \gsep \mathcal{A}_f \implies  \mathcal{C}_f \qquad
+      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
+      \freshMetavariables{X} \qquad
+      \Gamma \vdash f : B \gsep \mathcal{A}_f \implies \mathcal{C}_f \qquad
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
     }{
-      \Gamma \vdash f ~ a : B \gsep \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
+      \Gamma \vdash f ~ a : X \gsep
+      \{ B <:: A \sArr X \} \cup \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
     }
 
     \inferrule[InferGamma]{
-      \Gamma \vdash a : \sFunctorApp{D}{Y} \gsep \mathcal{A}_a \implies \mathcal{C}_a
+      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
+      \freshMetavariables{X, Y} \qquad
+      \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
       \\\\
-      % [Note]: the type inference rules for constructors take care of introducing a fresh Y
-      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{Y} \qquad
+      % [TODO]: enforce exhaustive pattern match
+      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
       \qquad
-      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
+      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
+      \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
     }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : B \gsep \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i} \implies \mathcal{C}_a \cup \bigcup_i \mathcal{C}_{b_i}
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
+      \gsep
+      \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i}
+      \implies
+      \{ C <:: \sFunctorApp{D}{X} \} \cup
+      \mathcal{C}_a \cup
+      \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
     }
 
     % [Bookmark] This is where the assumption about omega type R is introduced.
     \inferrule[InferOmega]{
-      % [Todo from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
+      % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
+      % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
+      \freshMetavariables{R, r} \qquad
       \Gamma, (R : \ast), (r : \sCoerceSig{R}{R}), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
       \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
@@ -342,16 +363,18 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
       \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet{x}{a}{b} : B \gsep \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
+      \Gamma \vdash \sLet{x}{a}{b} : B \gsep
+      \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
     }
 
-    % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
-    \inferrule[InferCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    }{
-      \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    }
+    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
+    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
+    % \inferrule[InferCoe]{
+    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
+    %   \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }{
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }
 
   \end{mathpar}
 
@@ -428,48 +451,36 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 
     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
 
-    \inferrule[Bool.true]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sTrue : \sFunctorConSig{}{\sBool}{Y}
+    \inferrule[Bool.true]{ }{
+      \sTrue : \sFunctorConSig{}{\sBool}{A}
     }
 
-    \inferrule[Bool.false]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sFalse : \sFunctorConSig{}{\sBool}{Y}
+    \inferrule[Bool.false]{ }{
+      \sFalse : \sFunctorConSig{}{\sBool}{A}
     }
 
     % Nat
 
     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
 
-    \inferrule[Nat.zero]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sZero : \sFunctorConSig{}{\sNat}{Y}
+    \inferrule[Nat.zero]{ }{
+      \sZero : \sFunctorConSig{}{\sNat}{A}
     }
 
-    \inferrule[Nat.suc]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sSuc : \sFunctorConSig{Y}{\sNat}{Y}
+    \inferrule[Nat.suc]{ }{
+      \sSuc : \sFunctorConSig{A}{\sNat}{A}
     }
 
     % NatList
 
     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
 
-    \inferrule[NatList.nil]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sNil : \sFunctorConSig{}{\sNatList}{Y}
+    \inferrule[NatList.nil]{ }{
+      \sNil : \sFunctorConSig{}{\sNatList}{A}
     }
 
-    \inferrule[NatList.cons]{
-      \freshTypeMetavariables{Y}
-    }{
-      \sCons : \sFunctorConSig{\sNat, Y}{\sNatList}{Y}
+    \inferrule[NatList.cons]{ }{
+      \sCons : \sFunctorConSig{\sNat, Y}{\sNatList}{A}
     }
   \end{mathpar}
 
