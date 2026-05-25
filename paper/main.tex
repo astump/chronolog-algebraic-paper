@@ -166,7 +166,7 @@
 \keywords{strong functional programming, type-based termination, Mendler-style recursion}
 
 \abstract{
-  This paper presents a system for more convenient algebraic programming, a form of total functional programming where datatypes are defined as least fixed points of covariant signature functors, and recursive functions are defined as algebras. This approach requires the use of certain combinators to roll and unroll fixed points, and to convert algebras to functions which can be applied to recurse over data. These combinators are a burden for programming in this style. To alleviate that burden, in this paper we propose to insert them automatically, using coercive subtyping. The type checker generates subtyping constraints, which are then solved with the help of a custom logic programming engined called Chronolog. The subtyping axioms are given to Chronolog as rules, which uses them to solve the subtyping constraints. To avoid infinite applications of rules for unrolling signature functors, Chronolog provides a mechanism for suspending and resuming certain forms of goals. The subtyping axioms presented to Chronolog are an algorithmic version of the usual declarative rules for algebraic programming. We prove equivalence of the declarative and algorithmic rules, in Agda. We present numerous examples of algebraic programs written in our system.
+  This paper presents a system for more convenient algebraic programming, a form of total functional programming where datatypes are defined as least fixed points of covariant signature functors, and recursive functions are defined as algebras. This approach requires the use of certain combinators to roll and unroll fixed points, and to convert algebras to functions which can be applied to recurse over data. These combinators are a burden for programming in this style. To alleviate that burden, in this paper we propose to insert them automatically, using coercive subtyping. The type checker generates subtyping constraints, which are then solved with the help of a custom logic programming engined called Chronolog. The subtyping axioms are given to Chronolog as rules, which uses them to solve the subtyping constraints. To avoid infinite applications of rules for unrolling signature functors, Chronolog provides a mechanism for suspending and resuming certain forms of goals. The subtyping axioms presented to Chronolog are an algorithmic version of the usual declarative rules for algebraic programming. We prove equivalence of the declarative and algorithmic rules, in Agda. We present examples of algebraic programs written in our system.
 }
 
 \maketitle
@@ -192,12 +192,77 @@ constructors of the signature functor, and destruction by
 pattern-matching against those constructors.  Algebras interpret the
 operations declared for one layer of the data, and catamorphisms then
 apply algebras across all the layers.  There is no other mechanism for
-recursion or looping in the language.  All functions written in this
-style are guaranteed to terminate.
+recursion or looping in the language.  This leads to a strong
+guarantee: all functions written in this style are guaranteed to
+terminate.
 
-One hindrance to algebraic programming is the need to apply functions
-for rolling and unrolling signature functors, and to apply $\cata{-}$
-to obtain a recursive function from an algebra.
+One hindrance to algebraic programming is the need to apply the
+functions for rolling and unrolling signature functors, and to apply
+$\cata{-}$ to obtain a recursive function from an algebra.  In this
+paper, we remove this hindrance by automatically inserting those
+coercions wherever they are needed in code.  This means that the
+programmer may write code that looks indistinguishable from regular
+pure-functional code, and yet falls within the algebraic style, thus
+assuring termination.  Code which attempts to make disallowed
+recursive calls will still be rejected by the type checker.
+
+To insert these functions automatically, we turn to the technique of
+coercive subtyping.  With this approach, the type checker generates
+subtyping constraints that need to hold, in order for the term to be
+well-typed.  The constraints are then processed by a constraint
+solver.  Successful runs of the solver compute the coercions for
+the proven subtyping statements.  These are then inserted in the code,
+at the places where the subtyping constraints were generated.  The
+constraints may contain type variables, which should be instantiated
+during solving.
+
+To implement this, we make use of a custom logic-programming engine
+called Chronolog.  The subtyping axioms are given to Chronolog as
+rules.  Chronolog then uses standard SLD resolution to search for
+proofs of the constraints, instantiating type variables during proof
+search via unification.  The rules for rolling and unrolling
+signatures would, if handled naively, lead to diverging proof search,
+as functors could be unrolled unboundedly, and even rolling could
+diverge, if type variables are instantiated to functor applications,
+which then roll back to just a bare type variable again.  To avoid
+this, Chronolog provides a mechanism to indicate that certain goals
+should be suspended.  We identify syntactic forms of goals which
+should not be processed, on pain of divergence.  These suspended goals
+may be resumed if they are instantiated enough during solving of other
+goals.  If not, an outer loop of our algorithm handles them by simply
+equating the lower and upper bound of the subtyping constraints.
+
+An important technical issue with this approach concerns the subtyping
+rules themselves.  Declarative rules for subtyping generally are not
+algorithmic, due to the presence of a transitivity rule.  This rules
+could be applied indefinitely during proof search, as it posits an
+intermediate type $B$ for solving a constraint $A <: C$, and requiring
+subgoals $A <: B$ and $B <: C$.  To handle this, one must devise an
+equivalent set of rules without transivity.  The goal could be
+compared to cut-elimination in sequent calculus, where the cut rule is
+a form of transitivity of entailment.  We identify
+(Section~\ref{sec:subtyping}) an algorithmic set of subtyping rules,
+without transitivity, and prove it equivalent to the declarative
+rules.  This both ensures we can use logic programming (with our
+algorithmic rules) to solve these subtyping constraints, and also
+assures us that the algorithmic rules are indeed sound and complete.
+This proof of equivalence has been formalized and checked in Agda.
+
+To summarize the contributions:
+\begin{itemize}
+\item We propose a new approach to total algebraic programming,
+  where function calls for rolling and unrolling signature functors
+  and turning algebras into catamorphisms are inferred by coercive
+  subtyping.
+\item We realize this approach by generating subtyping constraints
+  during typing, and solving them using a constraint solver.  The
+  solver is a logic-programming engine, with a custom mechanism
+  to suspend goals that would other lead to divergence.
+\item We propose an algorithmic version of the subtyping
+  rules for this theory, and prove it equivalent to the
+  declarative ones.  The proof is checked in Agda.
+\end{itemize}
+  
 
 \section{Motivating example} % Henry
 
@@ -489,8 +554,17 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
 \end{figure}
 
 \section{Subtyping} % Aaron
+\label{sec:subtyping}
 
-\subsection{Declarative}
+We begin with the declarative subtyping rules corresponding to the
+coercions of Figure~\ref{fig:coercion-type-checking-rules}, and then
+propose an algorithmic version, where all meta-variables in the
+premises of the rule are already present in the conclusion, and the
+sizes of the constraints decrease.  This ensures that SLD resolution
+will not diverge on ground constraints.  We prove that the two sets
+of rules are equivalent.
+
+\subsection{Declarative subtyping}
 
 \newcommand{\declcata}[1]{
   \inferrule[#1]{ }{
@@ -553,8 +627,8 @@ The judgment for inferring subtyping constraints is $\Gamma \vdash a : A \mid \m
   \label{fig:declarative-subtyping-rules}
 \end{figure}
 
-Figure~\ref{fig:declarative-subtyping-rules} shows the declarative
-subtyping rules.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
+Figure~\ref{fig:declarative-subtyping-rules} shows the rules for declarative
+subtyping $A <: B$.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
 subtyping rule for function types, which is contravariant in the
 domain and covariant in the codomain.  \textsc{Cov} expresses that the
 signature functor is indeed a (covariant) functor.  \textsc{Alg}
@@ -565,11 +639,7 @@ an algebra can be coerced to a function, namely the algebra's
 catamorphism.  Finally, there is the \textsc{Trans} rule, completing
 the definition of subtyping as a partial order.
 
-\begin{theorem}[Reflexivity]
-  For all types $A$, $A <: A$.
-\end{theorem}
-
-\subsection{Algorithmic}
+\subsection{Algorithmic subtyping}
 
 \newcommand{\decproccata}[1]{
   \inferrule[#1]{
@@ -633,14 +703,13 @@ the definition of subtyping as a partial order.
   \label{fig:algorithmic-subtyping-rules}
 \end{figure}
 
-Figure~\ref{fig:algorithmic-subtyping-rules} presents the algorithmic
-subtyping rules.  We use similar names as for the declarative rules,
-but distinguish the algorithmic judgment by writing $A <:: B$ (where
-the declarative judgment is written $A <: B$). Critically, the
-algorithmically problematic \textsc{Trans} rule is not present.
-A consequence of this is that now several rules that did not have
-premises in the declarative formulation, here do.  For example,
-compare the declarative (on the left) and algorithmic \textsc{Cata} rules:
+Figure~\ref{fig:algorithmic-subtyping-rules} presents the rules for
+algorithmic subtyping $A <:: B$.  We use similar names as for the
+declarative rules, but critically, the algorithmically problematic
+\textsc{Trans} rule is not present.  A consequence of this is that now
+several rules that did not have premises in the declarative
+formulation, here do.  For example, compare the declarative (on the
+left) and algorithmic \textsc{Cata} rules:
 \[
   \begin{array}{lll}
     \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
@@ -648,15 +717,12 @@ compare the declarative (on the left) and algorithmic \textsc{Cata} rules:
 \]
 \noindent The algorithmic rule needs to take into account subtyping
 relationships between the components in the conclusion, because there
-is no rule for transitivity.  In effect, transitivity needs to be
-built into all the other rules.  We see a similar change from the
-declarative to the algorithmic versions of the \textsc{Roll} and
-\textsc{Unroll} rules, for rolling and unrolling the signature
-functor.
-
-\begin{theorem}[Reflexivity]
-  For all types $A$, $A <:: A$.
-\end{theorem}
+is no rule for transitivity, which could allow those relationships to
+be taken into account after this rule is applied.  In effect,
+transitivity needs to be built into all the other rules.  We see a
+similar change from the declarative to the algorithmic versions of the
+\textsc{Roll} and \textsc{Unroll} rules, for rolling and unrolling the
+signature functor.
 
 \begin{lemma}[Decrease]
   \label{lem:decrease}
@@ -666,6 +732,7 @@ functor.
 \end{lemma}
 
 \begin{theorem}[Decidability]
+\label{thm:dec}
   It is decidable whether or not two types are in the algorithmic subtyping
   relation.
 \end{theorem}
@@ -676,6 +743,48 @@ functor.
 \end{proof}
 
 \subsection{Equivalence of declarative and algorithmic subtyping}
+\label{sec:equiv}
+
+While Theorem~\ref{thm:dec} ensures that we can test ground subtyping
+constraints using proof search, we must confirm that the algorithmic
+rules are indeed a correct version of the declarative ones.  For this,
+we prove the following theorems.
+
+\begin{theorem}[Soundness]
+  $A <:: B$ implies $A <: B$.
+\end{theorem}
+
+\begin{theorem}[Completeness]
+  $A <: B$ implies $A <:: B$.
+\end{theorem}
+
+The sets of rules are quite similar, so these proofs are not onerous.  They do depend on the following
+inductively proven lemmas.
+
+\begin{lemma}[roll1 (declarative)]
+  If $A <: \mu D$, then $D\ A <: \mu D$.
+\end{lemma}
+
+\begin{lemma}[roll2 (declarative)]
+  If $\mu D <: A$, then $\mu D <: D\ A$.
+\end{lemma}
+
+\begin{lemma}[refl (algorithmic)]
+    $A <:: A$.
+\end{lemma}
+
+\begin{lemma}[trans (algorithmic)]
+     If $A <:: B$ and $B <:: C$ then $A <:: C$.
+\end{lemma}
+
+\begin{lemma}[roll (algorithmic)]
+  $D\ \mu D <: \mu D$
+\end{lemma}
+
+\begin{lemma}[unroll (algorithmic)]
+  $\mu\ D <: D\ \mu D$
+\end{lemma}
+
 
 \subsection{Formalization in Agda}
 \label{sec:agda}
@@ -723,9 +832,19 @@ has type
 \begin{verbatim}
 {X : Tp} → D⇒ X <: μD ⟶ X
 \end{verbatim}
-\noindent This is a dependent function type, stating that give \verb|X : Tp|,
-the \verb|Cata| constructor will return a proof of \verb|D⇒ X <: μD ⟶ X|,
-expressing the coercion from an algebra with carrier \verb|X| to its catamorphism.
+\noindent This is a dependent function type, stating that give
+\verb|X : Tp|, the \verb|Cata| constructor will return a proof of
+\verb|D⇒ X <: μD ⟶ X|, expressing the coercion from an algebra with
+carrier \verb|X| to its catamorphism.  Finally, the statements of
+soundness and completeness are shown in Figure~\ref{fig:sndcmpl}.  We
+omit the proofs of these and the lemmas listed in
+Section~\ref{sec:equiv}.
+
+The total number of lines for all the Agda code is under 150.  This
+shows that the proof burden of the approach is very manageable.  Part
+of the reason for this is that the types do not contain bound
+variables, and so the technical overhead associated with reasoning in
+the presence of those does not arise.
 
 \begin{figure}
 \begin{verbatim}
@@ -771,6 +890,16 @@ data _<::_ : Tp → Tp → Set where
 \label{fig:algagda}
 \end{figure}
 
+\begin{figure}
+\begin{verbatim}
+soundness    : {T T' : Tp} → T <:: T' → T <: T'
+completeness : {T T' : Tp} → T <: T'  → T <:: T'
+\end{verbatim}
+\caption{Agda statements of soundness and completeness}
+\label{fig:algagda}
+\end{figure}
+
+
 
 \section{Implementation with Chronolog} % Henry
 
@@ -787,9 +916,41 @@ presented several arguments in favor of the approach, and proposed an
 static checks for structural recursion~\cite{turner95}.  Mendler
 proposed a recursor using an abstract type to ensure that recursive
 calls are permitted only on subdata for an inductive
-type~\cite{mendler91}.
+type~\cite{mendler91}.  The algebraic approach has been applied for
+modular implementation of interpreters~\cite{swierstra08}.
+
+Charity is a strong functional programming language based on
+categorical abstractions for initial algebras and final
+coalgebras~\citep{charity92}. Tofu uses the Calculus of Constructions
+as a language for defining terminating functions, again based on
+categorical ideas~\citep{tofu10}.  Charity and Tofu both support
+coinductive datatypes, which we did not study here.
 
 \section{Conclusion and future work} % Aaron
+
+We have seen how total algebraic programming can be made more feasible
+by inferring the basic coercions necessary for the method.  These are
+for rolling and unrolling signature functors, and for turning an
+algebra into its catamorphism.  We considered an approach to this
+problem, where type inference generates subtyping constraints, whose
+solutions correspond to the needed coercions.  Our constraint solver
+uses a logic-programming engine to process constraints with respect to
+an algorithmic version of the subtyping rules.  This algorithmic
+subtyping relation was proved equivalent to the declarative one, in
+Agda.
+
+Future work includes extending this paradigm further, to richer forms
+of algebraic programming.  One form that has been proposed, as a
+powerful generalization of the basic structural recursion captured by
+Mendler algebras, is that of recursive coalgebras~\cite{capretta+06}.
+This formulation encompasses divide-and-conquer algorithms, which are
+beyond the scope of structural recursion.  A different approach to
+divide-and-conquer recursion has also been considered
+by~\citet{abreu+23}.  That approach requires algebras to make various
+function calls to pass between various abstract types.  These would be
+excellent candidates for inference using coercive subtyping, as we
+proposed in this paper.  It would also be interesting to infer
+coercions for coalgebraic programming with coinductive types.
 
 % Richer patterns of recursion, as in POPL 2023 paper
 
