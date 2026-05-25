@@ -59,6 +59,7 @@
 \usepackage{xspace}
 \usepackage{amsmath}
 \usepackage{mathpartir}
+\usepackage{subcaption}
 
 %%%%
 
@@ -321,95 +322,200 @@ To summarize the contributions:
 % sub = λ m . ω sub' n . γ n .
 %   { Zero() → m
 %   | Suc(n') → γ pred (sub' n') .
-%     { Zero() -> (roll id) Zero()
+%     { Zero → (roll id) Zero()
 %     | Suc(m') -> m' } }
 % \end{verbatim}
 %   \caption{Algebraic implementation subtraction, with coercions.}
 %   \label{fig:example-subtraction-haskell}
 % \end{figure}
 
-% ----
-% folded-in pred
-% ----
+% % ----
+% % folded-in pred
+% % ----
+
+% \begin{figure}
+% \begin{verbatim}
+% sub :: Nat -> Nat -> Nat
+% sub m n = case n of
+%   Zero -> m
+%   Suc n' -> case sub m n' of
+%     Zero -> Zero
+%     Sub m' -> m'
+% \end{verbatim}
+%   \caption{Haskell implementation of subtraction.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% sub : Nat → Nat ⇒ Nat
+% sub = λ m . ω sub' n .
+%   { Zero() → m
+%   | Suc(n') → γ sub' n' .
+%     { Zero() → Zero()
+%     | Suc(m') → m' } }
+% \end{verbatim}
+%   \caption{Algebraic implementation subtraction, without coercions.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% sub : Nat → Nat ⇒ Nat
+% sub = λ m . ω sub' n . γ n .
+%   { Zero() → m
+%   | Suc(n') → γ (unroll id) (sub' n') .
+%     { Zero() → (roll id) Zero()
+%     | Suc(m') → m' } }
+% \end{verbatim}
+%   \caption{Algebraic implementation subtraction, with coercions.}
+%   \label{fig:example-subtraction-haskell}
+% \end{figure}
+
+% % example: length
+
+% \begin{figure}
+% \begin{verbatim}
+% length :: [Nat] -> Nat
+% length l = case l of
+%   [] -> Zero
+%   h : t -> Suc(length t)
+% \end{verbatim}
+%   \caption{Haskell implementation of length.}
+%   \label{fig:example-length-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% length : NatList ⇒ Nat
+% length = ω length' l . γ l
+%   { Nil → Zero()
+%   | Cons(h, t) → Suc(length' t) }
+% \end{verbatim}
+%   \caption{Algebraic implementation length, without coercions.}
+%   \label{fig:example-length-haskell}
+% \end{figure}
+
+% \begin{figure}
+% \begin{verbatim}
+% length : NatList ⇒ Nat
+% length = ω length' l . γ l
+%   { Nil → (roll id) Zero()
+%   | Cons(h, t) → (roll id) Suc((cata length') t) }
+% \end{verbatim}
+%   \caption{Algebraic implementation length, with coercions.}
+%   \label{fig:example-length-haskell}
+% \end{figure}
+
+% % example: sum of list elements
+
+% \begin{figure}
+%   \centering
+%   \begin{subfigure}[b]{0.45\textwidth}
+%     \centering
+%     \begin{verbatim}
+% add :: Nat -> Nat -> Nat
+% add m n = case n of
+%   Zero -> m
+%   Suc n' -> Suc(add m n)
+
+% sum :: [Nat] -> Nat
+% sum l = case l of
+%   [] -> Zero
+%   n : l' -> add n (sum l')
+%     \end{verbatim}
+%     \caption{Haskell implementation of sum.}
+%     \label{fig:example-sum-haskell}
+%   \end{subfigure}
+%   \\ \vspace{1em}
+%   \begin{subfigure}[b]{0.45\textwidth}
+%     \centering
+%     \begin{verbatim}
+% add : Nat → Nat ⇒ Nat
+% add = λ m . λ n . ω add' n .
+%   { Zero() → m
+%   | Suc(n') → Suc(add' n) }
+
+% sum : NatList ⇒ Nat
+% sum = ω sum' l .
+%   { Nil → Zero()
+%   | Cons(n, l') → add n (sum' l') }
+%     \end{verbatim}
+%     \caption{Algebraic implementation of sum, without coercions.}
+%     \label{fig:example-sum-algebraic-without-coercions}
+%   \end{subfigure}
+%   \hfill
+%   \begin{subfigure}[b]{0.45\textwidth}
+%     \centering
+%     \begin{verbatim}
+% add : Nat → Nat ⇒ Nat
+% add = λ m . λ n . ω add' n .
+%   { Zero() → m
+%   | Suc(n') → (roll id) Suc(add' n) }
+
+% sum : NatList ⇒ Nat
+% sum = ω sum' l .
+%   { Nil → (roll id) Zero()
+%   | Cons(n, l') → (cata add) n (sum' l') }
+%     \end{verbatim}
+%     \caption{Algebraic implementation of sum, with coercions.}
+%     \label{fig:example-sum-algebraic-with-coercions}
+%   \end{subfigure}
+% \end{figure}
+
+% % example: sub and list filter
+
+% \begin{figure}
+%   \centering
+%   \begin{subfigure}[b]{0.95\textwidth}
+%     \centering
+%     \begin{verbatim}
+% sub : Nat → Nat ⇒ Nat
+% sub = λ m . ω sub' n . γ n .
+%   { Zero() → m
+%   | Suc(n') → γ (unroll id) (sub' n') .
+%     { Zero() → (roll id) Zero()
+%     | Suc(m') → m' } }
+
+% filter : (Nat → Bool) → NatList ⇒ NatList
+% filter = λ p . ω filter' l .
+%   { Nil → Nil()
+%   | Cons(h, t) →
+%       let t' = filter' t in
+%       γ p h . { True → (roll id) Cons(h, t') | False → t' } }
+
+% nonzeros : NatList ⇒ NatList
+% nonzeros = filter (λ n . γ (unroll id) n . { Zero → False | Suc(n') → True })
+%     \end{verbatim}
+%     \caption{Algebraic implementation of subtraction and list filter, with coercions.}
+%     \label{fig:example-filter-algebraic-with-coercions}
+%   \end{subfigure}
+% \end{figure}
+
+% example: subs
 
 \begin{figure}
-\begin{verbatim}
-sub :: Nat -> Nat -> Nat
-sub m n = case n of
-  Zero -> m
-  Suc n' -> case sub m n' of
-    Zero -> Zero
-    Sub m' -> m'
-\end{verbatim}
-  \caption{Haskell implementation of subtraction.}
-  \label{fig:example-subtraction-haskell}
-\end{figure}
-
-\begin{figure}
-\begin{verbatim}
-sub : Nat → Nat ⇒ Nat
-sub = λ m . ω sub' n .
-  { Zero() → m
-  | Suc(n') → γ sub' n' .
-    { Zero() → Zero()
-    | Suc(m') → m' } }
-\end{verbatim}
-  \caption{Algebraic implementation subtraction, without coercions.}
-  \label{fig:example-subtraction-haskell}
-\end{figure}
-
-\begin{figure}
-\begin{verbatim}
+  \centering
+  \begin{subfigure}[b]{0.95\textwidth}
+    \centering
+    \begin{verbatim}
 sub : Nat → Nat ⇒ Nat
 sub = λ m . ω sub' n . γ n .
-  { Zero() → m
-  | Suc(n') → γ (unroll id) (sub' n') .
-    { Zero() → (roll id) Zero()
-    | Suc(m') → m' } }
-\end{verbatim}
-  \caption{Algebraic implementation subtraction, with coercions.}
-  \label{fig:example-subtraction-haskell}
-\end{figure}
+          { Zero() → m
+          | Suc(n') → γ (unroll id) (sub' n') .
+              { Zero() → (roll id) Zero()
+              | Suc(m') → m' } }
 
-% example: length
-
-\begin{figure}
-\begin{verbatim}
-sub :: Nat -> Nat -> Nat
-sub m n = case n of
-  Zero -> m
-  Suc n' -> case sub m n' of
-    Zero -> Zero
-    Sub m' -> m'
-\end{verbatim}
-  \caption{Haskell implementation of subtraction.}
-  \label{fig:example-subtraction-haskell}
-\end{figure}
-
-\begin{figure}
-\begin{verbatim}
-sub : Nat → Nat ⇒ Nat
-sub = λ m . ω sub' n .
-  { Zero() → m
-  | Suc(n') → γ sub' n' .
-    { Zero() → Zero()
-    | Suc(m') → m' } }
-\end{verbatim}
-  \caption{Algebraic implementation subtraction, without coercions.}
-  \label{fig:example-subtraction-haskell}
-\end{figure}
-
-\begin{figure}
-\begin{verbatim}
-sub : Nat → Nat ⇒ Nat
-sub = λ m . ω sub' n . γ n .
-  { Zero() → m
-  | Suc(n') → γ (unroll id) (sub' n') .
-    { Zero() → (roll id) Zero()
-    | Suc(m') → m' } }
-\end{verbatim}
-  \caption{Algebraic implementation subtraction, with coercions.}
-  \label{fig:example-subtraction-haskell}
+subs : NatList ⇒ NatList -> NatList
+subs = ω subs' l1 . λ l2 . γ l1 .
+          { Nil → Nil
+          | Cons(h1, t1) → γ (unroll id) l2 .
+              { Nil → (roll id) Nil
+              | Cons(h2, t2) -> (roll id) Cons((cata (sub h1)) h2, subs' t1 t2) } }
+    \end{verbatim}
+    \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with coercions.}
+    \label{fig:example-subs-algebraic-with-coercions}
+  \end{subfigure}
 \end{figure}
 
 \section{Syntax} % Henry (maybe Aaron helping with prose)
