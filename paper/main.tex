@@ -892,8 +892,8 @@ data _<::_ : Tp → Tp → Set where
 
 \begin{figure}
 \begin{verbatim}
-soundness    : {T T' : Tp} → T <:: T' → T <: T'
-completeness : {T T' : Tp} → T <: T'  → T <:: T'
+Soundness    : {T T' : Tp} → T <:: T' → T <: T'
+Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \end{verbatim}
 \caption{Agda statements of soundness and completeness}
 \label{fig:algagda}
