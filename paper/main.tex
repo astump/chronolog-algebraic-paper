@@ -319,7 +319,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
               Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2)
 \end{verbatim}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
   \begin{subfigure}[b]{0.95\textwidth}
     \centering
@@ -377,7 +377,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 
 \todoAaron{Write prose to introduce syntax of langauge, and explain some details of the running examples from "Motivating Examples".}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \todoHenry{Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?}
@@ -458,7 +458,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 
 \todoHenry{Decide if this should be a separate section, and if so, write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \todoHenry{If we actually want this written out, write the rest of the typing rules}
@@ -503,7 +503,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 
 \todoHenry{Enforce exhaustive pattern match at Gamma}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -589,7 +589,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:constraint-generation-rules}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -651,7 +651,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:coercion-type-checking-rules}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
   \begin{mathpar}
     % Bool
@@ -769,7 +769,7 @@ of rules are equivalent.
     D \sAlg A <: \sMu{D} \sArr A
 }}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -847,7 +847,7 @@ the definition of subtyping as a partial order.
     D \sAlg A <:: B \sArr C
 }}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
