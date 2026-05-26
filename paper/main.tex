@@ -1150,46 +1150,41 @@ Altogether, our constraint solving procedure is the following:
 \section{Related Work} % Aaron
 
 Turner introduced the term \emph{strong functional programming},
-presented several arguments in favor of the approach, and proposed an
-\emph{elementary} way to realize such a language, in the form of
-static checks for structural recursion~\cite{turner95}.  Mendler
-proposed a recursor using an abstract type to ensure that recursive
-calls are permitted only on subdata for an inductive
-type~\cite{mendler91}.  The algebraic approach has been applied for
-modular implementation of interpreters~\cite{swierstra08}.
-
-Charity is a strong functional programming language based on
-categorical abstractions for initial algebras and final
-coalgebras~\citep{charity92}. Tofu uses the Calculus of Constructions
-as a language for defining terminating functions, again based on
-categorical ideas~\citep{tofu10}.  Charity and Tofu both support
-coinductive datatypes, which we did not study here.
+presented several arguments in favor of the approach, and proposed
+using structural termination as an \emph{elementary} way to realize
+such a language~\cite{turner95}.  Mendler proposed a recursor using an
+abstract type to ensure that recursive calls are permitted only on
+subdata for an inductive type~\cite{mendler91}.  The algebraic
+approach has been applied for modular implementation of
+interpreters~\cite{swierstra08}.  Charity is a strong functional
+programming language based on categorical abstractions for initial
+algebras and final coalgebras~\citep{charity92}. Tofu uses the
+Calculus of Constructions as a language for defining terminating
+functions, again based on categorical ideas~\citep{tofu10}.  Charity
+and Tofu both support coinductive datatypes, which we did not study
+here.
 
 \section{Conclusion and future work} % Aaron
 
-We have seen how total algebraic programming can be made more feasible
-by inferring the basic coercions necessary for the method.  These are
-for rolling and unrolling signature functors, and for turning an
-algebra into its catamorphism.  We considered an approach to this
-problem, where type inference generates subtyping constraints, whose
-solutions correspond to the needed coercions.  Our constraint solver
-uses a logic-programming engine to process constraints with respect to
-an algorithmic version of the subtyping rules.  This algorithmic
-subtyping relation was proved equivalent to the declarative one, in
-Agda.
+Total algebraic programming can be made more feasible by inferring the
+basic coercions necessary for the method: rolling and unrolling
+signature functors, and turning an algebra into its catamorphism.
+Type inference generates subtyping constraints, whose solutions
+correspond to the needed coercions.  A logic-programming engine
+processes constraints with respect to an algorithmic version of the
+subtyping rules.  This algorithmic subtyping relation is proved
+equivalent to the declarative one, in Agda.
 
-Future work includes extending this paradigm further, to richer forms
-of algebraic programming.  One form that has been proposed, as a
-powerful generalization of the basic structural recursion captured by
-Mendler algebras, is that of recursive coalgebras~\cite{capretta+06}.
-This formulation encompasses divide-and-conquer algorithms, which are
-beyond the scope of structural recursion.  A different approach to
-divide-and-conquer recursion has also been considered
-by~\citet{abreu+23}.  That approach requires algebras to make various
-function calls to pass between various abstract types.  These would be
-excellent candidates for inference using coercive subtyping, as we
-proposed in this paper.  It would also be interesting to infer
-coercions for coalgebraic programming with coinductive types.
+Future work includes richer forms of algebraic programming.  One
+powerful generalization of structural recursion is to recursive
+coalgebras~\cite{capretta+06}.  This encompasses divide-and-conquer
+algorithms, which are beyond the scope of structural recursion.  A
+different approach to divide-and-conquer recursion has also been
+considered by~\citet{abreu+23}.  There, algebras call functions to
+pass between various abstract types.  These would be excellent
+candidates for inference using coercive subtyping, as we proposed in
+this paper.  It would also be interesting to infer coercions for
+coalgebraic programming with coinductive types.
 
 % Richer patterns of recursion, as in POPL 2023 paper
 
