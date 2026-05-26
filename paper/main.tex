@@ -645,6 +645,38 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   \end{align*}
 \end{figure}
 
+\section{Typing}
+\label{sec:typing}
+
+\todoHenry{prose}
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+    \inferrule[Gamma]{
+      a : \sFunctorApp{D}{C} \qquad
+      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij},}}{\sFunctorApp{D}{C}} \qquad
+      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij} \vdash b_i : B_i}
+    }{
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij}}) \mapsto b_i ~|} \} : B
+    }
+
+    \inferrule[Omega]{
+      \Gamma, (R : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B
+    }{
+      \Gamma \vdash \omega f(x) . b : D \sAlg B
+    }
+
+    \inferrule[Subtype]{
+      \Gamma \vdash A <: A' \qquad
+      \Gamma \vdash a : A
+    }{
+      \Gamma \vdash a : A'
+    }
+  \end{mathpar}
+\end{figure}
+
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
 
@@ -990,17 +1022,6 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
   \label{fig:algagda}
 \end{figure}
 
-\section{Typing}
-\label{sec:typing}
-
-\begin{figure}[tb]
-  \centering
-
-  \begin{mathpar}
-    \inferrule[]{ }{ }
-  \end{mathpar}
-\end{figure}
-
 \section{Typing checking with constraints}
 \label{sec:typechecking}
 
@@ -1152,7 +1173,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
       \Gamma \vdash c_2 : \sCoerceSig{A}{C}
     }{
-      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg B}{B \sArr C}
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
     }
   \end{mathpar}
 
