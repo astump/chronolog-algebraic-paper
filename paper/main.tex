@@ -993,8 +993,8 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \section{Typing with constraints}
 \label{sec:typing-with-constraints}
 
-We present a type checking procedure for the algorithmic subtyping system shown in Figure \ref{fig:algorithmic-subtyping-rules} based on constraint logic programming.
-Under this approach, typing a term amounts to generating the subtyping relations implied by the term's structure, and computing a solution to the subtyping constraints which determines an insertion of explicit coercions into the term which finally justifies the implied subtyping relations.
+We present a type checking procedure based on using the algorithmic subtyping system in Figure \ref{fig:algorithmic-subtyping-rules} with a logic-programming engine.
+Under this approach, typing a term amounts to generating the subtyping relations implied by the term's structure, and computing a solution to the subtyping constraints which determines insertions into the term of explicit coercions which justify the generated subtyping relations.
 
 \begin{figure}[tb]
   \centering
