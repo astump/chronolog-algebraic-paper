@@ -63,6 +63,9 @@
 \usepackage{mathpartir}
 \usepackage{subcaption}
 \usepackage{tcolorbox}
+\usepackage{contour}
+
+\contourlength{1pt}
 
 %%%%
 
@@ -119,7 +122,7 @@
 \newcommand{\sRoll}[1]{\text{roll}~ #1}
 \newcommand{\sUnroll}[1]{\text{unroll}~ #1}
 \newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
-\newcommand{\sSubData}[1]{\text{id}[#1]}
+\newcommand{\sSubData}[1]{\text{id}[\sMu{#1}]}
 \newcommand{\sSubArr}[2]{\text{arr}~ #1 ~ #2}
 \newcommand{\sSubAlg}[2]{\text{alg}[#1] ~ #2}
 % constructors
@@ -141,6 +144,8 @@
 \newcommand{\Case}{\textbf{case }}
 \newcommand{\Func}[1]{\textsc{#1}}
 
+\newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
+
 % \newcommand{\todoHenry}[1]{\Colorbox{red!20}{#1}}
 \newcommand{\todoHenry}[1]{%
   \begin{tcolorbox}[
@@ -151,7 +156,24 @@
       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
     ]
-    \textbf{[TODO for Henry]:} \\[1em]
+    % \textbf{[TODO for Henry]:}
+    \todo{Henry}
+    \\[1em]
+    #1
+  \end{tcolorbox}%
+}
+
+\newcommand{\todoAaron}[1]{%
+  \begin{tcolorbox}[
+      colback=blue!15,     % Light red background
+      colframe=blue!50,    % Muted red border
+      arc=0mm,            % Sharp corners
+      boxrule=0.5pt,      % Border thickness
+      left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+      before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+    ]
+    \todo{Aaron}
+    \\[1em]
     #1
   \end{tcolorbox}%
 }
@@ -520,7 +542,7 @@ To summarize the contributions:
 
 % example: subs
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
   \begin{subfigure}[b]{0.95\textwidth}
     \centering
@@ -544,14 +566,14 @@ To summarize the contributions:
     \centering
     \begin{verbatim}
 sub : Nat → Nat ⇒ Nat
-sub = λ m . ω sub' n . γ n .
+sub = λ m . ω sub'(n) . γ n .
           { Zero() → m
           | Suc(n') → γ (unroll id) (sub' n') .
               { Zero() → (roll id) Zero()
               | Suc(m') → m' } }
 
 subs : NatList ⇒ NatList → NatList
-subs = ω subs' l1 . λ l2 . γ l1 .
+subs = ω subs'(l1) . λ l2 . γ l1 .
           { Nil → Nil
           | Cons(h1, t1) → γ (unroll id) l2 .
               { Nil → (roll id) Nil
@@ -571,7 +593,7 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   Write prose (maybe Aaron helping with prose)
 }
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
@@ -600,7 +622,7 @@ subs = ω subs' l1 . λ l2 . γ l1 .
       %
       \text{(Contexts)} &
       \Gamma &::=&
-      \varnothing \mid
+      [] \mid
       \Gamma , (x : A) \mid
       \Gamma , (R : \ast)
       \\[1em]
@@ -650,7 +672,7 @@ subs = ω subs' l1 . λ l2 . γ l1 .
 
 \todoHenry{prose}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -695,7 +717,7 @@ of rules are equivalent.
     D \sAlg A <: \sMu{D} \sArr A
 }}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -773,7 +795,7 @@ the definition of subtyping as a partial order.
     D \sAlg A <:: B \sArr C
 }}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -1029,7 +1051,7 @@ We present a type checking procedure that uses a logic-programming engine to sol
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
 Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure \ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -1086,7 +1108,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
     }
 
-    % [Bookmark] This is where the assumption about omega type R is introduced.
+    % [Bookmark] This is where the axiom about omega type R is introduced.
     \inferrule[Omega]{
       % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
       % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
@@ -1119,7 +1141,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:constraint-generation-rules}
 \end{figure}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
 
   \begin{mathpar}
@@ -1181,7 +1203,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:coercion-type-checking-rules}
 \end{figure}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
   \begin{mathpar}
     % Bool
@@ -1228,7 +1250,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 \subsection{Constraint generation}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure \ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
-This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of assumed constraints and $\mathcal{C}$ is a set of required constraints.
+This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of axioms and $\mathcal{C}$ is a set of goals.
 Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
 The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
 
@@ -1241,7 +1263,9 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
 % [TODO]: Make sure to update this if the constraint generation rules change.
 % [TODO]: insert term positions on constraints
 \begin{mathpar}
-  \{ R <:: R \}
+  \{
+    R <:: R
+  \}
   \implies
   \{
     % X is domain of λ m ...
@@ -1263,6 +1287,13 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
     \sMu\sNat <:: U
   \}
 \end{mathpar}
+
+Here is where the axioms and requirements are introduced.
+\begin{itemize}
+  \item The axiom $R <:: R$ is introduced by $\omega ~ sub'(n)$.
+  \item The requirement $X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat$ is introduced by $\gamma ~ n$.
+  \item \todo{explain sources of other requirements}
+\end{itemize}
 
 \todoHenry{Prose}
 
