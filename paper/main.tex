@@ -1328,14 +1328,14 @@ For our implementation, we use a meta-predicate for $S$ defined by the following
 These rules are designed to prevent Chronolog from entering an infinite regress where a cycle of rules can be applied infinitely.
 % [TODO]: argue for why the rules assure this
 
-Our implementation uses Chronolog inside an outer loop that specially refines just one of the suspended goals according to the following rule.
+Our implementation uses Chronolog inside an outer loop that specially refines just one of the suspended goals according to \textsc{Refine} as defined below. \todo{fully explain how this works}
 
 \begin{mathpar}
-  \begin{array}{rcrl}
-    \sMu{D} <:: X ~&\text{or}&~ X <:: \sMu{D} &\mapsto \{ X := \sMu{D} \} \\
-    \sFunctorApp{D}{A} <:: X ~&\text{or}&~ X <:: \sFunctorApp{D}{A} &\mapsto \{ X := \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
-    R <:: X ~&\text{or}&~ X <:: R &\mapsto \{ X := R \} \\
-    && X <:: Y &\mapsto \{ X := Y \}
+  \begin{array}{rlcrll}
+    \textsc{Refine}(\sMu{D} &<:: X) &=& \textsc{Refine}(X &<:: \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
+    \textsc{Refine}(\sFunctorApp{D}{A} &<:: X) &=& \textsc{Refine}(X &<:: \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+    \textsc{Refine}(R &<:: X) &=& \textsc{Refine}(X &<:: R) &= \{ X \mapsto R \} \\
+    &&& \textsc{Refine}(X &<:: Y) &= \{ X \mapsto Y \}
   \end{array}
 \end{mathpar}
 
@@ -1346,8 +1346,8 @@ Altogether, our constraint solving procedure is the following:
   \caption{Constraint solving with Chronolog.}
   \label{alg:constraint-solving}
   \begin{algorithmic}[1]
-    \Function{RefineGoals}{$\mathit{axioms}, \mathit{goals}$}
-    \State $\sigma \gets \emptyset$ \Comment{Initialize as the empty logic variable substitution}
+    \Function{Solve}{$\mathit{axioms}, \mathit{goals}$}
+    \State $\sigma \gets \emptyset$ % \Comment{Initialize as the empty logic variable substitution}
     \While{$\mathit{goals} \neq \emptyset$}
     \State $\mathit{result} \gets \Func{Chronolog}(\mathit{axioms}, \mathit{goals}, \sigma$)
     \Statex
@@ -1360,7 +1360,7 @@ Altogether, our constraint solving procedure is the following:
     \Return $\sigma_{\mathit{new}}$
     \Statex
     \State \quad \Case $\langle \text{``progress''}, \sigma', \mathit{goals}' \rangle \Rightarrow$
-    \State \qquad $\sigma'' \gets \Func{refineSuspendedGoals}(\sigma', \mathit{goals}')$
+    \State \qquad $\sigma'' \gets \Func{Refine}(\sigma', \mathit{goals}')$
     \State \qquad $\mathit{goals} \gets \sigma''(\mathit{goals}')$
     \EndWhile
     \EndFunction
