@@ -1,5 +1,3 @@
-% [TODO]: make sure use of roll1/roll2 and roll/unroll is consistent
-
 %Version 3.1 December 2024
 % See section 11 of the User Manual for version history
 %
@@ -146,17 +144,15 @@
 
 \newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
 
-% \newcommand{\todoHenry}[1]{\Colorbox{red!20}{#1}}
 \newcommand{\todoHenry}[1]{%
   \begin{tcolorbox}[
-      colback=red!15,     % Light red background
-      colframe=red!50,    % Muted red border
+      colback=olive!15,     % Light olive background
+      colframe=olive!50,    % Muted olive border
       arc=0mm,            % Sharp corners
       boxrule=0.5pt,      % Border thickness
       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
     ]
-    % \textbf{[TODO for Henry]:}
     \todo{Henry}
     \\[1em]
     #1
@@ -165,8 +161,8 @@
 
 \newcommand{\todoAaron}[1]{%
   \begin{tcolorbox}[
-      colback=blue!15,     % Light red background
-      colframe=blue!50,    % Muted red border
+      colback=blue!15,     % Light blue background
+      colframe=blue!50,    % Muted blue border
       arc=0mm,            % Sharp corners
       boxrule=0.5pt,      % Border thickness
       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
@@ -218,6 +214,10 @@
 }
 
 \maketitle
+
+\todoHenry{Make sure use of roll1/roll2 and roll/unroll is consistent}
+
+\todoHenry{Cite previous work on handling delayed goals in logic programming}
 
 \section{Introduction} % Aaron
 
@@ -313,234 +313,22 @@ To summarize the contributions:
 
 \section{Motivating examples}
 
-\todoHenry{
-  pick nice example
+\todoHenry{It might be worth adjusting the syntax to be more directly comparable to haskell. For example:}
+\begin{verbatim}
+sub : Nat → Nat ⇒ Nat
+sub = λ m . ω sub'(n) . γ n .
+          Zero → m
+          Suc(n') → γ (unroll id) (sub' n') .
+              Zero → (roll id) Zero
+              Suc(m') → m'
 
-  subtraction uses unroll, but not roll or cata
-  length uses roll, but not unroll or cata
-  write an outer function that subtracts some quantity from the length of a list
-
-  here it is in Haskell
-  here it is in algebraic style with coercions
-
-  Can we use the algebraic style with lighter syntax?  This would make it more
-  feasible in practice.
-}
-
-% example: subtraction
-
-% % ----
-% % folded-out pred
-% % ----
-
-% \begin{figure}
-% \begin{verbatim}
-% pred = \a -> case a of
-%   Zero -> Zero
-%   Suc a' -> a'
-
-% sub = \a b -> case b of
-%   Zero -> a
-%   Suc b' -> pred (sub a b')
-% \end{verbatim}
-%   \caption{Haskell implementation of subtraction.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% pred = λ n . γ n .
-%   { Zero() → Zero()
-%   | Suc(n') → n' }
-
-% sub = λ m . ω sub' n .
-%   { Zero() → m
-%   | Suc(n') → pred (sub' n') }
-% \end{verbatim}
-%   \caption{Algebraic implementation subtraction, without coercions.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% pred = λ n . γ (unroll id) n .
-%   { Zero() → (roll id) Zero()
-%   | Suc(n') → n' }
-
-% sub = λ m . ω sub' n . γ n .
-%   { Zero() → m
-%   | Suc(n') → γ pred (sub' n') .
-%     { Zero → (roll id) Zero()
-%     | Suc(m') -> m' } }
-% \end{verbatim}
-%   \caption{Algebraic implementation subtraction, with coercions.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% % ----
-% % folded-in pred
-% % ----
-
-% \begin{figure}
-% \begin{verbatim}
-% sub :: Nat -> Nat -> Nat
-% sub m n = case n of
-%   Zero -> m
-%   Suc n' -> case sub m n' of
-%     Zero -> Zero
-%     Sub m' -> m'
-% \end{verbatim}
-%   \caption{Haskell implementation of subtraction.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% sub : Nat → Nat ⇒ Nat
-% sub = λ m . ω sub' n .
-%   { Zero() → m
-%   | Suc(n') → γ sub' n' .
-%     { Zero() → Zero()
-%     | Suc(m') → m' } }
-% \end{verbatim}
-%   \caption{Algebraic implementation subtraction, without coercions.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% sub : Nat → Nat ⇒ Nat
-% sub = λ m . ω sub' n . γ n .
-%   { Zero() → m
-%   | Suc(n') → γ (unroll id) (sub' n') .
-%     { Zero() → (roll id) Zero()
-%     | Suc(m') → m' } }
-% \end{verbatim}
-%   \caption{Algebraic implementation subtraction, with coercions.}
-%   \label{fig:example-subtraction-haskell}
-% \end{figure}
-
-% % example: length
-
-% \begin{figure}
-% \begin{verbatim}
-% length :: [Nat] -> Nat
-% length l = case l of
-%   [] -> Zero
-%   h : t -> Suc(length t)
-% \end{verbatim}
-%   \caption{Haskell implementation of length.}
-%   \label{fig:example-length-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% length : NatList ⇒ Nat
-% length = ω length' l . γ l
-%   { Nil → Zero()
-%   | Cons(h, t) → Suc(length' t) }
-% \end{verbatim}
-%   \caption{Algebraic implementation length, without coercions.}
-%   \label{fig:example-length-haskell}
-% \end{figure}
-
-% \begin{figure}
-% \begin{verbatim}
-% length : NatList ⇒ Nat
-% length = ω length' l . γ l
-%   { Nil → (roll id) Zero()
-%   | Cons(h, t) → (roll id) Suc((cata length') t) }
-% \end{verbatim}
-%   \caption{Algebraic implementation length, with coercions.}
-%   \label{fig:example-length-haskell}
-% \end{figure}
-
-% % example: sum of list elements
-
-% \begin{figure}
-%   \centering
-%   \begin{subfigure}[b]{0.45\textwidth}
-%     \centering
-%     \begin{verbatim}
-% add :: Nat -> Nat -> Nat
-% add m n = case n of
-%   Zero -> m
-%   Suc n' -> Suc(add m n)
-
-% sum :: [Nat] -> Nat
-% sum l = case l of
-%   [] -> Zero
-%   n : l' -> add n (sum l')
-%     \end{verbatim}
-%     \caption{Haskell implementation of sum.}
-%     \label{fig:example-sum-haskell}
-%   \end{subfigure}
-%   \\ \vspace{1em}
-%   \begin{subfigure}[b]{0.45\textwidth}
-%     \centering
-%     \begin{verbatim}
-% add : Nat → Nat ⇒ Nat
-% add = λ m . λ n . ω add' n .
-%   { Zero() → m
-%   | Suc(n') → Suc(add' n) }
-
-% sum : NatList ⇒ Nat
-% sum = ω sum' l .
-%   { Nil → Zero()
-%   | Cons(n, l') → add n (sum' l') }
-%     \end{verbatim}
-%     \caption{Algebraic implementation of sum, without coercions.}
-%     \label{fig:example-sum-algebraic-without-coercions}
-%   \end{subfigure}
-%   \hfill
-%   \begin{subfigure}[b]{0.45\textwidth}
-%     \centering
-%     \begin{verbatim}
-% add : Nat → Nat ⇒ Nat
-% add = λ m . λ n . ω add' n .
-%   { Zero() → m
-%   | Suc(n') → (roll id) Suc(add' n) }
-
-% sum : NatList ⇒ Nat
-% sum = ω sum' l .
-%   { Nil → (roll id) Zero()
-%   | Cons(n, l') → (cata add) n (sum' l') }
-%     \end{verbatim}
-%     \caption{Algebraic implementation of sum, with coercions.}
-%     \label{fig:example-sum-algebraic-with-coercions}
-%   \end{subfigure}
-% \end{figure}
-
-% % example: sub and list filter
-
-% \begin{figure}
-%   \centering
-%   \begin{subfigure}[b]{0.95\textwidth}
-%     \centering
-%     \begin{verbatim}
-% sub : Nat → Nat ⇒ Nat
-% sub = λ m . ω sub' n . γ n .
-%   { Zero() → m
-%   | Suc(n') → γ (unroll id) (sub' n') .
-%     { Zero() → (roll id) Zero()
-%     | Suc(m') → m' } }
-
-% filter : (Nat → Bool) → NatList ⇒ NatList
-% filter = λ p . ω filter' l .
-%   { Nil → Nil()
-%   | Cons(h, t) →
-%       let t' = filter' t in
-%       γ p h . { True → (roll id) Cons(h, t') | False → t' } }
-
-% nonzeros : NatList ⇒ NatList
-% nonzeros = filter (λ n . γ (unroll id) n . { Zero → False | Suc(n') → True })
-%     \end{verbatim}
-%     \caption{Algebraic implementation of subtraction and list filter, with coercions.}
-%     \label{fig:example-filter-algebraic-with-coercions}
-%   \end{subfigure}
-% \end{figure}
-
-% example: subs
+subs : NatList ⇒ NatList → NatList
+subs = ω subs'(l1) . λ l2 . γ l1 .
+          Nil → Nil
+          Cons(h1, t1) → γ (unroll id) l2 .
+              Nil → (roll id) Nil
+              Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2)
+\end{verbatim}
 
 \begin{figure}[H]
   \centering
@@ -564,12 +352,14 @@ To summarize the contributions:
 
   \begin{subfigure}[b]{0.95\textwidth}
     \centering
+
+    \todoHenry{don't forget the two child coercions at cata}
     \begin{verbatim}
 sub : Nat → Nat ⇒ Nat
 sub = λ m . ω sub'(n) . γ n .
-          { Zero() → m
+          { Zero → m
           | Suc(n') → γ (unroll id) (sub' n') .
-              { Zero() → (roll id) Zero()
+              { Zero → (roll id) Zero
               | Suc(m') → m' } }
 
 subs : NatList ⇒ NatList → NatList
@@ -587,17 +377,24 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
   \label{fig:example-subs}
 \end{figure}
 
+\todoHenry{
+  Prose: Can we use the algebraic style with lighter syntax?  This would make it more
+  feasible in practice.
+}
+
 \section{Syntax}
 
-\todoHenry{
-  Write prose (maybe Aaron helping with prose)
-}
+\todoHenry{Write prose}
+
+\todoAaron{Write prose to introduce syntax of langauge, and explain some details of the running examples from "Motivating Examples".}
 
 \begin{figure}[H]
   \centering
 
-  % [TODO from Henry]: Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?
-  % [TODO from Henry]: Somehow we need to say that type variables can *only* appear in subtyping constraints, since we don't want to claim the system supports polymorphism
+  \todoHenry{Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?}
+
+  \todoHenry{Somehow we need to say that type variables can *only* appear in subtyping constraints, since we don't want to claim the system supports polymorphism}
+
   \begin{align*}
     \begin{array}{rrcl}
       \text{(Datatype Names)} &
@@ -622,7 +419,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
       %
       \text{(Contexts)} &
       \Gamma &::=&
-      [] \mid
+      \cdot \mid
       \Gamma , (x : A) \mid
       \Gamma , (R : \ast)
       \\[1em]
@@ -670,10 +467,12 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 \section{Typing}
 \label{sec:typing}
 
-\todoHenry{prose}
+\todoHenry{Decide if this should be a separate section, and if so, write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".}
 
 \begin{figure}[H]
   \centering
+
+  \todoHenry{If we actually want this written out, write the rest of the typing rules}
 
   \begin{mathpar}
     \inferrule[Gamma]{
@@ -697,6 +496,9 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
       \Gamma \vdash a : A'
     }
   \end{mathpar}
+
+  \caption{Typing rules}
+  \label{fig:typing-rules}
 \end{figure}
 
 \section{Subtyping} % Aaron
@@ -1051,6 +853,12 @@ We present a type checking procedure that uses a logic-programming engine to sol
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
 Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure \ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
+\todoHenry{Need to enforce that R and r are linked to this \textit{appearance} of $\omega$. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.}
+
+\todoHenry{Is is a problem that r is introduced fresh here even though its not a type variable?}
+
+\todoHenry{Enforce exhaustive pattern match at Gamma}
+
 \begin{figure}[H]
   \centering
 
@@ -1093,7 +901,6 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \freshMetavariables{X, Y} \qquad
       \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
       \\\\
-      % [TODO]: enforce exhaustive pattern match
       (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
       \qquad
       (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
@@ -1108,10 +915,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
     }
 
-    % [Bookmark] This is where the axiom about omega type R is introduced.
     \inferrule[Omega]{
-      % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
-      % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
       \freshMetavariables{R, r} \qquad
       \Gamma, (R : \ast), (r : \sCoerceSig{R}{R}), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
@@ -1260,8 +1064,10 @@ A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely 
 
 For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
 
-% [TODO]: Make sure to update this if the constraint generation rules change.
-% [TODO]: insert term positions on constraints
+\todoHenry{Make sure to update this if the constraint generation rules change.}
+
+\todoHenry{Insert term positions on constraints}
+
 \begin{mathpar}
   \{
     R <:: R
@@ -1273,7 +1079,7 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
     % Y is the output type of sub' n
     % U is return of γ (and so is return of ω, and so is return of λ)
     % W is the recursive param of Nat for the pattern match
-    % Z is the recursive param of Zero()
+    % Z is the recursive param of Zero
     %
     % γ ...
     X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
@@ -1281,12 +1087,14 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
     \sFunctorApp{\sNat}{Y} <:: \sFunctorApp{\sNat}{W},
     % sub' n
     R \sArr \sMu\sNat <:: R \sArr \sFunctorApp{\sNat}{Y},
-    % roll Zero()
+    % roll Zero
     \sFunctorApp{\sNat}{Z} <:: U,
     % m'
     \sMu\sNat <:: U
   \}
 \end{mathpar}
+
+\todoHenry{Standardize choice of terminology: "axioms" and "requirements"}
 
 Here is where the axioms and requirements are introduced.
 \begin{itemize}
@@ -1295,13 +1103,14 @@ Here is where the axioms and requirements are introduced.
   \item \todo{explain sources of other requirements}
 \end{itemize}
 
-\todoHenry{Prose}
+\todoHenry{Explain anything else necessary for understanding constraint generation}
+
+\todoHenry{State completeness and soundness for the constraint generation rules relative to the typing rules}
 
 \subsection{Constraint solving with Chronolog}
 
 Once a constraint problem $\mathcal{A} \implies \mathcal{C}$ has been generated for a term, we apply a logic-programming approach to solving these constraints which computes the coercions that justify the original subtyping relations.
-Our approach is based on a novel logic-programming engine, Chronolog, which adopts an alternative technique for goal suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II).
-% [TODO]: source
+Our approach is based on a novel logic-programming engine, Chronolog, which adopts an alternative technique for goal suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source}
 Goal suspension is critical in this context due to the presence of the \textsc{Roll} and \textsc{Unroll} rules, which can be composed infinitely by straightforward SLD resolution.
 Chronolog prevents this by supporting a global suspension meta-predicate, $S$, where goals that satisfy $S$ are immediately suspended before being processed further.
 Suspended goals are still refined by logic variable substitutions.
@@ -1326,7 +1135,8 @@ For our implementation, we use a meta-predicate for $S$ defined by the following
 \end{mathpar}
 
 These rules are designed to prevent Chronolog from entering an infinite regress where a cycle of rules can be applied infinitely.
-% [TODO]: argue for why the rules assure this
+
+\todoHenry{argue for why the rules assure this}
 
 Our implementation uses Chronolog inside an outer loop that specially refines just one of the suspended goals according to \textsc{Refine} as defined below. \todo{fully explain how this works}
 
@@ -1367,29 +1177,14 @@ Altogether, our constraint solving procedure is the following:
   \end{algorithmic}
 \end{algorithm}
 
-% The rules for rolling and unrolling
-% signatures would, if handled naively, lead to diverging proof search,
-% as functors could be unrolled unboundedly, and even rolling could
-% diverge, if type variables are instantiated to functor applications,
-% which then roll back to just a bare type variable again.  To avoid
-% this, Chronolog provides a mechanism to indicate that certain goals
-% should be suspended.  We identify syntactic forms of goals which
-% should not be processed, on pain of divergence.  These suspended goals
-% may be resumed if they are instantiated enough during solving of other
-% goals.  If not, an outer loop of our algorithm handles them by simply
-% equating the lower and upper bound of the subtyping constraints.
+\todoHenry{Explain rest of constraint solving}
 
-\todoHenry{Prose}
-
-% \subsection{Implementation with Chronolog} % Henry
-% \todoHenry{Prose}
+\todoHenry{Argue for completeness of constraint solving, using the decreasing size of requirements in the algorithmic subtyping rules, and Refine. Note that which suspended goal gets refined doesn't actually matter (proof by case analysis).}
 
 \section{Returning to the Examples} % Henry
 
 \todoHenry{
-  Prose
-  remind the version with coercions
-  show without coercions
+  Prose. Remind the version with coercions. Show without coercions
 }
 
 \section{Related Work} % Aaron
