@@ -133,8 +133,13 @@
 % helpers
 \newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
-% \newcommand{\atPos}[1]{^{#1}}
-\newcommand{\atPos}[1]{}
+\newcommand{\atPos}[1]{^{#1}}
+% \newcommand{\atPos}[1]{}
+
+\newcommand{\Match}{\textbf{match }}
+\newcommand{\With}{\textbf{ with}}
+\newcommand{\Case}{\textbf{case }}
+\newcommand{\Func}[1]{\textsc{#1}}
 
 % \newcommand{\todoHenry}[1]{\Colorbox{red!20}{#1}}
 \newcommand{\todoHenry}[1]{%
@@ -640,244 +645,6 @@ subs = ω subs' l1 . λ l2 . γ l1 .
   \end{align*}
 \end{figure}
 
-\section{Typing with Constraints}
-
-Type checking consists of constraint generation phase and a constraint solving phase.
-Constraint generation for a well-formed and well-scoped term $a$ in context $\Gamma$ is performed by applying the constraint generation rules presented in figure \ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
-This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of assumed constraints and $\mathcal{C}$ is a set of required constraints.
-Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
-The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
-
-The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
-The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
-A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
-
-For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
-
-% [TODO]: Make sure to update this if the constraint generation rules change.
-% [TODO]: insert term positions on constraints
-\begin{mathpar}
-  \{ R <:: R \}
-  \implies
-  \{
-    % X is domain of λ m ...
-    % R is the recursive type var for omega
-    % Y is the output type of sub' n
-    % U is return of γ (and so is return of ω, and so is return of λ)
-    % W is the recursive param of Nat for the pattern match
-    % Z is the recursive param of Zero()
-    %
-    % γ ...
-    X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
-    % γ sub' n' ...
-    \sFunctorApp{\sNat}{Y} <:: \sFunctorApp{\sNat}{W},
-    % sub' n
-    R \sArr \sMu\sNat <:: R \sArr \sFunctorApp{\sNat}{Y},
-    % roll Zero()
-    \sFunctorApp{\sNat}{Z} <:: U,
-    % m'
-    \sMu\sNat <:: U
-  \}
-\end{mathpar}
-
-\todoHenry{Prose}
-
-\begin{figure}[tb]
-  \centering
-
-  \begin{mathpar}
-
-    \inferrule[InferVar]{
-      (x : A) \in \Gamma
-    }{
-      \Gamma \vdash x : A \gsep \varnothing \implies \varnothing
-    }
-
-    \inferrule[InferCon]{
-      % [Note] we need to freshen X here since the constructor rules dont deal with type variables
-      \freshMetavariables{X} \qquad
-      k : \sFunctorConSig{\overline{B_i,}}{D}{X} \qquad
-      (\forall i)~ \Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
-    }{
-      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
-    }
-
-    \inferrule[InferLam]{
-      \freshMetavariables{X} \qquad
-      \Gamma, (x : X) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
-    }{
-      \Gamma \vdash \lambda x . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
-    }
-
-    \inferrule[InferApp]{
-      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
-      \freshMetavariables{X} \qquad
-      \Gamma \vdash f : B \gsep \mathcal{A}_f \implies \mathcal{C}_f \qquad
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    }{
-      \Gamma \vdash f ~ a : X \gsep
-      \{ B <:: A \sArr X \} \cup \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
-    }
-
-    \inferrule[InferGamma]{
-      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
-      \freshMetavariables{X, Y} \qquad
-      \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
-      \\\\
-      % [TODO]: enforce exhaustive pattern match
-      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
-      \qquad
-      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
-      \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
-    }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
-      \gsep
-      \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i}
-      \implies
-      \{ C <:: \sFunctorApp{D}{X} \} \cup
-      \mathcal{C}_a \cup
-      \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
-    }
-
-    % [Bookmark] This is where the assumption about omega type R is introduced.
-    \inferrule[InferOmega]{
-      % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
-      % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
-      \freshMetavariables{R, r} \qquad
-      \Gamma, (R : \ast), (r : \sCoerceSig{R}{R}), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
-    }{
-      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
-    }
-
-    \inferrule[InferLet]{
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
-    }{
-      \Gamma \vdash \sLet{x}{a}{b} : B \gsep
-      \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
-    }
-
-    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
-    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
-    % \inferrule[InferCoe]{
-    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-    %   \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    % }{
-    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
-    % }
-
-  \end{mathpar}
-
-  \caption{Constraint generation rules.}
-  \label{fig:constraint-generation-rules}
-\end{figure}
-
-\begin{figure}[tb]
-  \centering
-
-  \begin{mathpar}
-
-    \inferrule[VarCoe]{
-      (r : \sCoerceSig{A}{B}) \in \Gamma
-    }{
-      \Gamma \vdash r : \sCoerceSig{A}{B}
-    }
-
-    \inferrule[ReflCoe]{
-      \isDatatype{D}
-    }{
-      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
-    }
-
-    \inferrule[ArrCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
-    }{
-      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' <:: B'}
-    }
-
-    \inferrule[CovCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
-    }
-
-    \inferrule[AlgCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
-    }
-
-    \inferrule[RollCoe]{
-      \isDatatype{D} \qquad
-      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
-    }{
-      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[UnrollCoe]{
-      \isDatatype{D} \qquad
-      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
-    }{
-      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[CataCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
-    }{
-      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg B}{B \sArr C}
-    }
-  \end{mathpar}
-
-  \caption{Coercion type checking rules.}
-  \label{fig:coercion-type-checking-rules}
-\end{figure}
-
-\begin{figure}[tb]
-  \centering
-  \begin{mathpar}
-    % Bool
-
-    \inferrule[DataBool]{ }{\isDatatype{\sBool}}
-
-    \inferrule[Bool.True]{ }{
-      \sTrue : \sFunctorConSig{}{\sBool}{A}
-    }
-
-    \inferrule[Bool.False]{ }{
-      \sFalse : \sFunctorConSig{}{\sBool}{A}
-    }
-
-    % Nat
-
-    \inferrule[DataNat]{ }{\isDatatype{\sNat}}
-
-    \inferrule[Nat.Zero]{ }{
-      \sZero : \sFunctorConSig{}{\sNat}{A}
-    }
-
-    \inferrule[Nat.Suc]{ }{
-      \sSuc : \sFunctorConSig{A}{\sNat}{A}
-    }
-
-    % NatList
-
-    \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
-
-    \inferrule[NatList.Nil]{ }{
-      \sNil : \sFunctorConSig{}{\sNatList}{A}
-    }
-
-    \inferrule[NatList.Cons]{ }{
-      \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
-    }
-  \end{mathpar}
-
-  \caption{Datatype constructor type inference rules.}
-  \label{fig:datatype-contructor-type-inference-rules}
-\end{figure}
-
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
 
@@ -1223,9 +990,335 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
   \label{fig:algagda}
 \end{figure}
 
-\section{Implementation with Chronolog} % Henry
+\section{Typing with constraints}
+\label{sec:typing-with-constraints}
+
+We present a type checking procedure for the algorithmic subtyping system shown in Figure \ref{fig:algorithmic-subtyping-rules} based on constraint logic programming.
+Under this approach, typing a term amounts to generating the subtyping relations implied by the term's structure, and computing a solution to the subtyping constraints which determines an insertion of explicit coercions into the term which finally justifies the implied subtyping relations.
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[InferVar]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A \gsep \varnothing \implies \varnothing
+    }
+
+    \inferrule[InferCon]{
+      % [Note] we need to freshen X here since the constructor rules dont deal with type variables
+      \freshMetavariables{X} \qquad
+      k : \sFunctorConSig{\overline{B_i,}}{D}{X} \qquad
+      (\forall i)~ \Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
+    }{
+      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
+    }
+
+    \inferrule[InferLam]{
+      \freshMetavariables{X} \qquad
+      \Gamma, (x : X) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+    }{
+      \Gamma \vdash \lambda x . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+    }
+
+    \inferrule[InferApp]{
+      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
+      \freshMetavariables{X} \qquad
+      \Gamma \vdash f : B \gsep \mathcal{A}_f \implies \mathcal{C}_f \qquad
+      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    }{
+      \Gamma \vdash f ~ a : X \gsep
+      \{ B <:: A \sArr X \} \cup \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
+    }
+
+    \inferrule[InferGamma]{
+      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
+      \freshMetavariables{X, Y} \qquad
+      \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
+      \\\\
+      % [TODO]: enforce exhaustive pattern match
+      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
+      \qquad
+      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
+      \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
+    }{
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
+      \gsep
+      \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i}
+      \implies
+      \{ C <:: \sFunctorApp{D}{X} \} \cup
+      \mathcal{C}_a \cup
+      \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
+    }
+
+    % [Bookmark] This is where the assumption about omega type R is introduced.
+    \inferrule[InferOmega]{
+      % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
+      % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
+      \freshMetavariables{R, r} \qquad
+      \Gamma, (R : \ast), (r : \sCoerceSig{R}{R}), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+    }{
+      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
+    }
+
+    \inferrule[InferLet]{
+      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
+      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+    }{
+      \Gamma \vdash \sLet{x}{a}{b} : B \gsep
+      \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
+    }
+
+    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
+    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
+    % \inferrule[InferCoe]{
+    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
+    %   \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }{
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    % }
+
+  \end{mathpar}
+
+  \caption{Constraint generation rules.}
+  \label{fig:constraint-generation-rules}
+\end{figure}
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[VarCoe]{
+      (r : \sCoerceSig{A}{B}) \in \Gamma
+    }{
+      \Gamma \vdash r : \sCoerceSig{A}{B}
+    }
+
+    \inferrule[ReflCoe]{
+      \isDatatype{D}
+    }{
+      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+
+    \inferrule[ArrCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
+    }{
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' <:: B'}
+    }
+
+    \inferrule[CovCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+    }
+
+    \inferrule[AlgCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
+    }
+
+    \inferrule[RollCoe]{
+      \isDatatype{D} \qquad
+      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
+    }{
+      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[UnrollCoe]{
+      \isDatatype{D} \qquad
+      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
+    }{
+      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[CataCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
+    }{
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg B}{B \sArr C}
+    }
+  \end{mathpar}
+
+  \caption{Coercion type checking rules.}
+  \label{fig:coercion-type-checking-rules}
+\end{figure}
+
+\begin{figure}[tb]
+  \centering
+  \begin{mathpar}
+    % Bool
+
+    \inferrule[DataBool]{ }{\isDatatype{\sBool}}
+
+    \inferrule[Bool.True]{ }{
+      \sTrue : \sFunctorConSig{}{\sBool}{A}
+    }
+
+    \inferrule[Bool.False]{ }{
+      \sFalse : \sFunctorConSig{}{\sBool}{A}
+    }
+
+    % Nat
+
+    \inferrule[DataNat]{ }{\isDatatype{\sNat}}
+
+    \inferrule[Nat.Zero]{ }{
+      \sZero : \sFunctorConSig{}{\sNat}{A}
+    }
+
+    \inferrule[Nat.Suc]{ }{
+      \sSuc : \sFunctorConSig{A}{\sNat}{A}
+    }
+
+    % NatList
+
+    \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
+
+    \inferrule[NatList.Nil]{ }{
+      \sNil : \sFunctorConSig{}{\sNatList}{A}
+    }
+
+    \inferrule[NatList.Cons]{ }{
+      \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
+    }
+  \end{mathpar}
+
+  \caption{Datatype constructor type inference rules.}
+  \label{fig:datatype-contructor-type-inference-rules}
+\end{figure}
+
+\subsection{Constraint generation}
+
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure \ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
+This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of assumed constraints and $\mathcal{C}$ is a set of required constraints.
+Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
+The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
+
+The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
+The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
+A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
+
+For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
+
+% [TODO]: Make sure to update this if the constraint generation rules change.
+% [TODO]: insert term positions on constraints
+\begin{mathpar}
+  \{ R <:: R \}
+  \implies
+  \{
+    % X is domain of λ m ...
+    % R is the recursive type var for omega
+    % Y is the output type of sub' n
+    % U is return of γ (and so is return of ω, and so is return of λ)
+    % W is the recursive param of Nat for the pattern match
+    % Z is the recursive param of Zero()
+    %
+    % γ ...
+    X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
+    % γ sub' n' ...
+    \sFunctorApp{\sNat}{Y} <:: \sFunctorApp{\sNat}{W},
+    % sub' n
+    R \sArr \sMu\sNat <:: R \sArr \sFunctorApp{\sNat}{Y},
+    % roll Zero()
+    \sFunctorApp{\sNat}{Z} <:: U,
+    % m'
+    \sMu\sNat <:: U
+  \}
+\end{mathpar}
 
 \todoHenry{Prose}
+
+\subsection{Constraint solving with Chronolog}
+
+Once a constraint problem $\mathcal{A} \implies \mathcal{C}$ has been generated for a term, we apply a logic-programming approach to solving these constraints which computes the coercions that justify the original subtyping relations.
+Our approach is based on a novel logic-programming engine, Chronolog, which adopts an alternative technique for goal suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II).
+% [TODO]: source
+Goal suspension is critical in this context due to the presence of the \textsc{Roll} and \textsc{Unroll} rules, which can be composed infinitely by straightforward SLD resolution.
+Chronolog prevents this by supporting a global suspension meta-predicate, $S$, where goals that satisfy $S$ are immediately suspended before being processed further.
+Suspended goals are still refined by logic variable substitutions.
+If such a refinement results in a goal no longer satisfying $S$, then the goal is resumed.
+% In our implementation, we use this suspension meta-predicate:
+For our implementation, we use a meta-predicate for $S$ defined by the following rules.
+
+\begin{mathpar}
+  \inferrule[]{X ~\text{is a logic variable}}{S(X <:: \sMu{D})}
+
+  \inferrule[]{X ~\text{is a logic variable}}{S(X <:: \sFunctorApp{D}{A})}
+
+  \inferrule[]{X ~\text{is a logic variable}}{S(X <:: R)}
+
+  \inferrule[]{X ~\text{is a logic variable}}{S(\sMu{D}) <:: X}
+
+  \inferrule[]{X ~\text{is a logic variable}}{S(\sFunctorApp{D}{A}) <:: X}
+
+  \inferrule[]{X ~\text{is a logic variable}}{S(R) <:: X}
+
+  \inferrule[]{X,Y ~\text{are logic variables}}{S(X <:: Y)}
+\end{mathpar}
+
+These rules are designed to prevent Chronolog from entering an infinite regress where a cycle of rules can be applied infinitely.
+% [TODO]: argue for why the rules assure this
+
+Our implementation uses Chronolog inside an outer loop that specially refines just one of the suspended goals according to the following rule.
+
+\begin{mathpar}
+  \begin{array}{rcrl}
+    \sMu{D} <:: X ~&\text{or}&~ X <:: \sMu{D} &\mapsto \{ X := \sMu{D} \} \\
+    \sFunctorApp{D}{A} <:: X ~&\text{or}&~ X <:: \sFunctorApp{D}{A} &\mapsto \{ X := \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+    R <:: X ~&\text{or}&~ X <:: R &\mapsto \{ X := R \} \\
+    && X <:: Y &\mapsto \{ X := Y \}
+  \end{array}
+\end{mathpar}
+
+Chronolog can terminate in three ways: (1) failure with unsolved goals, (2) progress with suspended goals, (3) success with no suspended goals.
+Altogether, our constraint solving procedure is the following:
+
+\begin{algorithm}
+  \caption{Constraint solving with Chronolog.}
+  \label{alg:constraint-solving}
+  \begin{algorithmic}[1]
+    \Function{RefineGoals}{$\mathit{axioms}, \mathit{goals}$}
+    \State $\sigma \gets \emptyset$ \Comment{Initialize as the empty logic variable substitution}
+    \While{$\mathit{goals} \neq \emptyset$}
+    \State $\mathit{result} \gets \Func{Chronolog}(\mathit{axioms}, \mathit{goals}, \sigma$)
+    \Statex
+    % Pattern-matching block
+    \State \Match $\mathit{result}$ \With
+    \State \quad \Case $\langle \text{``failure''} \rangle \Rightarrow$
+    \State \qquad \Return $\bot$
+    \Statex
+    \State \quad \Case $\langle \text{``success''}, \sigma_{\mathit{new}} \rangle \Rightarrow$
+    \Return $\sigma_{\mathit{new}}$
+    \Statex
+    \State \quad \Case $\langle \text{``progress''}, \sigma', \mathit{goals}' \rangle \Rightarrow$
+    \State \qquad $\sigma'' \gets \Func{refineSuspendedGoals}(\sigma', \mathit{goals}')$
+    \State \qquad $\mathit{goals} \gets \sigma''(\mathit{goals}')$
+    \EndWhile
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+% The rules for rolling and unrolling
+% signatures would, if handled naively, lead to diverging proof search,
+% as functors could be unrolled unboundedly, and even rolling could
+% diverge, if type variables are instantiated to functor applications,
+% which then roll back to just a bare type variable again.  To avoid
+% this, Chronolog provides a mechanism to indicate that certain goals
+% should be suspended.  We identify syntactic forms of goals which
+% should not be processed, on pain of divergence.  These suspended goals
+% may be resumed if they are instantiated enough during solving of other
+% goals.  If not, an outer loop of our algorithm handles them by simply
+% equating the lower and upper bound of the subtyping constraints.
+
+\todoHenry{Prose}
+
+% \subsection{Implementation with Chronolog} % Henry
+% \todoHenry{Prose}
 
 \section{Returning to the Examples} % Henry
 
