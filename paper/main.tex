@@ -119,9 +119,9 @@
 \newcommand{\sRoll}[1]{\text{roll}~ #1}
 \newcommand{\sUnroll}[1]{\text{unroll}~ #1}
 \newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
-\newcommand{\sSubData}[1]{\text{idData}[#1]}
-\newcommand{\sSubArr}[2]{\text{subArr}~ #1 ~ #2}
-\newcommand{\sSubAlg}[2]{\text{subAlg}[#1] ~ #2}
+\newcommand{\sSubData}[1]{\text{id}[#1]}
+\newcommand{\sSubArr}[2]{\text{arr}~ #1 ~ #2}
+\newcommand{\sSubAlg}[2]{\text{alg}[#1] ~ #2}
 % constructors
 \newcommand{\sTrue}{\textit{True}}
 \newcommand{\sFalse}{\textit{False}}
@@ -1140,7 +1140,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
       \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
     }{
-      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' <:: B'}
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
     }
 
     \inferrule[CovCoe]{
