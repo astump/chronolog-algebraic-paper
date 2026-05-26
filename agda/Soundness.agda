@@ -15,3 +15,4 @@ soundness (Unroll d) = roll2 (soundness d)
 soundness (Cov d) = Cov (soundness d)
 soundness (Alg d) = Alg (soundness d)
 soundness (Cata d d₁) = Trans Cata (Arr (soundness d) (soundness d₁))
+soundness ReflV = ReflV

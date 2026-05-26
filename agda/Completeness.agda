@@ -16,3 +16,4 @@ completeness (Cov d) = Cov (completeness d)
 completeness (Trans d d₁) = trans<:: (completeness d) (completeness d₁)
 completeness Cata = Cata refl<:: refl<::
 completeness (Alg d) = Alg (completeness d)
+completeness ReflV = ReflV

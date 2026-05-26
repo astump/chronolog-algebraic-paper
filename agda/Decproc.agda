@@ -7,6 +7,7 @@ infix 5 _<::_
 
 data _<::_ : Tp → Tp → Set where
   Refl : μD <:: μD
+  ReflV : ∀{n : ℕ} → V n <:: V n
   Arr : ∀{T1 T2 T1' T2' : Tp} → 
          T1' <:: T1 →
          T2 <:: T2' →
@@ -25,6 +26,7 @@ refl<:: {μD} = Refl
 refl<:: {D T} = Cov (refl<::{T})
 refl<:: {T ⟶ T'} = Arr (refl<::{T}) (refl<::{T'})
 refl<:: {D⇒ T} = Alg (refl<::{T})
+refl<:: {V n} = ReflV
 
 trans<:: : ∀{T1 T2 T3 : Tp} →
           (d1 : T1 <:: T2) →
@@ -41,6 +43,7 @@ trans<:: (Cov d1) (Cov d2) = Cov (trans<:: d1 d2)
 trans<:: (Alg d1) (Alg d2) = Alg (trans<:: d1 d2)
 trans<:: (Alg d1) (Cata d2 d3) = Cata d2 (trans<:: d1 d3)
 trans<:: (Cata d1 d2) (Arr d3 d4) = Cata (trans<:: d3 d1) (trans<:: d2 d4)
+trans<:: ReflV ReflV = ReflV
 
 roll : D μD <:: μD
 roll = Roll Refl
