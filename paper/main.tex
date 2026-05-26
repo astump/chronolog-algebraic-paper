@@ -990,24 +990,36 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
   \label{fig:algagda}
 \end{figure}
 
-\section{Typing with constraints}
-\label{sec:typing-with-constraints}
+\section{Typing}
+\label{sec:typing}
 
-We present a type checking procedure based on using the algorithmic subtyping system in Figure \ref{fig:algorithmic-subtyping-rules} with a logic-programming engine.
-Under this approach, typing a term amounts to generating the subtyping relations implied by the term's structure, and computing a solution to the subtyping constraints which determines insertions into the term of explicit coercions which justify the generated subtyping relations.
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+    \inferrule[]{ }{ }
+  \end{mathpar}
+\end{figure}
+
+\section{Typing checking with constraints}
+\label{sec:typechecking}
+
+We present a type checking procedure that uses a logic-programming engine to solve subtyping constraints.
+First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
+Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure \ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
 \begin{figure}[tb]
   \centering
 
   \begin{mathpar}
 
-    \inferrule[InferVar]{
+    \inferrule[Var]{
       (x : A) \in \Gamma
     }{
       \Gamma \vdash x : A \gsep \varnothing \implies \varnothing
     }
 
-    \inferrule[InferCon]{
+    \inferrule[Con]{
       % [Note] we need to freshen X here since the constructor rules dont deal with type variables
       \freshMetavariables{X} \qquad
       k : \sFunctorConSig{\overline{B_i,}}{D}{X} \qquad
@@ -1016,14 +1028,14 @@ Under this approach, typing a term amounts to generating the subtyping relations
       \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
     }
 
-    \inferrule[InferLam]{
+    \inferrule[Lam]{
       \freshMetavariables{X} \qquad
       \Gamma, (x : X) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
       \Gamma \vdash \lambda x . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }
 
-    \inferrule[InferApp]{
+    \inferrule[App]{
       % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
       \freshMetavariables{X} \qquad
       \Gamma \vdash f : B \gsep \mathcal{A}_f \implies \mathcal{C}_f \qquad
@@ -1033,7 +1045,7 @@ Under this approach, typing a term amounts to generating the subtyping relations
       \{ B <:: A \sArr X \} \cup \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
     }
 
-    \inferrule[InferGamma]{
+    \inferrule[Gamma]{
       % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
       \freshMetavariables{X, Y} \qquad
       \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
@@ -1054,7 +1066,7 @@ Under this approach, typing a term amounts to generating the subtyping relations
     }
 
     % [Bookmark] This is where the assumption about omega type R is introduced.
-    \inferrule[InferOmega]{
+    \inferrule[Omega]{
       % [TODO from Henry]: need to enforce that R and r are linked to this *appearance* of \omega. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.
       % [TODO]: is is a problem that r is introduced fresh here even though its not a type variable?
       \freshMetavariables{R, r} \qquad
@@ -1063,7 +1075,7 @@ Under this approach, typing a term amounts to generating the subtyping relations
       \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
     }
 
-    \inferrule[InferLet]{
+    \inferrule[Let]{
       \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
       \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
