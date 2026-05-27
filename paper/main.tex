@@ -401,9 +401,10 @@ explicit coercions, for two functions.  The \verb|sub| function
 subtracts two natural numbers, and \verb|subs| proceeds through a two
 lists of numbers, subtracting corresponding elements.  So subtracting
 the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
-$[7,7,7]$, for example.  The \verb|sub| function takes in the minuend
-\verb|m| and returns an algebra, which can be used to recurse through
-the subtrahend \verb|n|.  The code uses a $\gamma$-term to match on
+$[7,7,7]$, for example.  Let us see how these use the different kinds
+of coercions.  The \verb|sub| function takes in the minuend \verb|m|
+and returns an algebra, which can be used to recurse through the
+subtrahend \verb|n|.  The code uses a $\gamma$-term to match on
 \verb|n|, returning \verb|m| in the \verb|Zero| case.  In the
 \verb|Suc(n')| case, we recursively subtract \verb|n'| (from
 \verb|m|).  This requires unrolling the signature functor with a call
