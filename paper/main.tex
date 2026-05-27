@@ -974,6 +974,7 @@ we prove the following theorems.
 \end{theorem}
 
 \begin{theorem}[Completeness]
+  \label{thm:completeness}
   $A <: B$ implies $A <:: B$.
 \end{theorem}
 
@@ -1164,11 +1165,11 @@ The choice of which suspended goal to process may affect the order in which Chro
 
 \begin{theorem}[Completeness]
   \label{thm:solver-completeness}
+  \textsc{Solver} is a decision procedure for constraint problems $\mathcal{A} \implies \mathcal{C}$.
 \end{theorem}
-
-\todoHenry{Explain rest of constraint solving}
-
-\todoHenry{Argue for completeness of constraint solving, using the decreasing size of requirements in the algorithmic subtyping rules, and Refine. Note that which suspended goal gets refined doesn't actually matter (proof by case analysis).}
+\begin{proof}
+  \textsc{Solve} will finds all solutions (up to permutations of \textsc{Roll} and \textsc{Unroll}) to $\mathcal{A} \implies \mathcal{C}$ because \textsc{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \textsc{Refine} preserves validity of solution $\sigma$, and \textsc{Solve} terminates by theorem \ref{thm:solver-termination}.
+\end{proof}
 
 \section{Returning to the Examples} % Henry
 
