@@ -135,6 +135,7 @@
 \newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
 \newcommand{\atPos}[1]{^{#1}}
+\newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
 % \newcommand{\atPos}[1]{}
 
 \newcommand{\Match}{\textbf{match }}
@@ -308,69 +309,41 @@ Agda.  To summarize the contributions:
 
 \section{Motivating examples}
 
+% [Note]: this is the old Haskell example
+% \begin{subfigure}[t]{0.45\textwidth}
+%     \centering
+%     \begin{verbatim}
+% sub :: Nat -> Nat -> Nat
+% sub m n = case n of
+%   Zero -> m
+%   Suc n' -> case sub n' of
+%     Zero -> Zero
+%     Suc m' -> m'
+
+% subs :: [Nat] -> [Nat] -> [Nat]
+% subs l1 l2 = case l1 of
+%   Nil -> Nil
+%   Cons h1 t1 -> case t1 of
+%     Nil -> Nil
+%     Cons h2 t2 ->
+%       Cons (sub h1 h2, subs t1 t2)
+%     \end{verbatim}
+%     \caption{Haskell}
+%     \label{fig:example-subs-haskell}
+%   \end{subfigure}
+
 \begin{figure}[H]
   \centering
-  \begin{subfigure}[t]{0.45\textwidth}
-    \centering
-    \begin{verbatim}
-sub :: Nat -> Nat -> Nat
-sub m n = case n of
-  Zero -> m
-  Suc n' -> case sub n' of
-    Zero -> Zero
-    Suc m' -> m'
 
-subs :: [Nat] -> [Nat] -> [Nat]
-subs l1 l2 = case l1 of
-  Nil -> Nil
-  Cons h1 t1 -> case t1 of
-    Nil -> Nil
-    Cons h2 t2 ->
-      Cons (sub h1 h2, subs t1 t2)
-    \end{verbatim}
-    \caption{Haskell}
-    \label{fig:example-subs-haskell}
-  \end{subfigure}
-  %
-  % \vspace{1em}
-  \hfill
-  %
-  \begin{subfigure}[t]{0.45\textwidth}
-    \centering
-    \begin{verbatim}
-sub : μ Nat → Nat ⇒ μ Nat
-sub = λ m . ω sub'(n) . γ n .
-  { Zero → m
-  | Suc(n') → γ sub' n' .
-    { Zero → Zero
-    | Suc(m') → m' } }
-
-subs : NatList ⇒ μ NatList → μ NatList
-subs = ω subs'(l1) . λ l2 . γ l1 .
-  { Nil → Nil
-  | Cons(h1, t1) → γ l2 .
-    { Nil → Nil
-    | Cons(h2, t2) →
-        Cons(sub h1 h2, subs' t1 t2) } }
-    \end{verbatim}
-    \caption{Algebraic}
-    \label{fig:example-subs-algebraic-without-coercions}
-  \end{subfigure}
-
-  \vspace{1em}
-
-  \begin{subfigure}[t]{0.95\textwidth}
-    \centering
-
-    % sub h1 expected type is μNatList -> μNatList
-    % sub h1 inferred type is NatList => μNatList
-    % D := NatList
-    % A := μNatList
-    % B := μNatList
-    % C := μNatList
-    % B <:: μD <--> μNatList <:: μNatList
-    % A <:: C <--> μNatList <:: μNatList
-    \begin{verbatim}
+  % sub h1 expected type is μNatList -> μNatList
+  % sub h1 inferred type is NatList => μNatList
+  % D := NatList
+  % A := μNatList
+  % B := μNatList
+  % C := μNatList
+  % B <:: μD <--> μNatList <:: μNatList
+  % A <:: C <--> μNatList <:: μNatList
+  \begin{verbatim}
 sub : μ Nat → Nat ⇒ μ Nat
 sub = λ m . ω sub'(n) . γ n .
   { Zero → m
@@ -378,7 +351,7 @@ sub = λ m . ω sub'(n) . γ n .
     { Zero → coerce (roll id) Zero
     | Suc(m') → m' } }
 
-subs : NatList ⇒ μ NatList → μ NatList 
+subs : NatList ⇒ μ NatList → μ NatList
 subs = ω subs'(l1) . λ l2 . γ l1 .
   { Nil → Nil
   | Cons(h1, t1) → γ coerce (unroll id) l2 .
@@ -387,13 +360,9 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
         coerce (roll id)
           Cons((coerce (cata id[μNatList] id[μNatList]) (sub h1)) h2,
                 subs' t1 t2) } }
-    \end{verbatim}
-    \caption{Algebraic with explicit coercions}
-    \label{fig:example-subs-algebraic-with-coercions}
-  \end{subfigure}
-
-  \caption{Implementations of \texttt{sub} and \texttt{subs}.}
-  \label{fig:example-subs}
+  \end{verbatim}
+  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions.}
+  \label{fig:example-subs-algebraic-with-coercions}
 \end{figure}
 
 Figure~\ref{fig:example-subs-algebraic-with-coercions} shows code with
@@ -519,8 +488,8 @@ support algebraic programming like this with lighter syntax?
   \begin{mathpar}
     \inferrule[Gamma]{
       a : \sFunctorApp{D}{C} \qquad
-      (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij},}}{\sFunctorApp{D}{C}} \qquad
-      (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij} \vdash b_i : B_i}
+      % (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij},}}{\sFunctorApp{D}{C}} \qquad
+      (\forall (k_i : \sFunctorConSig{\overline{A_{ij}}}{D}{C}) \in \mathscr{K}(D, C))~ \Gamma, \overline{x_{ij} : A_{ij} \vdash b_i : B_i}
     }{
       \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij}}) \mapsto b_i ~|} \} : B
     }
@@ -570,7 +539,8 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     \inferrule[Con]{
       % [Note] we need to freshen X here since the constructor rules dont deal with type variables
       \freshMetavariables{X} \qquad
-      k : \sFunctorConSig{\overline{B_i,}}{D}{X} \qquad
+      % (k : \sFunctorConSig{\overline{B_i,}}{D}{X}) \in \mathscr{K}(D, X) \qquad
+      \constructorOf{k}{\overline{B_i,}}{D}{X} \qquad
       (\forall i)~ \Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}
     }{
       \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
@@ -704,49 +674,49 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:coercion-type-checking-rules}
 \end{figure}
 
-\begin{figure}[htb]
-  \centering
-  \begin{mathpar}
-    % Bool
+% \begin{figure}[htb]
+%   \centering
+%   \begin{mathpar}
+%     % Bool
 
-    \inferrule[DataBool]{ }{\isDatatype{\sBool}}
+%     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
 
-    \inferrule[Bool.True]{ }{
-      \sTrue : \sFunctorConSig{}{\sBool}{A}
-    }
+%     \inferrule[Bool.True]{ }{
+%       \sTrue : \sFunctorConSig{}{\sBool}{A}
+%     }
 
-    \inferrule[Bool.False]{ }{
-      \sFalse : \sFunctorConSig{}{\sBool}{A}
-    }
+%     \inferrule[Bool.False]{ }{
+%       \sFalse : \sFunctorConSig{}{\sBool}{A}
+%     }
 
-    % Nat
+%     % Nat
 
-    \inferrule[DataNat]{ }{\isDatatype{\sNat}}
+%     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
 
-    \inferrule[Nat.Zero]{ }{
-      \sZero : \sFunctorConSig{}{\sNat}{A}
-    }
+%     \inferrule[Nat.Zero]{ }{
+%       \sZero : \sFunctorConSig{}{\sNat}{A}
+%     }
 
-    \inferrule[Nat.Suc]{ }{
-      \sSuc : \sFunctorConSig{A}{\sNat}{A}
-    }
+%     \inferrule[Nat.Suc]{ }{
+%       \sSuc : \sFunctorConSig{A}{\sNat}{A}
+%     }
 
-    % NatList
+%     % NatList
 
-    \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
+%     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
 
-    \inferrule[NatList.Nil]{ }{
-      \sNil : \sFunctorConSig{}{\sNatList}{A}
-    }
+%     \inferrule[NatList.Nil]{ }{
+%       \sNil : \sFunctorConSig{}{\sNatList}{A}
+%     }
 
-    \inferrule[NatList.Cons]{ }{
-      \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
-    }
-  \end{mathpar}
+%     \inferrule[NatList.Cons]{ }{
+%       \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
+%     }
+%   \end{mathpar}
 
-  \caption{Datatype constructor type inference rules.}
-  \label{fig:datatype-contructor-type-inference-rules}
-\end{figure}
+%   \caption{Datatype constructor type inference rules.}
+%   \label{fig:datatype-contructor-type-inference-rules}
+% \end{figure}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
 This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of axioms and $\mathcal{C}$ is a set of goals.
@@ -1196,6 +1166,29 @@ Altogether, our constraint solving procedure is the following:
 \todoHenry{
   Prose. Remind the version with coercions. Show without coercions
 }
+
+\begin{figure}[H]
+  \centering
+
+  \begin{verbatim}
+sub : μ Nat → Nat ⇒ μ Nat
+sub = λ m . ω sub'(n) . γ n .
+  { Zero → m
+  | Suc(n') → γ sub' n' .
+    { Zero → Zero
+    | Suc(m') → m' } }
+
+subs : NatList ⇒ μ NatList → μ NatList
+subs = ω subs'(l1) . λ l2 . γ l1 .
+  { Nil → Nil
+  | Cons(h1, t1) → γ l2 .
+    { Nil → Nil
+    | Cons(h2, t2) →
+        Cons(sub h1 h2, subs' t1 t2) } }
+  \end{verbatim}
+  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}.}
+  \label{fig:example-subs-algebraic-without-coercions}
+\end{figure}
 
 \section{Related Work} % Aaron
 
