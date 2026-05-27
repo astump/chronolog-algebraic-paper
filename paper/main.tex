@@ -378,15 +378,15 @@ sub = λ m . ω sub'(n) . γ n .
     { Zero → coerce (roll id) Zero
     | Suc(m') → m' } }
 
-subs : NatList ⇒ μNatList → μNatList =
-  ω subs'(l1) . λ l2 . γ l1 .
-    { Nil → Nil
-    | Cons(h1, t1) → γ coerce (unroll id) l2 .
-      { Nil → coerce (roll id) Nil
-      | Cons(h2, t2) →
-          coerce (roll id)
-            Cons((coerce (cata id[μNatList] id[μNatList]) (sub h1)) h2,
-                 subs' t1 t2) } }
+subs : NatList ⇒ μNatList → μNatList
+subs = ω subs'(l1) . λ l2 . γ l1 .
+  { Nil → Nil
+  | Cons(h1, t1) → γ coerce (unroll id) l2 .
+    { Nil → coerce (roll id) Nil
+    | Cons(h2, t2) →
+        coerce (roll id)
+          Cons((coerce (cata id[μNatList] id[μNatList]) (sub h1)) h2,
+                subs' t1 t2) } }
     \end{verbatim}
     \caption{Algebraic with explicit coercions}
     \label{fig:example-subs-algebraic-with-coercions}
