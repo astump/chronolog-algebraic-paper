@@ -144,34 +144,40 @@
 
 \newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
 
+% \newcommand{\todoHenry}[1]{%
+%   \begin{tcolorbox}[
+%       colback=olive!15,     % Light olive background
+%       colframe=olive!50,    % Muted olive border
+%       arc=0mm,            % Sharp corners
+%       boxrule=0.5pt,      % Border thickness
+%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+%     ]
+%     \todo{Henry}
+%     \\[1em]
+%     #1
+%   \end{tcolorbox}%
+% }
 \newcommand{\todoHenry}[1]{%
-  \begin{tcolorbox}[
-      colback=olive!15,     % Light olive background
-      colframe=olive!50,    % Muted olive border
-      arc=0mm,            % Sharp corners
-      boxrule=0.5pt,      % Border thickness
-      left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
-      before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
-    ]
-    \todo{Henry}
-    \\[1em]
-    #1
-  \end{tcolorbox}%
+  \todo{Henry}: #1%
 }
 
+% \newcommand{\todoAaron}[1]{%
+%   \begin{tcolorbox}[
+%       colback=blue!15,     % Light blue background
+%       colframe=blue!50,    % Muted blue border
+%       arc=0mm,            % Sharp corners
+%       boxrule=0.5pt,      % Border thickness
+%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+%     ]
+%     \todo{Aaron}
+%     \\[1em]
+%     #1
+%   \end{tcolorbox}%
+% }
 \newcommand{\todoAaron}[1]{%
-  \begin{tcolorbox}[
-      colback=blue!15,     % Light blue background
-      colframe=blue!50,    % Muted blue border
-      arc=0mm,            % Sharp corners
-      boxrule=0.5pt,      % Border thickness
-      left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
-      before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
-    ]
-    \todo{Aaron}
-    \\[1em]
-    #1
-  \end{tcolorbox}%
+  \todo{Aaron}: #1%
 }
 
 \include{definitions}
@@ -302,63 +308,96 @@ Agda.  To summarize the contributions:
 
 \section{Motivating examples}
 
-\todoHenry{It might be worth adjusting the syntax to be more directly comparable to haskell. For example:}
-\begin{verbatim}
-sub : Nat → Nat ⇒ Nat
-sub = λ m . ω sub'(n) . γ n .
-          Zero → m
-          Suc(n') → γ (unroll id) (sub' n') .
-              Zero → (roll id) Zero
-              Suc(m') → m'
+\todoHenry{It might be worth adjusting the syntax to be more directly comparable to haskell. For example (in commented-out verbatim block below)}
+% \begin{verbatim}
+% sub : Nat → Nat ⇒ Nat
+% sub = λ m . ω sub'(n) . γ n .
+%           Zero → m
+%           Suc(n') → γ (unroll id) (sub' n') .
+%               Zero → (roll id) Zero
+%               Suc(m') → m'
 
-subs : NatList ⇒ NatList → NatList
-subs = ω subs'(l1) . λ l2 . γ l1 .
-          Nil → Nil
-          Cons(h1, t1) → γ (unroll id) l2 .
-              Nil → (roll id) Nil
-              Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2)
-\end{verbatim}
+% subs : NatList ⇒ NatList → NatList
+% subs = ω subs'(l1) . λ l2 . γ l1 .
+%           Nil → Nil
+%           Cons(h1, t1) → γ (unroll id) l2 .
+%               Nil → (roll id) Nil
+%               Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2)
+% \end{verbatim}
 
-\begin{figure}[tb]
+\begin{figure}[H]
   \centering
-  \begin{subfigure}[b]{0.95\textwidth}
+  \begin{subfigure}[t]{0.45\textwidth}
     \centering
-    \todoHenry{Haskell version}
+    \begin{verbatim}
+sub :: Nat -> Nat -> Nat
+sub m n = case n of
+  Zero -> m
+  Suc n' -> case sub n' of
+    Zero -> Zero
+    Suc m' -> m'
+
+subs :: [Nat] -> [Nat] -> [Nat]
+subs l1 l2 = case l1 of
+  Nil -> Nil
+  Cons h1 t1 -> case t1 of
+    Nil -> Nil
+    Cons h2 t2 ->
+      Cons (sub h1 h2, subs t1 t2)
+    \end{verbatim}
     \caption{Haskell}
     \label{fig:example-subs-haskell}
   \end{subfigure}
-
-  \vspace{1em}
-
-  \begin{subfigure}[b]{0.95\textwidth}
+  %
+  % \vspace{1em}
+  \hfill
+  %
+  \begin{subfigure}[t]{0.45\textwidth}
     \centering
-    \todoHenry{Algebraic version without coercions}
+    \begin{verbatim}
+sub : Nat → Nat ⇒ Nat
+sub = λ m . ω sub'(n) . γ n .
+  { Zero → m
+  | Suc(n') → γ sub' n' .
+    { Zero → Zero
+    | Suc(m') → m' } }
+
+subs : NatList ⇒ NatList → NatList
+subs = ω subs'(l1) . λ l2 . γ l1 .
+  { Nil → Nil
+  | Cons(h1, t1) → γ l2 .
+    { Nil → Nil
+    | Cons(h2, t2) →
+        Cons(sub h1 h2, subs' t1 t2) } }
+    \end{verbatim}
     \caption{Algebraic}
     \label{fig:example-subs-algebraic-without-coercions}
   \end{subfigure}
 
   \vspace{1em}
 
-  \begin{subfigure}[b]{0.95\textwidth}
+  \begin{subfigure}[t]{0.95\textwidth}
     \centering
 
     \todoHenry{don't forget the two child coercions at cata}
     \begin{verbatim}
 sub : Nat → Nat ⇒ Nat
 sub = λ m . ω sub'(n) . γ n .
-          { Zero → m
-          | Suc(n') → γ (unroll id) (sub' n') .
-              { Zero → (roll id) Zero
-              | Suc(m') → m' } }
+  { Zero → m
+  | Suc(n') → γ coerce (unroll id) (sub' n') .
+    { Zero → coerce (roll id) Zero
+    | Suc(m') → m' } }
 
-subs : NatList ⇒ NatList → NatList
-subs = ω subs'(l1) . λ l2 . γ l1 .
-          { Nil → Nil
-          | Cons(h1, t1) → γ (unroll id) l2 .
-              { Nil → (roll id) Nil
-              | Cons(h2, t2) → (roll id) Cons((cata (sub h1)) h2, subs' t1 t2) } }
+subs : NatList ⇒ NatList → NatList =
+  ω subs'(l1) . λ l2 . γ l1 .
+    { Nil → Nil
+    | Cons(h1, t1) → γ coerce (unroll id) l2 .
+      { Nil → coerce (roll id) Nil
+      | Cons(h2, t2) →
+          coerce (roll id)
+            Cons((coerce cata (sub h1)) h2, subs' t1 t2) } }
     \end{verbatim}
-    \caption{Algebraic with coercions}
+    \caption{Algebraic with explicit coercions}
     \label{fig:example-subs-algebraic-with-coercions}
   \end{subfigure}
 
@@ -377,7 +416,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 
 \todoAaron{Write prose to introduce syntax of langauge, and explain some details of the running examples from "Motivating Examples".}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \todoHenry{Do I actually need to define the domains for term variables, coercion variables, etc. as sets or is there a more standard way?}
@@ -458,7 +497,7 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 
 \todoHenry{Decide if this should be a separate section, and if so, write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \todoHenry{If we actually want this written out, write the rest of the typing rules}
@@ -503,7 +542,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 
 \todoHenry{Enforce exhaustive pattern match at Gamma}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \begin{mathpar}
@@ -589,7 +628,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:constraint-generation-rules}
 \end{figure}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \begin{mathpar}
@@ -651,7 +690,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:coercion-type-checking-rules}
 \end{figure}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
   \begin{mathpar}
     % Bool
@@ -769,7 +808,7 @@ of rules are equivalent.
     D \sAlg A <: \sMu{D} \sArr A
 }}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \begin{mathpar}
@@ -847,7 +886,7 @@ the definition of subtyping as a partial order.
     D \sAlg A <:: B \sArr C
 }}
 
-\begin{figure}[tb]
+\begin{figure}[htb]
   \centering
 
   \begin{mathpar}
