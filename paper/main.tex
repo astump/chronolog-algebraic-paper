@@ -362,7 +362,14 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
   \begin{subfigure}[t]{0.95\textwidth}
     \centering
 
-    \todoHenry{don't forget the two child coercions at cata}
+    % sub h1 expected type is μNatList -> μNatList
+    % sub h1 inferred type is NatList => μNatList
+    % D := NatList
+    % A := μNatList
+    % B := μNatList
+    % C := μNatList
+    % B <:: μD <--> μNatList <:: μNatList
+    % A <:: C <--> μNatList <:: μNatList
     \begin{verbatim}
 sub : μNat → Nat ⇒ μNat
 sub = λ m . ω sub'(n) . γ n .
@@ -378,7 +385,8 @@ subs : NatList ⇒ μNatList → μNatList =
       { Nil → coerce (roll id) Nil
       | Cons(h2, t2) →
           coerce (roll id)
-            Cons((coerce cata (sub h1)) h2, subs' t1 t2) } }
+            Cons((coerce (cata id[μNatList] id[μNatList]) (sub h1)) h2,
+                 subs' t1 t2) } }
     \end{verbatim}
     \caption{Algebraic with explicit coercions}
     \label{fig:example-subs-algebraic-with-coercions}
@@ -863,7 +871,7 @@ the definition of subtyping as a partial order.
 
 \newcommand{\decproccata}[1]{
   \inferrule[#1]{
-    B <:: D \quad
+    B <:: \sMu{D} \quad
     A <:: C
   }{
     D \sAlg A <:: B \sArr C
