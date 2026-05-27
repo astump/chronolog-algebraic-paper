@@ -515,14 +515,14 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
     }
   \end{mathpar}
 
-  \caption{Typing rules}
+  \caption{A few typing rules}
   \label{fig:typing-rules}
 \end{figure}
 
 \section{Type checking with constraints}
 \label{sec:typechecking}
 
-We present a type checking procedure that uses a logic-programming engine to solve subtyping constraints.
+We present a type checking procedure based on generating and solving subtyping constraints.
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
 Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
@@ -723,8 +723,6 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \caption{Datatype constructor type inference rules.}
   \label{fig:datatype-contructor-type-inference-rules}
 \end{figure}
-
-\subsection{Constraint generation}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
 This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of axioms and $\mathcal{C}$ is a set of goals.
