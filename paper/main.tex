@@ -338,14 +338,14 @@ subs l1 l2 = case l1 of
   \begin{subfigure}[t]{0.45\textwidth}
     \centering
     \begin{verbatim}
-sub : μNat → Nat ⇒ μNat
+sub : μ Nat → Nat ⇒ μ Nat
 sub = λ m . ω sub'(n) . γ n .
   { Zero → m
   | Suc(n') → γ sub' n' .
     { Zero → Zero
     | Suc(m') → m' } }
 
-subs : NatList ⇒ μNatList → μNatList
+subs : NatList ⇒ μ NatList → μ NatList
 subs = ω subs'(l1) . λ l2 . γ l1 .
   { Nil → Nil
   | Cons(h1, t1) → γ l2 .
@@ -364,14 +364,14 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
 
     \todoHenry{don't forget the two child coercions at cata}
     \begin{verbatim}
-sub : μNat → Nat ⇒ μNat
+sub : μ Nat → Nat ⇒ μ Nat
 sub = λ m . ω sub'(n) . γ n .
   { Zero → m
   | Suc(n') → γ coerce (unroll id) (sub' n') .
     { Zero → coerce (roll id) Zero
     | Suc(m') → m' } }
 
-subs : NatList ⇒ μNatList → μNatList =
+subs : NatList ⇒ μ NatList → μ NatList =
   ω subs'(l1) . λ l2 . γ l1 .
     { Nil → Nil
     | Cons(h1, t1) → γ coerce (unroll id) l2 .
@@ -388,10 +388,33 @@ subs : NatList ⇒ μNatList → μNatList =
   \label{fig:example-subs}
 \end{figure}
 
-\todoHenry{
-  Prose: Can we use the algebraic style with lighter syntax?  This would make it more
-  feasible in practice.
-}
+Figure~\ref{fig:example-subs-algebraic-with-coercions} shows code with
+explicit coercions, for two functions.  The \verb|sub| function
+subtracts two natural numbers, and \verb|subs| proceeds through a two
+lists of numbers, subtracting corresponding elements.  So subtracting
+the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
+$[7,7,7]$, for example.  The \verb|sub| function takes in the minuend
+\verb|m| and returns an algebra, which can be used to recurse through
+the subtrahend \verb|n|.  The code uses a $\gamma$-term to match on
+\verb|n|, returning \verb|m| in the \verb|Zero| case.  In the
+\verb|Suc(n')| case, we recursively subtract \verb|n'| (from
+\verb|m|).  This requires unrolling the signature functor with a call
+to \verb|unroll|.  The coercion is actually \verb|unroll id|, where
+\verb|id| represents that there is no further coercion under this
+unrolling.  The code matches on this result.  In the \verb|Zero| case,
+the code returns \verb|Zero|.  Constructors' return types are
+applications of signature functors.  Here, \verb|Zero| can be given
+type \verb|Nat (μ Nat)|, which is then coerced to \verb|μ Nat| by
+\verb|roll|.  The function \verb|subs| does similar rolling and
+unrolling, but also invokes subtraction (\verb|sub|).  Since
+\verb|sub| returns an algebra, the code uses \verb|cata| to coerce
+that to the function which accepts the subtrahend.
+
+While these functions have the desirable property that they are
+guaranteed to terminate on all inputs, we are sure the reader will
+agree that the code is rather burdened with the need to call these
+coercions.  This raises the question we address in this paper: can we
+support algebraic programming like this with lighter syntax?
 
 \section{Syntax}
 
