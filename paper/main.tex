@@ -362,7 +362,14 @@ subs = ω subs'(l1) . λ l2 . γ l1 .
   \begin{subfigure}[t]{0.95\textwidth}
     \centering
 
-    \todoHenry{don't forget the two child coercions at cata}
+    % sub h1 expected type is μNatList -> μNatList
+    % sub h1 inferred type is NatList => μNatList
+    % D := NatList
+    % A := μNatList
+    % B := μNatList
+    % C := μNatList
+    % B <:: μD <--> μNatList <:: μNatList
+    % A <:: C <--> μNatList <:: μNatList
     \begin{verbatim}
 sub : μ Nat → Nat ⇒ μ Nat
 sub = λ m . ω sub'(n) . γ n .
@@ -371,6 +378,7 @@ sub = λ m . ω sub'(n) . γ n .
     { Zero → coerce (roll id) Zero
     | Suc(m') → m' } }
 
+<<<<<<< HEAD
 subs : NatList ⇒ μ NatList → μ NatList =
   ω subs'(l1) . λ l2 . γ l1 .
     { Nil → Nil
@@ -379,6 +387,17 @@ subs : NatList ⇒ μ NatList → μ NatList =
       | Cons(h2, t2) →
           coerce (roll id)
             Cons((coerce cata (sub h1)) h2, subs' t1 t2) } }
+=======
+subs : NatList ⇒ μNatList → μNatList
+subs = ω subs'(l1) . λ l2 . γ l1 .
+  { Nil → Nil
+  | Cons(h1, t1) → γ coerce (unroll id) l2 .
+    { Nil → coerce (roll id) Nil
+    | Cons(h2, t2) →
+        coerce (roll id)
+          Cons((coerce (cata id[μNatList] id[μNatList]) (sub h1)) h2,
+                subs' t1 t2) } }
+>>>>>>> 582982ed5ca8bf30d30fb97bbefbba628e064a6b
     \end{verbatim}
     \caption{Algebraic with explicit coercions}
     \label{fig:example-subs-algebraic-with-coercions}
@@ -501,12 +520,11 @@ support algebraic programming like this with lighter syntax?
 \section{Typing}
 \label{sec:typing}
 
-\todoHenry{Decide if this should be a separate section, and if so, write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".}
+\todoHenry{Write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".  Here's the idea: Here are the most interesting typing rules. The rest are in Appendix~\ref{app:typing-rules}.
+}
 
 \begin{figure}[htb]
   \centering
-
-  \todoHenry{If we actually want this written out, write the rest of the typing rules}
 
   \begin{mathpar}
     \inferrule[Gamma]{
@@ -531,16 +549,16 @@ support algebraic programming like this with lighter syntax?
     }
   \end{mathpar}
 
-  \caption{Typing rules}
+  \caption{A few typing rules}
   \label{fig:typing-rules}
 \end{figure}
 
 \section{Type checking with constraints}
 \label{sec:typechecking}
 
-We present a type checking procedure that uses a logic-programming engine to solve subtyping constraints.
+We present a type checking procedure based on generating and solving subtyping constraints.
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
-Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure \ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
+Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
 \todoHenry{Need to enforce that R and r are linked to this \textit{appearance} of $\omega$. I could add position annotations to all terms and subtype constraints, but that's quite verbose, so I should probably just say this in prose somewhere.}
 
@@ -740,9 +758,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \label{fig:datatype-contructor-type-inference-rules}
 \end{figure}
 
-\subsection{Constraint generation}
-
-Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure \ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
 This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of axioms and $\mathcal{C}$ is a set of goals.
 Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
 The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
@@ -886,7 +902,7 @@ the definition of subtyping as a partial order.
 
 \newcommand{\decproccata}[1]{
   \inferrule[#1]{
-    B <:: D \quad
+    B <:: \sMu{D} \quad
     A <:: C
   }{
     D \sAlg A <:: B \sArr C
@@ -1229,6 +1245,13 @@ pass between various abstract types.  These would be excellent
 candidates for inference using coercive subtyping, as we proposed in
 this paper.  It would also be interesting to infer coercions for
 coalgebraic programming with coinductive types.
+
+\appendix
+
+\section{Typing rules}
+\label{app:typing-rules}
+
+\todoHenry{full typing rules}
 
 % Richer patterns of recursion, as in POPL 2023 paper
 
