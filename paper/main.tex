@@ -345,14 +345,14 @@ Agda.  To summarize the contributions:
   \begin{subfigure}[t]{1.0\textwidth}
   \begin{verbatim}
 sub : μ Nat → Nat ⇒ μ Nat =
-  λ m . ω sub'(n) . γ n .
+  λ (m : μ Nat) . ω sub'(n) . γ n .
     { Zero → m
     | Suc(n') → γ unroll(sub' n') .
         { Zero → roll(Zero)
         | Suc(m') → m' } }
 
 subs : NatList ⇒ μ NatList → μ NatList =
-  ω subs'(l1) . λ l2 . γ l1 .
+  ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
     { Nil → Nil
     | Cons(h1, t1) → γ unroll(l2) .
         { Nil → roll(Nil)
@@ -457,7 +457,7 @@ support algebraic programming like this with lighter syntax?
       & ::= &
       x \mid
       k(\overline{a,}) \mid
-      \lambda x . b \mid
+      \lambda (x : A) . b \mid
       (f ~ a) \mid
       \omega f(x) . b \mid
       \\[0.25em] &&&
@@ -563,10 +563,9 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }
 
     \inferrule[Lam]{
-      \freshMetavariables{X} \qquad
-      \Gamma, (x : X) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }{
-      \Gamma \vdash \lambda x . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma \vdash \lambda (x : A) . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
     }
 
     \inferrule[App]{
@@ -1201,14 +1200,14 @@ Now, with the machinery of coercive subtyping in place, we can write those examp
 
   \begin{verbatim}
 sub : μ Nat → Nat ⇒ μ Nat
-sub = λ m . ω sub'(n) . γ n .
+sub = λ (m : μ Nat) . ω sub'(n) . γ n .
   { Zero → m
   | Suc(n') → γ sub' n' .
     { Zero → Zero
     | Suc(m') → m' } }
 
 subs : NatList ⇒ μ NatList → μ NatList
-subs = ω subs'(l1) . λ l2 . γ l1 .
+subs = ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
   { Nil → Nil
   | Cons(h1, t1) → γ l2 .
     { Nil → Nil
