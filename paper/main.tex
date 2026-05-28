@@ -355,9 +355,9 @@ subs : NatList ⇒ μ NatList → μ NatList =
   ω subs'(l1) . λ l2 . γ l1 .
     { Nil → Nil
     | Cons(h1, t1) → γ unroll(l2) .
-        { Nil → coerce roll Nil
+        { Nil → roll(Nil)
         | Cons(h2, t2) →
-            coerce roll Cons(cata(sub h1) h2, subs' t1 t2) } }
+            roll(Cons(cata(sub h1) h2, subs' t1 t2)) } }
   \end{verbatim}
   \end{subfigure}
   \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions. Here \texttt{roll}, \texttt{unroll}, and \texttt{cata} abbreviate \texttt{roll id}, \texttt{unroll id}, and \texttt{cata id id}.}
