@@ -99,89 +99,6 @@
 \raggedbottom
 %%\unnumbered% uncomment this for unnumbered level heads
 
-\newcommand{\gsep}{\mspace{8mu}\lvert\mspace{8mu}}
-
-% types
-\newcommand{\sBool}{\textit{Bool}}
-\newcommand{\sNat}{\textit{Nat}}
-\newcommand{\sNatList}{\textit{NatList}}
-\newcommand{\sAlg}{\Rightarrow}
-\newcommand{\sArr}{\to}
-\newcommand{\sFunctorApp}[2]{#1 ~ #2} % spaced
-% \newcommand{\sFunctorApp}[2]{#1(#2)} % parenthesized
-\newcommand{\sMu}[1]{\mu #1}
-\newcommand{\sFunctorConSig}[3]{(#1) \sArr \sFunctorApp{#2}{#3}}
-\newcommand{\sCoerceSig}[2]{#1 <:: #2}
-% terms
-\newcommand{\sLet}[3]{\text{let}~ #1 = #2 ~\text{in}~ #3}
-% \newcommand{\sCoerce}[2]{\text{coerce}~ #1 ~ #2}
-\newcommand{\sCoerce}[2]{#1(#2)}
-% coercions
-\newcommand{\sCata}[2]{\text{cata}~ #1 ~ #2}
-\newcommand{\sRoll}[1]{\text{roll}~ #1}
-\newcommand{\sUnroll}[1]{\text{unroll}~ #1}
-\newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
-\newcommand{\sSubData}[1]{\text{id}[\sMu{#1}]}
-\newcommand{\sSubArr}[2]{\text{arr}~ #1 ~ #2}
-\newcommand{\sSubAlg}[2]{\text{alg}[#1] ~ #2}
-\newcommand{\sSubRecVar}[1]{\text{id}[#1]}
-% constructors
-\newcommand{\sTrue}{\textit{True}}
-\newcommand{\sFalse}{\textit{False}}
-\newcommand{\sZero}{\textit{Zero}}
-\newcommand{\sSuc}{\textit{Suc}}
-\newcommand{\sNil}{\textit{Nil}}
-\newcommand{\sCons}{\textit{Cons}}
-
-% helpers
-\newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
-\newcommand{\isDatatype}[1]{#1 ~\text{data}}
-\newcommand{\atPos}[1]{^{#1}}
-\newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
-% \newcommand{\atPos}[1]{}
-
-\newcommand{\Match}{\textbf{match }}
-\newcommand{\With}{\textbf{ with}}
-\newcommand{\Case}{\textbf{case }}
-\newcommand{\Func}[1]{\textsc{#1}}
-
-\newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
-
-% \newcommand{\todoHenry}[1]{%
-%   \begin{tcolorbox}[
-%       colback=olive!15,     % Light olive background
-%       colframe=olive!50,    % Muted olive border
-%       arc=0mm,            % Sharp corners
-%       boxrule=0.5pt,      % Border thickness
-%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
-%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
-%     ]
-%     \todo{Henry}
-%     \\[1em]
-%     #1
-%   \end{tcolorbox}%
-% }
-\newcommand{\todoHenry}[1]{%
-  \todo{Henry}: #1%
-}
-
-% \newcommand{\todoAaron}[1]{%
-%   \begin{tcolorbox}[
-%       colback=blue!15,     % Light blue background
-%       colframe=blue!50,    % Muted blue border
-%       arc=0mm,            % Sharp corners
-%       boxrule=0.5pt,      % Border thickness
-%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
-%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
-%     ]
-%     \todo{Aaron}
-%     \\[1em]
-%     #1
-%   \end{tcolorbox}%
-% }
-\newcommand{\todoAaron}[1]{%
-  \todo{Aaron}: #1%
-}
 
 \include{definitions}
 
@@ -255,19 +172,19 @@ number of layers.  We may unroll $\mu F$ to $F\ (\mu F)$, and roll it
 back again.  Algebras interpret the operations declared for one layer
 of the data, and catamorphisms apply algebras across all the layers.
 There is no other mechanism for recursion or looping in the language,
-leading leading to a strong guarantee: all functions written in this
+leading  to a strong guarantee: all functions written in this
 style terminate.
 
 One burden is the need to include calls to roll and unroll functors,
 and to $\cata{-}$, in code.  This adds clutter, compared to regular
 functional programming.  In this paper, we address this problem by
 automatically inserting those coercions wherever they are needed in
-code.  The resulting code that looks indistinguishable from regular
+code.  The resulting code looks indistinguishable from regular
 pure-functional code, and yet falls within the algebraic style, thus
 assuring termination.  To insert these calls automatically, we turn to
 \emph{coercive subtyping}.  The type checker generates subtyping
 constraints that need to hold, in order for the term to be well-typed.
-The constraints are then processed by a constraint solver, generating
+The constraints are processed by a constraint solver, generating
 coercions that are then inserted at the places where the subtyping
 constraints were generated.
 
@@ -279,20 +196,20 @@ search via unification.  The rules for rolling and unrolling
 signatures would, if handled naively, lead to diverging proof search.
 Instead, Chronolog provides a mechanism to indicate that certain
 problematic goals should be suspended.  These suspended goals may be
-resumed if they are instantiated enough during solving of other goals.
+resumed if they are instantiated during solving of other goals.
 If not, an outer loop of our algorithm handles them by simply equating
-the lower and upper bound of the subtyping constraints.
+the lower and upper bound of the subtyping constraints.  We prove
+that solving in this manner terminates.
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
 nondeterministically guesses $B$ with $A <: B$ and $B <: C$, to solve
 $A <: C$.  We identify (Section~\ref{sec:subtyping}) an algorithmic
 set of subtyping rules, without transitivity, and prove it equivalent
-to the declarative rules.  This both ensures we can use logic
+in Agda to the declarative rules.  This both ensures we can use logic
 programming (with our algorithmic rules) to solve these subtyping
 constraints, and also assures us that the algorithmic rules are indeed
-correct.  This proof of equivalence has been formalized and checked in
-Agda.  To summarize the contributions:
+correct.  To summarize the contributions:
 \begin{itemize}
   \item We propose a new approach to total algebraic programming,
     where calls for rolling and unrolling signature functors
@@ -300,102 +217,48 @@ Agda.  To summarize the contributions:
     subtyping.
   \item We realize this approach with constraint-generating typing,
     and a constraint solver based on logic programming, modified
-    to avoid infinite unrolling of functors.
+    to avoid infinite unrolling of functors. We prove termination of
+    this algorithm.
   \item We propose an algorithmic subtyping system, and prove it
     equivalent to the declarative one in Agda.
 \end{itemize}
 
-\section{Motivating examples}
-\label{sec:motivating-examples}
-
-% [Note]: this is the old Haskell example
-% \begin{subfigure}[t]{0.45\textwidth}
-%     \centering
-%     \begin{verbatim}
-% sub :: Nat -> Nat -> Nat
-% sub m n = case n of
-%   Zero -> m
-%   Suc n' -> case sub n' of
-%     Zero -> Zero
-%     Suc m' -> m'
-
-% subs :: [Nat] -> [Nat] -> [Nat]
-% subs l1 l2 = case l1 of
-%   Nil -> Nil
-%   Cons h1 t1 -> case t1 of
-%     Nil -> Nil
-%     Cons h2 t2 ->
-%       Cons (sub h1 h2, subs t1 t2)
-%     \end{verbatim}
-%     \caption{Haskell}
-%     \label{fig:example-subs-haskell}
-%   \end{subfigure}
-
-\begin{figure}[H]
-  \centering
-
-  % sub h1 expected type is μNatList -> μNatList
-  % sub h1 inferred type is NatList => μNatList
-  % D := NatList
-  % A := μNatList
-  % B := μNatList
-  % C := μNatList
-  % B <:: μD <--> μNatList <:: μNatList
-  % A <:: C <--> μNatList <:: μNatList
-  \begin{subfigure}[t]{1.0\textwidth}
-  \begin{verbatim}
-sub : μ Nat → Nat ⇒ μ Nat =
-  λ m . ω sub'(n) . γ n .
-    { Zero → m
-    | Suc(n') → γ unroll(sub' n') .
-        { Zero → roll(Zero)
-        | Suc(m') → m' } }
-
-subs : NatList ⇒ μ NatList → μ NatList =
-  ω subs'(l1) . λ l2 . γ l1 .
-    { Nil → Nil
-    | Cons(h1, t1) → γ unroll(l2) .
-        { Nil → coerce roll Nil
-        | Cons(h2, t2) →
-            coerce roll Cons(cata(sub h1) h2, subs' t1 t2) } }
-  \end{verbatim}
-  \end{subfigure}
-  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions. Here \texttt{roll}, \texttt{unroll}, and \texttt{cata} abbreviate \texttt{roll id}, \texttt{unroll id}, and \texttt{cata id id}.}
-  \label{fig:example-subs-algebraic-with-coercions}
-\end{figure}
-
-Figure~\ref{fig:example-subs-algebraic-with-coercions} shows code with
-explicit coercions, for two functions.  The \verb|sub| function
-subtracts two natural numbers, and \verb|subs| proceeds through a two
-lists of numbers, subtracting corresponding elements.  So subtracting
-the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
-$[7,7,7]$, for example.  Let us see how these use the different kinds
-of coercions.  The \verb|sub| function takes in the minuend \verb|m|
-and returns an algebra, which can be used to recurse through the
-subtrahend \verb|n|.  The code uses a $\gamma$-term to match on
-\verb|n|, returning \verb|m| in the \verb|Zero| case.  In the
-\verb|Suc(n')| case, we recursively subtract \verb|n'| (from
-\verb|m|).  This requires unrolling the signature functor with a call
-to \verb|unroll|.  The coercion is actually \verb|unroll id|, where
-\verb|id| represents that there is no further coercion under this
-unrolling.  The code matches on this result.  In the \verb|Zero| case,
-the code returns \verb|Zero|.  Constructors' return types are
-applications of signature functors.  Here, \verb|Zero| can be given
-type \verb|Nat (μ Nat)|, which is then coerced to \verb|μ Nat| by
-\verb|roll|.  The function \verb|subs| does similar rolling and
-unrolling, but also invokes subtraction (\verb|sub|).  Since
-\verb|sub| returns an algebra, the code uses \verb|cata| to coerce
-that to the function which accepts the subtrahend.
-
-While these functions have the desirable property that they are
-guaranteed to terminate on all inputs, we are sure the reader will
-agree that the code is rather burdened with the need to call these
-coercions.  This raises the question we address in this paper: can we
-support algebraic programming like this with lighter syntax?
 
 \section{Syntax}
 
-\todoAaron{Write prose to introduce syntax of langauge}
+Figure~\ref{fig:syntax} presents the syntax for the language $\lcata$,
+through which we study coercion inference for algebraic programming.
+We use notation $\overline{e\ \oplus}$ where $\oplus$ is a syntactic
+operator, to indicate a $\oplus$-separated list of expressions $e$.
+Datatypes $D$ are described as least fixed points of signature
+functors $F$, which we take to be polynomial functors for simplicity.
+Types feature least fixed points $\mu\ D$ of signature functors
+(referenced by datatype name $D$), as well as usual function types 
+$A \to B$.  Types $D \To B$ are the types for algebras over $\mu\ D$
+computing a value of type $B$, the carrier of the algebra.  Type variables $R$
+are introduced in the bodies of algebras.
+
+Terms include the usual constructs of simply typed $\lambda$-calculus.
+There are also constructor applications $k(\overline{a})$, and simple
+pattern-matching with notation $\gamma a . \{
+\overline{k(\overline{x,}) \mapsto b ~ |} \}$, where the value of $a$
+is matched against constructor patterns $k(\overline{x,})$.  For
+totality, all constructors for $a$'s datatype must be covered.
+We distinguish applications $c(a)$ of coercions $c$, which include
+rolling, unrolling, and catamorphizing.  Coercions will be
+explained with their typing rules in Section~\ref{sec:typechecking}.
+
+Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
+algebras~\cite{uustalu99}.  With this style, an algebra is presented
+with a function $f$ from $R$ to the carrier $B$ of the algebra.  $R$
+is an abstract type introduced in the algebra.  The input $x$ has type
+$D\ R$, where $D$ is the signature functor of the algebra.  The body
+$b : B$ may pattern-match on $x$ and apply $f$ to subdata of type $R$
+that are revealed.  One benefit over conventional $F$-algebras is that
+calling $f$ to recurse makes algebras appear very similar to
+conventional recursive functional programs, albeit with more abstract
+typing.
+
 
 \begin{figure}[htb]
   \centering
@@ -449,7 +312,7 @@ support algebraic programming like this with lighter syntax?
       \sMu{D} \mid
       \sFunctorApp{D}{A} \mid
       A \sArr B \mid
-      A \sAlg B
+      D \sAlg B
       \\[0.5em]
       %
       \text{(Terms)} &
@@ -479,6 +342,8 @@ support algebraic programming like this with lighter syntax?
       \sSubRecVar{R}
     \end{array}
   \end{align*}
+\caption{Syntax of $\lcata$}
+\label{fig:syntax}
 \end{figure}
 
 A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is its name and $F$ is its signature functor \todoHenry{cite original work on defining datatypes as fixed points of signature functors}.
@@ -491,6 +356,103 @@ For examples presented in this paper, we define the following set of datatypes.
 \end{align*}
 
 \todoHenry{note that type variables only appear in constraints, but all types inferred and that you can write in the langauge should be concrete (variable-free)}
+
+\section{Motivating examples}
+\label{sec:motivating-examples}
+
+% [Note]: this is the old Haskell example
+% \begin{subfigure}[t]{0.45\textwidth}
+%     \centering
+%     \begin{verbatim}
+% sub :: Nat -> Nat -> Nat
+% sub m n = case n of
+%   Zero -> m
+%   Suc n' -> case sub n' of
+%     Zero -> Zero
+%     Suc m' -> m'
+
+% subs :: [Nat] -> [Nat] -> [Nat]
+% subs l1 l2 = case l1 of
+%   Nil -> Nil
+%   Cons h1 t1 -> case t1 of
+%     Nil -> Nil
+%     Cons h2 t2 ->
+%       Cons (sub h1 h2, subs t1 t2)
+%     \end{verbatim}
+%     \caption{Haskell}
+%     \label{fig:example-subs-haskell}
+%   \end{subfigure}
+
+\begin{figure}[H]
+  \centering
+
+  % sub h1 expected type is μNatList -> μNatList
+  % sub h1 inferred type is NatList => μNatList
+  % D := NatList
+  % A := μNatList
+  % B := μNatList
+  % C := μNatList
+  % B <:: μD <--> μNatList <:: μNatList
+  % A <:: C <--> μNatList <:: μNatList
+  \begin{subfigure}[t]{1.0\textwidth}
+  \begin{verbatim}
+sub : μ Nat → Nat ⇒ μ Nat =
+  λ m . ω sub'(n) . γ n .
+    { Zero → m
+    | Suc(n') → γ (unroll id) - (sub' n') .
+        { Zero → (roll id) - (Zero)
+        | Suc(m') → m' } }
+
+subs : NatList ⇒ μ NatList → μ NatList =
+  ω subs'(l1) . λ l2 . γ l1 .
+    { Nil → Nil
+    | Cons(h1, t1) → γ (unroll id) - (l2) .
+        { Nil → (roll id) - Nil
+        | Cons(h2, t2) →
+          (roll id) -
+            (Cons((cata id id) - sub h1 h2, subs' t1 t2)) } }
+  \end{verbatim}
+  \end{subfigure}
+  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions. }
+  \label{fig:example-subs-algebraic-with-coercions}
+\end{figure}
+
+Figure~\ref{fig:example-subs-algebraic-with-coercions} shows code with
+explicit coercions, for two functions.  The \verb|sub| function
+subtracts two natural numbers, and \verb|subs| proceeds through a two
+lists of numbers, subtracting corresponding elements.  So subtracting
+the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
+$[7,7,7]$, for example.  Let us see how these use the different kinds
+of coercions.  The \verb|sub| function takes in the minuend \verb|m|
+and returns an algebra, which can be used to recurse through the
+subtrahend \verb|n|.  The code matches (with $\gamma$) on \verb|n|,
+returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
+case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
+algebras are Mendler-style, the type of \verb|sub'| is
+\verb|R → μ Nat|, where \verb|R| is the abstract type introduced by
+the algebra.  The input $n$ has type \verb|Nat R|, and so its subdatum
+\verb|n'| has type \verb|R|.  So the call \verb|sub' n'| is
+well-typed.  To pattern-match on the output of this call requires
+unrolling \verb|μ Nat| with \verb|unroll id|.  The \verb|id| is
+the identity coercion, indicating that the subtyping is only happening
+at the top level of the type.  In the \verb|Zero| case of this match
+on unrolled \verb|sub' n'|, the code returns \verb|Zero|.
+Constructors' return types are applications of signature functors.
+Here, \verb|Zero| can be given type \verb|Nat (μ Nat)|, which is then
+coerced to \verb|μ Nat| by \verb|roll|.  The function \verb|subs| does
+similar rolling and unrolling, but also invokes subtraction
+(\verb|sub|).  Since \verb|sub| returns an algebra, the code uses
+\verb|cata| to coerce that to the function which accepts the
+subtrahend.
+
+Thanks to the restrictions imposed by Mendler-style algebras, these
+functions have the desirable property that they are guaranteed to
+terminate on all inputs.  Nevertheless, we expect the reader will
+agree that the code is rather burdened with coercions.  This
+raises the question we address in this paper: can we support algebraic
+programming like this with lighter syntax?  We return with our
+positive answer for these examples in
+Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 
 \section{Typing}
 \label{sec:typing}

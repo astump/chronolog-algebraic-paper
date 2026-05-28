@@ -79,3 +79,90 @@
 %     }
 \newcommand{\shift}[2]{{\uparrow^{#1}_{#2}}}
 \newcommand{\textblue}[1]{\textcolor{blue}{#1}}
+
+\newcommand{\lcata}[0]{\ensuremath{\mathcal{L}_{\textit{cata}}}}
+
+
+\newcommand{\gsep}{\mspace{8mu}\lvert\mspace{8mu}}
+
+% types
+\newcommand{\sBool}{\textit{Bool}}
+\newcommand{\sNat}{\textit{Nat}}
+\newcommand{\sNatList}{\textit{NatList}}
+\newcommand{\sAlg}{\Rightarrow}
+\newcommand{\sArr}{\to}
+\newcommand{\sFunctorApp}[2]{#1 ~ #2} % spaced
+% \newcommand{\sFunctorApp}[2]{#1(#2)} % parenthesized
+\newcommand{\sMu}[1]{\mu #1}
+\newcommand{\sFunctorConSig}[3]{(#1) \sArr \sFunctorApp{#2}{#3}}
+\newcommand{\sCoerceSig}[2]{#1 <:: #2}
+% terms
+\newcommand{\sLet}[3]{\text{let}~ #1 = #2 ~\text{in}~ #3}
+% \newcommand{\sCoerce}[2]{\text{coerce}~ #1 ~ #2}
+\newcommand{\sCoerce}[2]{#1 - #2}
+% coercions
+\newcommand{\sCata}[2]{\text{cata}~ #1 ~ #2}
+\newcommand{\sRoll}[1]{\text{roll}~ #1}
+\newcommand{\sUnroll}[1]{\text{unroll}~ #1}
+\newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
+\newcommand{\sSubData}[1]{\text{id}[\sMu{#1}]}
+\newcommand{\sSubArr}[2]{\text{arr}~ #1 ~ #2}
+\newcommand{\sSubAlg}[2]{\text{alg}[#1] ~ #2}
+\newcommand{\sSubRecVar}[1]{\text{id}[#1]}
+% constructors
+\newcommand{\sTrue}{\textit{True}}
+\newcommand{\sFalse}{\textit{False}}
+\newcommand{\sZero}{\textit{Zero}}
+\newcommand{\sSuc}{\textit{Suc}}
+\newcommand{\sNil}{\textit{Nil}}
+\newcommand{\sCons}{\textit{Cons}}
+
+% helpers
+\newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
+\newcommand{\isDatatype}[1]{#1 ~\text{data}}
+\newcommand{\atPos}[1]{^{#1}}
+\newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
+% \newcommand{\atPos}[1]{}
+
+\newcommand{\Match}{\textbf{match }}
+\newcommand{\With}{\textbf{ with}}
+\newcommand{\Case}{\textbf{case }}
+\newcommand{\Func}[1]{\textsc{#1}}
+
+\newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
+
+% \newcommand{\todoHenry}[1]{%
+%   \begin{tcolorbox}[
+%       colback=olive!15,     % Light olive background
+%       colframe=olive!50,    % Muted olive border
+%       arc=0mm,            % Sharp corners
+%       boxrule=0.5pt,      % Border thickness
+%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+%     ]
+%     \todo{Henry}
+%     \\[1em]
+%     #1
+%   \end{tcolorbox}%
+% }
+\newcommand{\todoHenry}[1]{%
+  \todo{Henry}: #1%
+}
+
+% \newcommand{\todoAaron}[1]{%
+%   \begin{tcolorbox}[
+%       colback=blue!15,     % Light blue background
+%       colframe=blue!50,    % Muted blue border
+%       arc=0mm,            % Sharp corners
+%       boxrule=0.5pt,      % Border thickness
+%       left=6pt, right=6pt, top=6pt, bottom=6pt, % Inner padding
+%       before=\par\smallskip, after=\par\smallskip % Paragraph-like spacing
+%     ]
+%     \todo{Aaron}
+%     \\[1em]
+%     #1
+%   \end{tcolorbox}%
+% }
+\newcommand{\todoAaron}[1]{%
+  \todo{Aaron}: #1%
+}
