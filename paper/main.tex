@@ -377,8 +377,8 @@ datatypes.
   % A := μNatList
   % B := μNatList
   % C := μNatList
-  % B <:: μD <--> μNatList <:: μNatList
-  % A <:: C <--> μNatList <:: μNatList
+  % B \subtypeA μD <--> μNatList \subtypeA μNatList
+  % A \subtypeA C <--> μNatList \subtypeA μNatList
   \begin{subfigure}[t]{1.0\textwidth}
   \begin{verbatim}
 sub : μ Nat → Nat ⇒ μ Nat =
@@ -530,7 +530,7 @@ Operationally, these coercions are reified as explicit function applications whi
     }
 
     \inferrule[App]{
-      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
+      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B \subtypeA A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
       \freshMetavariables{X} \qquad
       \Gamma \vdash f : B \gsep \constraints_f \qquad
       \Gamma \vdash a : A \gsep \constraints_a
@@ -540,7 +540,7 @@ Operationally, these coercions are reified as explicit function applications whi
     }
 
     \inferrule[Gamma]{
-      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
+      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C \subtypeA D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i \subtypeA Y for the outputs of each branch which are the B_i
       \freshMetavariables{X, Y} \qquad
       \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+} \rangle \in \datatypes
       \\\\
@@ -1023,13 +1023,6 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 
 \subsection{Constraint solving with Chronolog}
 
-\todoHenry{Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
-}
-
-\todoHenry{Some of these coercions may end up being the identity function (if the justified  subtyping relation is of the form $A <:: A$), or semantically equivalent to the identity (in the case of \textsyntax{roll} and \textsyntax{unroll}, which are used only for typing but are semantically interpreted as teh identity).
-So, there are many syntactically different ways to solve a set of subtyping constraints.
-We define an equivalence relation $\sim$ over solutions where two solutions are related if they result in semantically equivalent terms when applied to the term that generated the constraints}
-
 We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
 Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed constraints in Prolog-style logic PLs}
 Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
@@ -1047,9 +1040,15 @@ We use a meta-predicate for $S$ that holds of the following forms of constraints
 \end{mathpar}
 Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to constraints not of suspended forms.
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
-This allows Chronolog, for example, to attempt to solve constraints of the form $X \subtypeA A \sArr B$ with both $\IRule{Arr}$ and $\IRule{Cata}$, or to attempt to solve constraints of the form $A \sAlg B \subtypeA X$ with both $\IRule{Alg}$ and $\IRule{Cata}$.
+Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
+This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
+This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
+Each solution corresponds to a specific set of derivations for the original subtyping constraints, where each derivation can be interpreted as a coercion justifying the corresponding subtyping relation.
 
-\todoHenry{mention that \Func{Solve} is nondeterministic}
+We introduce an equivalence relation, denoted $\sim$, over the space of solutions: two solutions are deemed $\sim$-equivalent if their application to the term that originally generated the constraints yields semantically equivalent terms.
+We posit that all solutions discovered by \Func{Solve} reside within a single $\sim$-equivalence class: $\forall \sigma, \sigma' \in \Func{Solve}(\constraints), \sigma \sim \sigma'$.
+To illustrate, certain coercions manifest as the identity function (for instance, when justifying a reflexive relation of the form $A \subtypeA A$) or are semantically equivalent to the identity (such as \textsyntax{roll} and \textsyntax{unroll}, which serve strictly as static typing markers and erase to identities dynamically).
+Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via distinct compositions of subtyping rules, or that employ \IRule{Roll} and \IRule{Unroll} in varying permutations, uniformly collapse into the same $\sim$-equivalence class.
 
 \begin{algorithm}[htb]
   \caption{Constraint solving with Chronolog.}
@@ -1112,10 +1111,10 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
 
 \begin{lemma}[Completeness of \Func{Solve}]
   \label{lem:solver-completeness}
-  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\exists \sigma' \in \eqClass{\sigma}{\sim}$ such that $\sigma' \in \Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}).
+  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\eqClass{\sigma}{\sim} \cap \Func{Solve}(\constraints) \neq \varnothing$.
 \end{lemma}
 \begin{proof}
-  \Func{Solve} will finds all solutions (up to permutations of \IRule{Roll} and \IRule{Unroll}) to $\constraints$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by theorem \ref{lem:solver-termination}.
+  \Func{Solve} finds all solutions to $\constraints$ up to $\sim$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by Theorem \ref{lem:solver-termination}.
 \end{proof}
 
 While there may be multiple solutions to $\constraints$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \IRule{Roll} and \IRule{Unroll} \todoHenry{justify this claim}.
