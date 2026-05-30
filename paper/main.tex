@@ -345,19 +345,20 @@ recursive functional programs, albeit with more abstract typing.
 \label{fig:syntax}
 \end{figure}
 
+Throughout the remainder of this paper, we implicitly constrain each metavariable to range exclusively over the valid syntactic forms defined by its corresponding production in Figure~\ref{fig:syntax}.
+
 A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is
 its name and $F$ is its signature functor.  This approach was proposed
 and developed in early works like~\cite{hagino87,goguen+77}.  For
 examples presented in this paper, we define the following set of
 datatypes.
 \begin{align*}
-  \datatypes = \{
+  \datatypes := \{
     & \langle \sNat , \mu X . \sZero + \sSuc(X) \rangle, \\
     & \langle \sNatList, \mu X . \sNil + \sCons(\sMu\sNat \times X) \rangle
   \}
 \end{align*}
 
-\todoHenry{note that throughout the rest of the document, we implicitly restrict variables to range over their appropriate syntactic kinds as defined in the grammar above, for example $R$ only ranges over $\sRecVar{f}}$.
 \todoHenry{note that type variables only appear in constraints, but all types inferred and that you can write in the langauge should be concrete (variable-free)}
 \todoHenry{make sure that all overlines use proper separator}
 
@@ -728,7 +729,7 @@ Here is where the constraints are introduced.
 
 We begin with the declarative subtyping rules corresponding to the
 coercions of Figure~\ref{fig:coercion-typing-rules}, and then
-propose an algorithmic version, where all meta-variables in the
+propose an algorithmic version, where all metavariables in the
 premises of the rule are already present in the conclusion, and the
 sizes of the constraints decrease.  This ensures that SLD resolution
 will not diverge on ground constraints.  We prove that the two sets
