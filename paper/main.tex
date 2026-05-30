@@ -1098,8 +1098,8 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
     \Return $\sigma'$
     % \Statex
     \State \quad \Case $\langle \text{``progress''}, \sigma', \constraints' \rangle \Rightarrow$
-    \State \qquad $\mathit{constraint} \gets \Func{Sample}(\constraints')$
-    \State \qquad $\sigma \gets \Func{Refine}(\mathit{constraint}) \circ \sigma'$
+    \State \qquad $c \gets \Func{Sample}(\constraints')$
+    \State \qquad $\sigma \gets \Func{Refine}(c) \circ \sigma'$
     \State \qquad $\constraints \gets \sigma(\constraints')$
     \State \EndMatch
     \EndWhile
@@ -1121,9 +1121,9 @@ The choice of which suspended constraint to process may affect the order in whic
   \end{array}
 \end{mathpar}
 
-\begin{lemma}[Termination]
+\begin{lemma}[Termination of \Func{Solve}]
   \label{lem:solver-termination}
-  For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ terminates.
+  For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
   We show termination by demonstrating a strictly decreasing metric over each iteration of the loop in \Func{Solve}.
@@ -1135,9 +1135,9 @@ The choice of which suspended constraint to process may affect the order in whic
   When $\Func{Refine}(\textit{constraint})$ increases the size of constraints in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \Func{Chronolog} will strictly decrease the size of these constraints again immediately, as follows from a case analysis on all the possible results of applying $\Func{Refine}(\textit{constraint})$ to suspended constraints.
 \end{proof}
 
-\begin{lemma}[Completeness]
+\begin{lemma}[Completeness of \Func{Solve}]
   \label{lem:solver-completeness}
-  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\exists \sigma' \in \eqClass{\sigma}{\sim}$ such that $\sigma' \in \Func{Solve}(\constraints)$.
+  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\exists \sigma' \in \eqClass{\sigma}{\sim}$ such that $\sigma' \in \Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}).
 \end{lemma}
 \begin{proof}
   \Func{Solve} will finds all solutions (up to permutations of \IRule{Roll} and \IRule{Unroll}) to $\constraints$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by theorem \ref{lem:solver-termination}.
@@ -1160,7 +1160,7 @@ Furthermore, solutions related by this equivalence, when applied as coercion ins
   \end{algorithmic}
 \end{algorithm}
 
-\begin{theorem}
+\begin{theorem}[Completeness of \Func{TypeCheck}]
   \label{thm:type-checker-completeness}
   If $\Gamma \vdash a : A$ according to the declarative typing rules for \lcata displayed in Figure~\ref{fig:typing-rules}, then $\Func{TypeCheck}(\Gamma, a, A)$ (Algorithm~\ref{alg:type-checker}) accepts.
 \end{theorem}
