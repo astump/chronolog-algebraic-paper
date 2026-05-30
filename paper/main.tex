@@ -516,7 +516,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     \inferrule[Var]{
       (x : A) \in \Gamma
     }{
-      \Gamma \vdash x : A \gsep \varnothing \implies \varnothing
+      \Gamma \vdash x : A \gsep \varnothing
     }
 
     \inferrule[Con]{
@@ -525,25 +525,25 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       % (k : \sFunctorConSig{\overline{B_i,}}{D}{X}) \in \mathscr{K}(D, X) \qquad
       % \constructorOf{k}{\overline{B_i,}}{D}{X} \qquad
       \langle D, \mu Y . \dots + k(\overline{B_i ~\times}) + \dots \rangle \in \mathscr{D} \qquad
-      \overline{\Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{A}_{a_i} \implies \mathcal{C}_{a_i}}
+      \overline{\Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{C}_{a_i}}
     }{
-      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_i (\{ A_i <::\atPos{p_i} B_i[X \mapsto Y] \} \cup \mathcal{A}_{a_i}) \implies \bigcup_{i} \mathcal{C}_{a_i}
+      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} \mathcal{C}_{a_i}
     }
 
     \inferrule[Lam]{
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma, (x : A) \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \lambda (x : A) . b : X \sArr B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma \vdash \lambda (x : A) . b : X \sArr B \gsep \mathcal{C}_b
     }
 
     \inferrule[App]{
       % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
       \freshMetavariables{X} \qquad
-      \Gamma \vdash f : B \gsep \mathcal{A}_f \implies \mathcal{C}_f \qquad
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+      \Gamma \vdash f : B \gsep \mathcal{C}_f \qquad
+      \Gamma \vdash a : A \gsep \mathcal{C}_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \{ B <:: A \sArr X \} \cup \mathcal{A}_f \cup \mathcal{A}_a \implies \mathcal{C}_f \cup \mathcal{C}_a
+      \{ B <:: A \sArr X \} \cup \mathcal{C}_f \cup \mathcal{C}_a
     }
 
     \inferrule[Gamma]{
@@ -551,18 +551,15 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \freshMetavariables{X, Y} \qquad
       \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \mathscr{D}
       \\\\
-      \Gamma \vdash a : C \gsep \mathcal{A}_a \implies \mathcal{C}_a
+      \Gamma \vdash a : C \gsep \mathcal{C}_a
       \qquad
       % (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
       % \\\\
-      % (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
-      % \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
-      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C]} \vdash b_i : B_i \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}}
+      % (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}
+      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C]} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}
     }{
       \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
       \gsep
-      \mathcal{A}_a \cup \bigcup_i \mathcal{A}_{b_i}
-      \implies
       \{ C <:: \sFunctorApp{D}{X} \} \cup
       \mathcal{C}_a \cup
       \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
@@ -570,28 +567,26 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 
     \inferrule[Omega]{
       \freshMetavariables{R, r} \qquad
-      \Gamma, (R : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma, (R : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{A}_b \cup \{ R <:: R \} \implies \mathcal{C}_b
+      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{C}_b
     }
 
     \inferrule[Let]{
-      \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a \qquad
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{A}_b \implies \mathcal{C}_b
+      \Gamma \vdash a : A \gsep \mathcal{C}_a \qquad
+      \Gamma, (x : A) \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet{x}{A}{a}{b} : B \gsep
-      \mathcal{A}_a \cup \mathcal{A}_b \implies \mathcal{C}_a \cup \mathcal{C}_a
+      \Gamma \vdash \sLet{x}{A}{a}{b} : B \gsep \mathcal{C}_a \cup \mathcal{C}_b
     }
 
     % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
     % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
     % \inferrule[InferCoe]{
     %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-    %   \Gamma \vdash a : A \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    %   \Gamma \vdash a : A \gsep \mathcal{C}_a
     % }{
-    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{A}_a \implies \mathcal{C}_a
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{C}_a
     % }
-
   \end{mathpar}
 
   \caption{Constraint generation rules.}
@@ -702,14 +697,14 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 %   \label{fig:datatype-contructor-type-inference-rules}
 % \end{figure}
 
-Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$.
-This is a usual typing judgment augmented with a constraint problem $\mathcal{A} \implies \mathcal{C}$, where $\mathcal{A}$ is a set of axioms and $\mathcal{C}$ is a set of goals.
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{C}$.
+This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of goals.
 Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
-The system is designed such that a solution to $\mathcal{A} \implies \mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
+The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
 
 The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
-A derivation $\Gamma \vdash a : A \mid \mathcal{A} \implies \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{A} \implies \mathcal{C}$ is solvable.
+A derivation $\Gamma \vdash a : A \mid \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{C}$ is solvable.
 
 For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
 
@@ -720,10 +715,6 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
 \todoHenry{Note that $R <:: R$ corresponds to identity coercion $\sSubRecVar{R}$}
 
 \begin{mathpar}
-  \{
-    R <:: R
-  \}
-  \implies
   \{
     % X is domain of λ m ...
     % R is the recursive type var for omega
@@ -1074,7 +1065,7 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 
 \subsection{Constraint solving with Chronolog}
 
-We take a logic-programming approach to solving problems $\mathcal{A} \implies \mathcal{C}$ in such a way that calculates the coercions that justify the generated subtyping relations.
+We take a logic-programming approach to solving problems $\mathcal{C}$ in such a way that calculates the coercions that justify the generated subtyping relations.
 Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for goal suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed goals in Prolog-style logic PLs}
 Chronolog accepts a set of axioms, a set of goals, a logic variable substitution, and a suspension meta-predicate $S$.
 Anytime a goal that satisfies $S$ appears, that goal is immediately suspended.
@@ -1148,13 +1139,13 @@ The choice of which suspended goal to process may affect the order in which Chro
 
 \begin{theorem}[Completeness]
   \label{thm:solver-completeness}
-  \textsc{Solver} is a decision procedure for constraint problems $\mathcal{A} \implies \mathcal{C}$.
+  \textsc{Solver} is a decision procedure for constraint problems $\mathcal{C}$.
 \end{theorem}
 \begin{proof}
-  \textsc{Solve} will finds all solutions (up to permutations of \textsc{Roll} and \textsc{Unroll}) to $\mathcal{A} \implies \mathcal{C}$ because \textsc{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \textsc{Refine} preserves validity of solution $\sigma$, and \textsc{Solve} terminates by theorem \ref{thm:solver-termination}.
+  \textsc{Solve} will finds all solutions (up to permutations of \textsc{Roll} and \textsc{Unroll}) to $\mathcal{C}$ because \textsc{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \textsc{Refine} preserves validity of solution $\sigma$, and \textsc{Solve} terminates by theorem \ref{thm:solver-termination}.
 \end{proof}
 
-While there may be multiple solutions to $\mathcal{A} \implies \mathcal{C}$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \textsc{Roll} and \textsc{Unroll} \todoHenry{justify this claim}.
+While there may be multiple solutions to $\mathcal{C}$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \textsc{Roll} and \textsc{Unroll} \todoHenry{justify this claim}.
 Furthermore, solutions related by this equivalence, when applied as coercion insertions to terms, result in semantically equivalent terms where \texttt{roll} and \texttt{unroll} are semantically interpreted as identity functions \todoHenry{justify this claim}.
 
 \todoHenry{state completeness of type checking, which simply combines Theorem~\ref{thm:completeness} and Theorem~\ref{thm:solver-completeness}.}
