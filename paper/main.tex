@@ -239,7 +239,7 @@ computing a value of type $B$, the carrier of the algebra.  Type variables $R$
 are introduced in the bodies of algebras.
 
 Terms include the usual constructs of simply typed $\lambda$-calculus.
-There are also constructor applications $k(\overline{a})$, and simple
+There are also constructor applications $k(\overline{a,})$, and simple
 pattern-matching with notation $\gamma a . \{
 \overline{k(\overline{x,}) \mapsto b ~ |} \}$, where the value of $a$
 is matched against constructor patterns $k(\overline{x,})$.  For
@@ -470,11 +470,11 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
     \inferrule[Gamma]{
       a : \sFunctorApp{D}{C}
       \qquad
-      \overline{\Gamma, x_{ij} : A_{ij}[X \mapsto C] \vdash b_i : B_i}
+      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B_i}
       \qquad
       \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \mathscr{D}
     }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij}}) \mapsto b_i ~|} \} : B
+      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~|} \} : B
     }
 
     \inferrule[Omega]{
@@ -557,7 +557,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       % \\\\
       % (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep
       % \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}
-      \overline{\Gamma, x_{ij} : A_{ij}[X \mapsto C] \vdash b_i : B_i \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}}
+      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C]} \vdash b_i : B_i \gsep \mathcal{A}_{b_i} \implies \mathcal{C}_{b_i}}
     }{
       \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
       \gsep
