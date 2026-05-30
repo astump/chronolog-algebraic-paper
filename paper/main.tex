@@ -1086,9 +1086,6 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
     \Func{Refine}(\{ \dots, \sFunctorApp{D}{A} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{A}, \dots \}) &:= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
   \end{array}
 \end{mathpar}
-The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \IRule{Roll} and \IRule{Unroll} (if there is a solution).
-\todoHenry{justify this statement}
-\todoHenry{call back to where i was talking about this before, where I defined $\sim$ for constraint solutions}
 
 % 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
 % 2. if two constraints have the same type variable, then 
