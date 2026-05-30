@@ -494,9 +494,12 @@ We present a type checking procedure based on generating and solving subtyping c
 Crucially, while type variables are introduced during the type-checking phase, they serve exclusively to facilitate constraint satisfaction rather than to support type inference. 
 Both $\lambda$-abstractions and $\textsyntax{let}$-bindings require explicit type annotations, thereby ensuring that all types occurring within a program are ground. We defer the development of a comprehensive type inference mechanism to future work.
 
-First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
-\todoHenry{name \Func{Generate} function.}
-Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
+Initially, the constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, produces a set of subtyping constraints for a term $a$ against an expected type $A$ under the context $\Gamma$.
+This procedure operates by structural recursion on $a$, governed by the rules delineated in Figure~\ref{fig:constraint-generation-rules}.
+Each emitted constraint signifies an implicit application of the \IRule{Subtype} rule, which is requisite for constructing a valid typing derivation.
+Furthermore, every constraint is explicitly annotated with the precise sub-term at which the subsumption step occurs.
+Under the paradigm of coercive subtyping, these applications of \IRule{Subtype} are witnessed by coercions that provide computational justification for the subtyping relation.
+Operationally, these coercions are reified as explicit function applications which are inserted at the annotated sub-terms associated with the resolved constraints.
 
 \begin{figure}[htb]
   \centering
@@ -1037,6 +1040,13 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \end{figure}
 
 \subsection{Constraint solving with Chronolog}
+
+\todoHenry{Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
+}
+
+\todoHenry{Some of these coercions may end up being the identity function (if the justified  subtyping relation is of the form $A <:: A$), or semantically equivalent to the identity (in the case of \textsyntax{roll} and \textsyntax{unroll}, which are used only for typing but are semantically interpreted as teh identity).
+So, there are many syntactically different ways to solve a set of subtyping constraints.
+We define an equivalence relation $\sim$ over solutions where two solutions are related if they result in semantically equivalent terms when applied to the term that generated the constraints}
 
 We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
 Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed constraints in Prolog-style logic PLs}
