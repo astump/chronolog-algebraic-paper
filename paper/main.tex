@@ -1100,6 +1100,7 @@ Constraints solving is accomplished by using Chronolog inside a loop that proces
 Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
 The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \IRule{Roll} and \IRule{Unroll} (if there is a solution).
 \todoHenry{justify this statement}
+\todoHenry{call back to where i was talking about this before, where I defined $\sim$ for constraint solutions}
 
 \begin{mathpar}
   \begin{array}{rlcrll}
@@ -1110,18 +1111,27 @@ The choice of which suspended constraint to process may affect the order in whic
   \end{array}
 \end{mathpar}
 
+% 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
+% 2. if two constraints have the same type variable, then 
+%   a. it occurs on the same side of the constraints, and not on the opposite side; and
+%   b. the sets of type variables for the opposite sides of those constraints are disjoint
+
+% These invariants seem to hold for the rules of Figure 4, although I would appreciate your confirmation.  
+
+% If so, then solving suspended goals should preserve invariant (2), I am thinking.  And this would mean that substituting with the result of Refine would indeed decrease the number of type variables.
+
 \begin{lemma}[Termination of \Func{Solve}]
   \label{lem:solver-termination}
   For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
-  We show termination by demonstrating a strictly decreasing metric over each iteration of the loop in \Func{Solve}.
+  We show termination by demonstrating that the number of type variables among constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
   Each iteration begins with an invocation of \Func{Chronolog}.
   If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
   If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
 
-  The substitution resulting from $\Func{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case.
-  When $\Func{Refine}(\textit{constraint})$ increases the size of constraints in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \Func{Chronolog} will strictly decrease the size of these constraints again immediately, as follows from a case analysis on all the possible results of applying $\Func{Refine}(\textit{constraint})$ to suspended constraints.
+  The substitution resulting from $\Func{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case, $X \subtypeA \sFunctorApp{D}{Y}$ or $\sFunctorApp{D}{Y} \subtypeA X$, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$.
+  In this case, 
 \end{proof}
 
 \begin{lemma}[Completeness of \Func{Solve}]

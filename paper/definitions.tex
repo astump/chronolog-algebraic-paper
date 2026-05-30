@@ -142,7 +142,11 @@
 \newcommand{\EndMatch}{\textbf{end match}}
 \newcommand{\With}{\textbf{ with}}
 \newcommand{\Case}{\textbf{case }}
-\newcommand{\Func}[1]{\textsf{#1}}
+
+% functions
+\newcommand{\textFunc}{\textsf}
+\newcommand{\Func}[1]{\textFunc{#1}}
+\algrenewcommand\textproc{\textFunc}
 
 \newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
 
