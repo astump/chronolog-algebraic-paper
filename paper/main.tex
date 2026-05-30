@@ -232,8 +232,8 @@ $\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic operator, to indicate a
 $\oplus$-separated list of expressions $e$. Datatypes $D$ are described as least
 fixed points of signature functors $F$, which we take to be polynomial functors
 for simplicity. Types feature least fixed points $\sMu{D}$ of signature functors
-(referenced by datatype name $D$), as well as usual function types $A \to B$.
-Types $D \To B$ are the types for algebras over $\sMu{D}$ computing a value of
+(referenced by datatype name $D$), as well as usual function types $A \sArr B$.
+Types $D \sAlg B$ are the types for algebras over $\sMu{D}$ computing a value of
 type $B$, the carrier of the algebra.  Recursion type variables $\sRecVar{f}$
 are introduced in the bodies of algebras, where $f$ is the name of the function
 introduced by the respective algebra.
@@ -957,7 +957,7 @@ Types are represented by the Agda datatype \verb|Ty| in
 Figure~\ref{fig:synagda}.  For simplicity, we have a single signature
 functor \verb|D| and its least fixed-point \verb|μD| (note that this
   is a single identifier in Agda, not an application of a \verb|μ|
-operator to \verb|D|).  Algebra types $D \To A$ are represented just
+operator to \verb|D|).  Algebra types $D \sAlg A$ are represented just
 as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda.  Arrow types are represented $\arr{A}{B}$ (as other
 arrow notations are already in use).  The figure declares some fixity
 information, for lighter notation below.
