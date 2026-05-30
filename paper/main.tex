@@ -278,7 +278,8 @@ typing.
       \\[0.5em]
       %
       \text{(Recursion type variables)} &
-      R &\in& \textbf{RecTypeVars}
+      % R &\in& \textbf{RecTypeVars}
+      R &::=& \sRecVar{f}
       \\[0.5em]
       %
       \text{(Type variables)} &
@@ -290,7 +291,7 @@ typing.
       &::=&
       \cdot \mid
       \Gamma , (x : A) \mid
-      \Gamma , (R_a : \ast)
+      \Gamma , (\sRecVar{f} : \ast)
       \\[0.5em]
       %
       \text{(Datatype signature functor)} &
@@ -352,12 +353,13 @@ and developed in early works like~\cite{hagino87,goguen+77}.  For
 examples presented in this paper, we define the following set of
 datatypes.
 \begin{align*}
-  \mathscr{D} = \{
+  \datatypes = \{
     & \langle \sNat , \mu X . \sZero + \sSuc(X) \rangle, \\
     & \langle \sNatList, \mu X . \sNil + \sCons(\sMu\sNat \times X) \rangle
   \}
 \end{align*}
 
+\todoHenry{note that throughout the rest of the document, we implicitly restrict variables to range over their appropriate syntactic kinds as defined in the grammar above, for example $R$ only ranges over $\sRecVar{f}}$.
 \todoHenry{note that type variables only appear in constraints, but all types inferred and that you can write in the langauge should be concrete (variable-free)}
 \todoHenry{make sure that all overlines use proper separator}
 
@@ -461,35 +463,46 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Typing}
 \label{sec:typing}
 
-\todoHenry{Write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".  Here's the idea: Here are the most interesting typing rules. The rest are in Appendix~\ref{app:typing-rules}.
+\todoHenry{Write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".  Here's the idea: Here are the most interesting typing rules. The rest are in Appendix~\ref{app:typing}.
+}
+
+% Note(Henry): these are defined as macros so they can be referred to again the appendix
+\newcommand{\typingRuleOmega}{
+  \inferrule[Gamma]{
+    \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \datatypes
+    \qquad
+    a : \sFunctorApp{D}{C}
+    \qquad
+    \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B}
+  }{
+    \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~|} \} : B
+  }
+}
+\newcommand{\typingRuleGamma}{
+  \inferrule[Omega]{
+    \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B
+  }{
+    \Gamma \vdash \omega f(x) . b : D \sAlg B
+  }
+}
+\newcommand{\typingRuleSubtype}{
+  \inferrule[Subtype]{
+    \Gamma \vdash A \subtype A' \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash a : A'
+  }
 }
 
 \begin{figure}[htb]
   \centering
 
   \begin{mathpar}
-    \inferrule[Gamma]{
-      a : \sFunctorApp{D}{C}
-      \qquad
-      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B_i}
-      \qquad
-      \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \mathscr{D}
-    }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~|} \} : B
-    }
+    \typingRuleOmega
 
-    \inferrule[Omega]{
-      \Gamma, (R_f : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B
-    }{
-      \Gamma \vdash \omega f(x) . b : D \sAlg B
-    }
+    \typingRuleGamma
 
-    \inferrule[Subtype]{
-      \Gamma \vdash A \subtype A' \qquad
-      \Gamma \vdash a : A
-    }{
-      \Gamma \vdash a : A'
-    }
+    \typingRuleSubtype
   \end{mathpar}
 
   \caption{Notable typing rules}
@@ -517,9 +530,11 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }
 
     \inferrule[Con]{
-      \freshMetavariables{X} \qquad
-      \overline{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}} \qquad
-      \langle D, \mu Y . \dots + k(\overline{A'_i ~\times}) + \dots \rangle \in \mathscr{D}
+      \freshMetavariables{X}
+      \qquad
+      \langle D, \mu Y . \dots + k(\overline{A'_i ~\times}) + \dots \rangle \in \datatypes
+      \qquad
+      \overline{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}}
     }{
       \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
     }
@@ -543,7 +558,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     \inferrule[Gamma]{
       % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
       \freshMetavariables{X, Y} \qquad
-      \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \mathscr{D}
+      \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \datatypes
       \\\\
       \Gamma \vdash a : C \gsep \mathcal{C}_a
       \qquad
@@ -560,7 +575,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }
 
     \inferrule[Omega]{
-      \Gamma, (R_f : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{C}_b
+      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \mathcal{C}_b
     }{
       \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{C}_b
     }
@@ -590,15 +605,13 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
   \centering
 
   \begin{mathpar}
-
-    \inferrule[ReflRecVarCoe]{ }{
-      \Gamma \vdash \sSubRecVar{R} : \sCoerceSig{R}{R}
-    }
-
-    \inferrule[ReflCoe]{
-      \isDatatype{D}
-    }{
+    
+    \inferrule[ReflCoe]{ }{
       \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+        
+    \inferrule[RecVarCoe]{ }{
+      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
     }
 
     \inferrule[ArrCoe]{
@@ -621,14 +634,12 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }
 
     \inferrule[RollCoe]{
-      \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
     }{
       \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
     }
 
     \inferrule[UnrollCoe]{
-      \isDatatype{D} \qquad
       \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
     }{
       \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
@@ -760,10 +771,7 @@ of rules are equivalent.
 
   \begin{mathpar}
 
-    \inferrule[Refl]
-    {
-      \isDatatype{D}
-    }
+    \inferrule[Refl]{ }
     {
       \sMu{D} \subtype \sMu{D}
     }
@@ -838,10 +846,7 @@ the definition of subtyping as a partial order.
 
   \begin{mathpar}
 
-    \inferrule[Refl]
-    {
-      \isDatatype{D}
-    }
+    \inferrule[Refl]{ }
     {
       \sMu{D} \subtypeA \sMu{D}
     }
@@ -1212,9 +1217,52 @@ coalgebraic programming with coinductive types.
 \appendix
 
 \section{Typing rules}
-\label{app:typing-rules}
+\label{app:typing}
 
-\todoHenry{full typing rules}
+Section~\ref{sec:typing} presented a sampling from the full set of typing rules for \lcata below.
+
+\begin{mathpar}
+
+  \inferrule[Var]{
+    (x : A) \in \Gamma
+  }{
+    \Gamma \vdash x : A
+  }
+  
+  \inferrule[Con]{
+    \langle D , \mu X . \cdots + k(\overline{A_i} \times) + \cdots \rangle \in \datatypes \qquad
+    \overline{\Gamma \vdash a_i : A_i}
+  }{
+    \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X}
+  }
+  
+  \inferrule[Lam]{
+    \Gamma , (x : A) \vdash b : B
+  }{
+    \Gamma \vdash \lambda (x : A) . b : A \sArr B
+  }
+  
+  \inferrule[App]{
+    \Gamma \vdash f : A \sArr B \qquad 
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash f ~ a : B
+  }
+
+  \typingRuleGamma
+  
+  \typingRuleOmega
+  
+  \inferrule[Let]{
+    \Gamma, (x : A) \vdash b : B \qquad 
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash \sLet{x}{A}{a}{b} : B
+  }
+
+  \typingRuleSubtype
+
+\end{mathpar}
 
 % Richer patterns of recursion, as in POPL 2023 paper
 

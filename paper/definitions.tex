@@ -82,13 +82,17 @@
 
 \newcommand{\lcata}[0]{\ensuremath{\mathcal{L}_{\textit{cata}}}}
 
-
 \newcommand{\gsep}{\mspace{8mu}\lvert\mspace{8mu}}
 
+% \newcommand{\textsyntax}[1]{\textsf{#1}}
+% \newcommand{\textsyntax}[1]{\texttt{#1}}
+\newcommand{\textsyntax}[1]{\textit{#1}}
+
 % types
-\newcommand{\sBool}{\textit{Bool}}
-\newcommand{\sNat}{\textit{Nat}}
-\newcommand{\sNatList}{\textit{NatList}}
+\newcommand{\sRecVar}[1]{\textsyntax{R}_{#1}}
+\newcommand{\sBool}{\textsyntax{Bool}}
+\newcommand{\sNat}{\textsyntax{Nat}}
+\newcommand{\sNatList}{\textsyntax{NatList}}
 \newcommand{\sAlg}{\Rightarrow}
 \newcommand{\sArr}{\to}
 \newcommand{\sFunctorApp}[2]{#1 ~ #2} % spaced
@@ -97,40 +101,43 @@
 \newcommand{\sFunctorConSig}[3]{(#1) \sArr \sFunctorApp{#2}{#3}}
 \newcommand{\sCoerceSig}[2]{#1 \mathrel{<::} #2}
 % terms
-\newcommand{\sLet}[4]{\text{let}~ #1 : #2 = #3 ~\text{in}~ #4}
-% \newcommand{\sCoerce}[2]{\text{coerce}~ #1 ~ #2}
+\newcommand{\sLet}[4]{\textsyntax{let}~ #1 : #2 = #3 ~\textsyntax{in}~ #4}
+% \newcommand{\sCoerce}[2]{\textsyntax{coerce}~ #1 ~ #2}
 \newcommand{\sCoerce}[2]{#1 - #2}
 % coercions
-\newcommand{\sCata}[2]{\text{cata}~ #1 ~ #2}
-\newcommand{\sRoll}[1]{\text{roll}~ #1}
-\newcommand{\sUnroll}[1]{\text{unroll}~ #1}
-\newcommand{\sSubCov}[2]{\text{cov}[#1] ~ #2}
-\newcommand{\sSubData}[1]{\text{id}[\sMu{#1}]}
-\newcommand{\sSubArr}[2]{\text{arr}~ #1 ~ #2}
-\newcommand{\sSubAlg}[2]{\text{alg}[#1] ~ #2}
-\newcommand{\sSubRecVar}[1]{\text{id}[#1]}
+\newcommand{\sCata}[2]{\textsyntax{cata}~ #1 ~ #2}
+\newcommand{\sRoll}[1]{\textsyntax{roll}~ #1}
+\newcommand{\sUnroll}[1]{\textsyntax{unroll}~ #1}
+\newcommand{\sSubCov}[2]{\textsyntax{cov}[#1] ~ #2}
+\newcommand{\sSubData}[1]{\textsyntax{id}[\sMu{#1}]}
+\newcommand{\sSubArr}[2]{\textsyntax{arr}~ #1 ~ #2}
+\newcommand{\sSubAlg}[2]{\textsyntax{alg}[#1] ~ #2}
+\newcommand{\sSubRecVar}[1]{\textsyntax{id}[#1]}
 % constructors
-\newcommand{\sTrue}{\textit{True}}
-\newcommand{\sFalse}{\textit{False}}
-\newcommand{\sZero}{\textit{Zero}}
-\newcommand{\sSuc}{\textit{Suc}}
-\newcommand{\sNil}{\textit{Nil}}
-\newcommand{\sCons}{\textit{Cons}}
+\newcommand{\sTrue}{\textsyntax{True}}
+\newcommand{\sFalse}{\textsyntax{False}}
+\newcommand{\sZero}{\textsyntax{Zero}}
+\newcommand{\sSuc}{\textsyntax{Suc}}
+\newcommand{\sNil}{\textsyntax{Nil}}
+\newcommand{\sCons}{\textsyntax{Cons}}
 
 % helpers
 \newcommand{\freshMetavariables}[1]{#1 ~\text{fresh}}
-\newcommand{\isDatatype}[1]{#1 ~\text{data}}
-\newcommand{\atPos}[1]{^{#1}}
+% \newcommand{\isDatatype}[1]{#1 ~\text{data}}
+% \newcommand{\atPos}[1]{^{#1}}
 \newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
 \newcommand{\subtype}{\mathrel{<:}}
 \newcommand{\subtypeA}{\mathrel{<::}}
 \newcommand{\subtypeAP}[1]{\mathop{\subtypeA}_{#1}}
+\newcommand{\datatypes}{\mathscr{D}}
 
 \newcommand{\Match}{\textbf{match }}
 \newcommand{\EndMatch}{\textbf{end match}}
 \newcommand{\With}{\textbf{ with}}
 \newcommand{\Case}{\textbf{case }}
 \newcommand{\Func}[1]{\textsc{#1}}
+
+
 
 \newcommand{\todo}[1]{{{\contour{red}{\textbf{\color{black}TODO}}} \color{red}#1}}
 
