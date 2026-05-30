@@ -134,7 +134,7 @@
 % \ccsdesc[500]{Software and its engineering~Functional languages}
 % \ccsdesc[300]{Software and its engineering~Recursion}
 
-\keywords{strong functional programming, type-based termination}
+\keywords{termination, algebraic programming, coercive subtyping}
 
 \abstract{ This paper presents a system for more convenient algebraic
   programming, where datatypes are defined as least fixed points of
@@ -162,19 +162,19 @@ algebraic programming. }
 % Burden of inserting roll/unroll and cata
 % We will reduce this burden using coercive subtyping to infer the coercions
 
-Strong functional programming is a form of pure functional programming
-where all functions are statically required to terminate on all
-inputs.  One way to achieve this is through an algebraic approach:
-datatypes are least fixed points $\sMu{F}$ of signature functors $F$,
-and recursive functions are least fixed points $\cata{a}$, called
-catamorphisms, of algebras $a$.  The functor $F$ describes one layer
-of the data, and $\sMu{F}$ then describes data consisting of any finite
-number of layers.  We may unroll $\sMu{F}$ to $\sFunctorApp{F}{\sMu{F}}$, and roll it
-back again.  Algebras interpret the operations declared for one layer
-of the data, and catamorphisms apply algebras across all the layers.
+The discipline of strong functional programming statically requires
+that functions terminate on all inputs.  One way to achieve this is
+through an algebraic approach: datatypes are least fixed points
+$\sMu{F}$ of signature functors $F$, and recursive functions are least
+fixed points $\cata{a}$, called catamorphisms, of algebras $a$.  The
+functor $F$ describes one layer of the data, and $\sMu{F}$ then
+describes data consisting of any finite number of layers.  We may
+unroll $\sMu{F}$ to $\sFunctorApp{F}{\sMu{F}}$, and roll it back
+again.  Algebras interpret the operations declared for one layer of
+the data, and catamorphisms apply algebras across all the layers.
 There is no other mechanism for recursion or looping in the language,
-leading  to a strong guarantee: all functions written in this
-style terminate.
+leading to a strong guarantee: all functions written in this style
+terminate.
 
 One burden is the need to include calls to roll and unroll functors,
 and to $\cata{-}$, in code.  This adds clutter, compared to regular
@@ -198,19 +198,17 @@ signatures would, if handled naively, lead to diverging proof search.
 Instead, Chronolog provides a mechanism to indicate that certain
 problematic constraints should be suspended.  These suspended constraints may be
 resumed if they are instantiated during solving of other constraints.
-If not, an outer loop of our algorithm handles them by simply equating
-the lower and upper bound of the subtyping constraints.  We prove
-that solving in this manner terminates.
+If not, an outer loop of our algorithm handles them specially.  
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
 nondeterministically guesses $B$ with $A \subtype B$ and $B \subtype C$, to solve
 $A \subtype C$.  We identify (Section~\ref{sec:subtyping}) an algorithmic
 set of subtyping rules, without transitivity, and prove it equivalent
-in Agda to the declarative rules.  This both ensures we can use logic
+to the declarative rules.  This both ensures we can use logic
 programming (with our algorithmic rules) to solve these subtyping
 constraints, and also assures us that the algorithmic rules are indeed
-correct.  To summarize the contributions:
+correct.  To summarize our contributions:
 \begin{itemize}
   \item We propose a new approach to total algebraic programming,
     where calls for rolling and unrolling signature functors
@@ -219,7 +217,7 @@ correct.  To summarize the contributions:
   \item We realize this approach with constraint-generating typing,
     and a constraint solver based on logic programming, modified
     to avoid infinite unrolling of functors. We prove termination of
-    this algorithm.
+    our algorithm.
   \item We propose an algorithmic subtyping system, and prove it
     equivalent to the declarative one in Agda.
 \end{itemize}
@@ -227,36 +225,40 @@ correct.  To summarize the contributions:
 
 \section{Syntax}
 
-Figure~\ref{fig:syntax} presents the syntax for the language \lcata, through
-which we study coercion inference for algebraic programming. We use notation
-$\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic operator, to indicate a
-$\oplus$-separated list of expressions $e$. Datatypes $D$ are described as least
-fixed points of signature functors $F$, which we take to be polynomial functors
-for simplicity. Types feature least fixed points $\sMu{D}$ of signature functors
-(referenced by datatype name $D$), as well as usual function types $A \sArr B$.
-Types $D \sAlg B$ are the types for algebras over $\sMu{D}$ computing a value of
-type $B$, the carrier of the algebra.  Recursion type variables $\sRecVar{f}$
-are introduced in the bodies of algebras, where $f$ is the name of the function
-introduced by the respective algebra.  While type variables (which are unrelated
-to recursion type variables) appear during type checking, as detailed in
-Section~\ref{sec:typechecking}, type variables cannot appear in the surface
-syntax for types.  In this way, all types that appear in programs are ground
-types.
+Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
+through which we study coercion inference for algebraic
+programming. We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a
+syntactic operator, to indicate a $\oplus$-separated list of
+expressions $e$. Datatypes are described as least fixed points of
+signature functors $F$, which we take to be polynomial functors for
+simplicity. Least fixed points of signature functors, referenced by
+datatype name $D$, are denoted $\sMu{D}$.  We have usual function
+types $A \sArr B$.  Types $D \sAlg B$ are the types for algebras over
+$\sMu{D}$ computing a value of type $B$, the carrier of the algebra.
+Recursion type variables $\sRecVar{f}$ are introduced in the bodies of
+algebras, where $f$ is the name of the function introduced by the
+respective algebra.  While type variables (which are unrelated to
+recursion type variables) appear during type checking, as detailed in
+Section~\ref{sec:typechecking}, they are not allowed in the surface
+syntax for types.  In this way, all types that appear in programs are
+ground types.
 
-Terms include the usual constructs of simply typed $\lambda$-calculus. There are
-also constructor applications $k(\sepBy{a}{,})$, and simple pattern-matching
-with notation $\gamma a . \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where
-the value of $a$ is matched against constructor patterns $k(\sepBy{x}{,})$.  For
-totality, all constructors for $a$'s datatype must be covered. We distinguish
-applications $c(a)$ of coercions $c$, which include rolling, unrolling, and
-catamorphizing.  Coercions will be explained with their typing rules in
-Section~\ref{sec:typechecking}.
+Terms include the usual constructs of simply typed
+$\lambda$-calculus. There are also constructor applications
+$k(\sepBy{a}{,})$, and simple pattern-matching with notation $\gamma a
+. \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where the value of $a$
+is matched against constructor patterns $k(\sepBy{x}{,})$.  If such a
+pattern matches, then the term reduces to the body $b$ for that
+case. For totality, all constructors for $a$'s datatype must be
+covered. We distinguish applications $c(a)$ of coercions $c$, which
+include rolling, unrolling, and catamorphizing.  Coercions will be
+explained with their typing rules in Section~\ref{sec:typechecking}.
 
 Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
 algebras~\cite{uustalu99}.  With this style, an algebra is presented with a
 function $f$ from $\sRecVar{f}$ to the carrier $B$ of the algebra.
 $\sRecVar{f}$ is an abstract type introduced in the algebra.  The input $x$ has
-type $\sFunctorApp{D}{R}$, where $D$ is the signature functor of the algebra.
+type $\sFunctorApp{D}{\sRecVar{f}}$, where $D$ is the signature functor of the algebra.
 The body $b : B$ may pattern-match on $x$ and apply $f$ to subdata of type
 $\sRecVar{f}$ that are revealed.  One benefit over conventional $F$-algebras is
 that calling $f$ to recurse makes algebras appear very similar to conventional
@@ -350,7 +352,9 @@ recursive functional programs, albeit with more abstract typing.
 \label{fig:syntax}
 \end{figure}
 
-Throughout the remainder of this paper, we implicitly constrain each metavariable to range exclusively over the valid syntactic forms defined by its corresponding production in Figure~\ref{fig:syntax}.
+% this practice is so standard we do not need to say we are following it:
+%
+%Throughout the remainder of this paper, we implicitly constrain each metavariable to range exclusively over the valid syntactic forms defined by its corresponding production in Figure~\ref{fig:syntax}.
 
 
 A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is
@@ -407,16 +411,16 @@ explicit coercions, for two functions.  The \verb|sub| function
 subtracts two natural numbers, and \verb|subs| proceeds through a two
 lists of numbers, subtracting corresponding elements.  So subtracting
 the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
-$[7,7,7]$, for example.  Let us see how these use the different kinds
-of coercions.  The \verb|sub| function takes in the minuend \verb|m|
+$[7,7,7]$, for example.  Let us see how the different kinds
+of coercions are used.  The \verb|sub| function takes in the minuend \verb|m|
 and returns an algebra, which can be used to recurse through the
 subtrahend \verb|n|.  The code matches (with $\gamma$) on \verb|n|,
 returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
 case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
 algebras are Mendler-style, the type of \verb|sub'| is
-\verb|R → μ Nat|, where \verb|R| is the abstract type introduced by
-the algebra.  The input $n$ has type \verb|Nat R|, and so its subdatum
-\verb|n'| has type \verb|R|.  So the call \verb|sub' n'| is
+\verb|R_f → μ Nat|, where \verb|R_f| is the abstract type introduced by
+the algebra.  The input $n$ has type \verb|Nat R_f|, and so its subdatum
+\verb|n'| has type \verb|R_f|.  So the call \verb|sub' n'| is
 well-typed.  To pattern-match on the output of this call requires
 unrolling \verb|μ Nat| with \verb|unroll id|.  The \verb|id| is
 the identity coercion, indicating that the subtyping is only happening
