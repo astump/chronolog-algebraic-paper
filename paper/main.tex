@@ -384,18 +384,18 @@ datatypes.
 sub : μ Nat → Nat ⇒ μ Nat =
   λ m . ω sub'(n) . γ n .
     { Zero → m
-    | Suc(n') → γ (unroll id) - (sub' n') .
-        { Zero → (roll id) - (Zero)
+    | Suc(n') → γ unroll id - sub' n' .
+        { Zero → roll id - Zero
         | Suc(m') → m' } }
 
 subs : NatList ⇒ μ NatList → μ NatList =
   ω subs'(l1) . λ l2 . γ l1 .
     { Nil → Nil
-    | Cons(h1, t1) → γ (unroll id) - (l2) .
-        { Nil → (roll id) - Nil
+    | Cons(h1, t1) → γ unroll id - l2 .
+        { Nil → roll id - Nil
         | Cons(h2, t2) →
           (roll id) -
-            (Cons((cata id id) - sub h1 h2, subs' t1 t2)) } }
+            (Cons(cata id id - sub h1 h2, subs' t1 t2)) } }
   \end{verbatim}
   \end{subfigure}
   \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions. }
