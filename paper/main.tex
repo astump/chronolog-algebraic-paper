@@ -298,7 +298,7 @@ recursive functional programs, albeit with more abstract typing.
       \\[0.5em]
       %
       \text{(Datatype signature functor)} &
-      F &::=& \mu X . \sepBy{k(\sepBy{P(X)}{~\times})}{~+}
+      F &::=& \lambda X . \sepBy{k(\sepBy{P(X)}{~\times})}{~+}
       \\[0.5em]
       %
       \text{(Constructor parameter types)} &
@@ -360,8 +360,8 @@ examples presented in this paper, we define the following set of
 datatypes.
 \begin{align*}
   \datatypes := \{
-    & \langle \sNat , \mu X . \sZero + \sSuc(X) \rangle, \\
-    & \langle \sNatList, \mu X . \sNil + \sCons(\sMu\sNat \times X) \rangle
+    & \langle \sNat , \sSignatureFunctor{X}{\sZero + \sSuc(X)} \rangle, \\
+    & \langle \sNatList, \sSignatureFunctor{X}{\sNil + \sCons(\sMu\sNat \times X)} \rangle
   \}
 \end{align*}
 
@@ -442,15 +442,39 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Typing}
 \label{sec:typing}
 
-\todoHenry{Write prose for introducing type system and explain how it fits into the running examples from "Motivating Examples".  Here's the idea: Here are the most interesting typing rules. The rest are in Appendix~\ref{app:typing}.
-}
+% The type system for \lcata is basically the same as the simply-typed $\lambda$-calculus, but with a few extra constructs.
+
+% % \typingRules
+
+% \lcata supports exhaustive pattern-matching with the $\gamma a . \{ \dots \}$ construct.
+% The typing rule for this construct is \IRule{Gamma}.
+% The typing rule \IRule{Gamma} looks up the signature functor of the datatype of the term that is being discriminated by the pattern-match.
+% As a functor, the signature functor is parametrized by a single type parameter, which \IRule{Gamma} instantiates with the type argument $C$ corresponding to deriving $\Gamma \vdash a : D ~ C$.
+
+% \lcata has a special construct for introducing algebras, $\omega f(x) . b$.
+% The typing rule for this construct, \IRule[Omega], must take into account that a new type, $\sRecVar{f}$,  is introduced into the local context of $b$, where $\sRecVar{f}$ is associated specifically with this syntactic construct, the fact of which is encoded by the $f$ index of $\sRecVar{f}$.
+% \lcata does not support type inference or polymorphism, so this is just a very restricted form of scoped typing for the sake of modeling Mendler algebras.
+% Such a recursion type variable $\sRecVar{f}$ is not related to any other types, which ensures in a similar way that parametricity does for Mendler algebras, that $f$ can only ever be called on sub-data of $x$. 
+
+The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching and algebraic recursion.
+A sampling of the notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules are provided in Appendix~\ref{app:typing-rules}
+
+The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
+This rule resolves the signature functor associated with the datatype of the scrutinee.
+Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the typing premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
+
+The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule[Omega] rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
+This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
+Because \lcata purposely omits general polymorphism and type inference, this mechanism serves as a highly restricted form of scoped type abstraction tailored explicitly for modeling Mendler-style algebras.
+The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context. 
+Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
 % Note(Henry): these are defined as macros so they can be referred to again the appendix
 \newcommand{\typingRuleOmega}{
   \inferrule[Gamma]{
-    \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times})}{~+} \rangle \in \datatypes
+    \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times})}{~+}} \rangle \in \datatypes
     \qquad
-    a : \sFunctorApp{D}{C}
+    \Gamma \vdash a : \sFunctorApp{D}{C}
     \qquad
     \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B}{ }
   }{
@@ -516,7 +540,7 @@ Operationally, these coercions are reified as explicit function applications whi
     \inferrule[Con]{
       \freshMetavariables{X}
       \qquad
-      \langle D, \mu Y . \dots + k(\sepBy{A'_i}{~\times}) + \dots \rangle \in \datatypes
+      \langle D, \sSignatureFunctor{Y}{\dots + k(\sepBy{A'_i}{~\times}) + \dots} \rangle \in \datatypes
       \qquad
       \sepBy{\Gamma \vdash a_i : A_i \gsep \constraints_{a_i}}{ }
     }{
@@ -542,7 +566,7 @@ Operationally, these coercions are reified as explicit function applications whi
     \inferrule[Gamma]{
       % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C \subtypeA D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i \subtypeA Y for the outputs of each branch which are the B_i
       \freshMetavariables{X, Y} \qquad
-      \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+} \rangle \in \datatypes
+      \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+}} \rangle \in \datatypes
       \\\\
       \Gamma \vdash a : C \gsep \constraints_a
       \qquad
@@ -1024,7 +1048,7 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \subsection{Constraint solving with Chronolog}
 
 We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
-Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed constraints in Prolog-style logic PLs}
+Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension to rule-level techniques in previous work~\cite{Clark1982,Naish1982,residuation2019}.
 Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
 Anytime a constraint that satisfies $S$ appears, that constraint is immediately suspended.
 Suspended constraints are still refined by logic variable substitutions.
@@ -1116,9 +1140,6 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
 \begin{proof}
   \Func{Solve} finds all solutions to $\constraints$ up to $\sim$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by Theorem \ref{lem:solver-termination}.
 \end{proof}
-
-While there may be multiple solutions to $\constraints$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \IRule{Roll} and \IRule{Unroll} \todoHenry{justify this claim}.
-Furthermore, solutions related by this equivalence, when applied as coercion insertions to terms, result in semantically equivalent terms where \texttt{roll} and \texttt{unroll} are semantically interpreted as identity functions \todoHenry{justify this claim}.
 
 \begin{algorithm}[htb]
   \caption{Type checking for \lcata.}
@@ -1218,7 +1239,7 @@ coalgebraic programming with coinductive types.
 \appendix
 
 \section{Typing rules}
-\label{app:typing}
+\label{app:typing-rules}
 
 Section~\ref{sec:typing} presented a sampling from the full set of typing rules for \lcata below.
 
@@ -1231,7 +1252,7 @@ Section~\ref{sec:typing} presented a sampling from the full set of typing rules 
   }
   
   \inferrule[Con]{
-    \langle D , \mu X . \cdots + k(\sepBy{A_i}{~\times}) + \cdots \rangle \in \datatypes \qquad
+    \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
     \sepBy{\Gamma \vdash a_i : A_i}{ }
   }{
     \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{X}
