@@ -1253,9 +1253,9 @@ Section~\ref{sec:typing} presented a sampling from the full set of typing rules 
   
   \inferrule[Con]{
     \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
-    \sepBy{\Gamma \vdash a_i : A_i}{ }
+    \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
   }{
-    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{X}
+    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
   }
   
   \inferrule[Lam]{
