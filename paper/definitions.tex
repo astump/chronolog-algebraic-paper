@@ -95,7 +95,7 @@
 % \newcommand{\sFunctorApp}[2]{#1(#2)} % parenthesized
 \newcommand{\sMu}[1]{\mu #1}
 \newcommand{\sFunctorConSig}[3]{(#1) \sArr \sFunctorApp{#2}{#3}}
-\newcommand{\sCoerceSig}[2]{#1 <:: #2}
+\newcommand{\sCoerceSig}[2]{#1 \mathrel{<::} #2}
 % terms
 \newcommand{\sLet}[4]{\text{let}~ #1 : #2 = #3 ~\text{in}~ #4}
 % \newcommand{\sCoerce}[2]{\text{coerce}~ #1 ~ #2}
@@ -122,6 +122,8 @@
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
 \newcommand{\atPos}[1]{^{#1}}
 \newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
+\newcommand{\subtypeA}[2]{#1 \mathrel{<::} #2}
+\newcommand{\subtypeAtPos}[3]{#1 \mathop{\mathrel{<::}}_{#3} #2}
 % \newcommand{\atPos}[1]{}
 
 \newcommand{\Match}{\textbf{match }}

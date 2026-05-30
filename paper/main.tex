@@ -359,6 +359,7 @@ datatypes.
 \end{align*}
 
 \todoHenry{note that type variables only appear in constraints, but all types inferred and that you can write in the langauge should be concrete (variable-free)}
+\todoHenry{make sure that all overlines use proper separator}
 
 \section{Motivating examples}
 \label{sec:motivating-examples}
@@ -504,10 +505,6 @@ We present a type checking procedure based on generating and solving subtyping c
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
 Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
-\todoHenry{Include positions, annotated on terms and constraints}
-
-\todoHenry{Use new syntax for datatypes in Con and Gamma rules}
-
 \begin{figure}[htb]
   \centering
 
@@ -520,20 +517,17 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }
 
     \inferrule[Con]{
-      % [Note] we need to freshen X here since the constructor rules dont deal with type variables
       \freshMetavariables{X} \qquad
-      % (k : \sFunctorConSig{\overline{B_i,}}{D}{X}) \in \mathscr{K}(D, X) \qquad
-      % \constructorOf{k}{\overline{B_i,}}{D}{X} \qquad
-      \langle D, \mu Y . \dots + k(\overline{B_i ~\times}) + \dots \rangle \in \mathscr{D} \qquad
-      \overline{\Gamma \vdash a\atPos{p_i}_i : A_i \gsep \mathcal{C}_{a_i}}
+      \overline{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}} \qquad
+      \langle D, \mu Y . \dots + k(\overline{A'_i ~\times}) + \dots \rangle \in \mathscr{D}
     }{
-      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} \mathcal{C}_{a_i}
+      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ \subtypeAtPos{A_i}{A'_i[Y \mapsto X]}{a_i}  \})
     }
 
     \inferrule[Lam]{
       \Gamma, (x : A) \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \lambda (x : A) . b : X \sArr B \gsep \mathcal{C}_b
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \mathcal{C}_b
     }
 
     \inferrule[App]{
@@ -543,7 +537,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \Gamma \vdash a : A \gsep \mathcal{C}_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \{ B <:: A \sArr X \} \cup \mathcal{C}_f \cup \mathcal{C}_a
+      \mathcal{C}_f \cup \mathcal{C}_a \cup \{ \subtypeAtPos{B}{A \sArr X}{f} \}
     }
 
     \inferrule[Gamma]{
@@ -556,27 +550,26 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       % (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
       % \\\\
       % (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}
-      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C]} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}
+      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}
     }{
       \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
       \gsep
-      \{ C <:: \sFunctorApp{D}{X} \} \cup
+      \{ \subtypeAtPos{C}{\sFunctorApp{D}{X}}{a} \} \cup
       \mathcal{C}_a \cup
-      \bigcup_i (\{ B_i <:: Y \} \cup \mathcal{C}_{b_i})
+      \bigcup_i (\{ \subtypeAtPos{B_i}{Y}{b_i} \} \cup \mathcal{C}_{b_i})
     }
 
     \inferrule[Omega]{
-      \freshMetavariables{R, r} \qquad
-      \Gamma, (R : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{C}_b
+      \Gamma, (R_f : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B \gsep \mathcal{C}_b
     }{
       \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{C}_b
     }
 
     \inferrule[Let]{
       \Gamma \vdash a : A \gsep \mathcal{C}_a \qquad
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{C}_b
+      \Gamma, (x : A') \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet{x}{A}{a}{b} : B \gsep \mathcal{C}_a \cup \mathcal{C}_b
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \mathcal{C}_a \cup \{ \subtypeAtPos{A}{A'}{a} \} \cup \mathcal{C}_b
     }
 
     % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
@@ -699,8 +692,8 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{C}$.
 This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of goals.
-Each constraint in these sets is of the form $A <::^p B$, where $p$ is a position of a sub-term of $a$.
-The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $p$ corresponds to one of the original required constraints $A <::^p B$.
+Each constraint in these sets is of the form $\subtypeAtPos{A}{B}{a'}$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
+The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $\subtypeAtPos{A}{B}{a'}$.
 
 The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
@@ -710,9 +703,7 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
 
 \todoHenry{Make sure to update this if the constraint generation rules change.}
 
-\todoHenry{Insert term positions on constraints}
-
-\todoHenry{Note that $R <:: R$ corresponds to identity coercion $\sSubRecVar{R}$}
+\todoHenry{Insert term positions on constraints, just using the terms themselves}
 
 \begin{mathpar}
   \{
