@@ -1077,18 +1077,16 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
     \Function{Solve}{$\constraints$}
     \State $\sigma \gets \emptyset$ % \Comment{Initialize as the empty logic variable substitution}
     \While{$\constraints \neq \emptyset$}
-    \State $\mathit{result} \gets \Func{Chronolog}(S, \constraints, \sigma$)
     % \Statex
     % Pattern-matching block
-    \State \Match $\mathit{result}$ \With
+    \State \Match $\Func{Chronolog}(S, \constraints)$ \With
     \State \quad \Case $\langle \text{``failure''} \rangle \Rightarrow$ \Return $\bot$
     % \Statex
     \State \quad \Case $\langle \text{``success''}, \sigma' \rangle \Rightarrow$
     \Return $\sigma'$
     % \Statex
     \State \quad \Case $\langle \text{``progress''}, \sigma', \constraints' \rangle \Rightarrow$
-    \State \qquad $c \gets \Func{Sample}(\constraints')$
-    \State \qquad $\sigma \gets \Func{Refine}(c) \circ \sigma'$
+    \State \qquad $\sigma \gets \Func{Refine}(\constraints') \circ \sigma'$
     \State \qquad $\constraints \gets \sigma(\constraints')$
     \State \EndMatch
     \EndWhile
@@ -1098,18 +1096,18 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
 
 Constraints solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
+Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$. 
+\begin{mathpar}
+  \begin{array}{rlrll}
+    \Func{Refine}(\{ \dots, \sMu{D} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sMu{D}, \dots \}) &:= \{ X \mapsto \sMu{D} \} \\
+    \Func{Refine}(\{ \dots, R &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA R, \dots \}) &:= \{ X \mapsto R \} \\
+    No && \Func{Refine}(\{ \dots, X &\subtypeA Y, \dots \}) &:= \{ X \mapsto Y \} \\
+    \Func{Refine}(\{ \dots, \sFunctorApp{D}{A} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{A}, \dots \}) &:= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+  \end{array}
+\end{mathpar}
 The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \IRule{Roll} and \IRule{Unroll} (if there is a solution).
 \todoHenry{justify this statement}
 \todoHenry{call back to where i was talking about this before, where I defined $\sim$ for constraint solutions}
-
-\begin{mathpar}
-  \begin{array}{rlcrll}
-    \Func{Refine}(\sMu{D} &\subtypeA X) &=& \Func{Refine}(X &\subtypeA \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
-    \Func{Refine}(\sFunctorApp{D}{A} &\subtypeA X) &=& \Func{Refine}(X &\subtypeA \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
-    \Func{Refine}(R &\subtypeA X) &=& \Func{Refine}(X &\subtypeA R) &= \{ X \mapsto R \} \\
-    &&& \Func{Refine}(X &\subtypeA Y) &= \{ X \mapsto Y \}
-  \end{array}
-\end{mathpar}
 
 % 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
 % 2. if two constraints have the same type variable, then 
@@ -1125,13 +1123,13 @@ The choice of which suspended constraint to process may affect the order in whic
   For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
-  We show termination by demonstrating that the number of type variables among constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
+  We show termination by demonstrating that \todoHenry{define what the termination metric is} is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
   Each iteration begins with an invocation of \Func{Chronolog}.
   If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
   If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
 
-  The substitution resulting from $\Func{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case, $X \subtypeA \sFunctorApp{D}{Y}$ or $\sFunctorApp{D}{Y} \subtypeA X$, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$.
-  In this case, 
+  The substitution resulting from $\Func{Refine}(\constraints)$ preserves the size of constraints in all but one case, $\Func{Refine}(\{ \dots, X \subtypeA \sFunctorApp{D}{A}, \dots \}$ or $\Func{Refine}(\{ \dots, \sFunctorApp{D}{A} \subtypeA X, \dots \}$, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$ where $Y$ is a fresh type variable.
+  In this case, \todoHenry{argue that even in this case, decreasing metric}
 \end{proof}
 
 \begin{lemma}[Completeness of \Func{Solve}]
