@@ -148,7 +148,7 @@
   which uses them to solve the subtyping constraints. To avoid
   infinite applications of rules for unrolling signature functors,
   Chronolog provides a mechanism for suspending and resuming certain
-  forms of goals. The subtyping axioms presented to Chronolog are an
+  forms of constraints. The subtyping axioms presented to Chronolog are an
   equivalent algorithmic version of the usual declarative rules for
 algebraic programming. }
 
@@ -195,8 +195,8 @@ proofs of the constraints, instantiating type variables during proof
 search via unification.  The rules for rolling and unrolling
 signatures would, if handled naively, lead to diverging proof search.
 Instead, Chronolog provides a mechanism to indicate that certain
-problematic goals should be suspended.  These suspended goals may be
-resumed if they are instantiated during solving of other goals.
+problematic constraints should be suspended.  These suspended constraints may be
+resumed if they are instantiated during solving of other constraints.
 If not, an outer loop of our algorithm handles them by simply equating
 the lower and upper bound of the subtyping constraints.  We prove
 that solving in this manner terminates.
@@ -691,7 +691,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 % \end{figure}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{C}$.
-This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of goals.
+This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of constraints.
 Each constraint in these sets is of the form $\subtypeAtPos{A}{B}{a'}$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
 The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $\subtypeAtPos{A}{B}{a'}$.
 
@@ -727,11 +727,8 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
   \}
 \end{mathpar}
 
-\todoHenry{Standardize choice of terminology: "axioms" and "requirements"}
-
-Here is where the axioms and requirements are introduced.
+Here is where the constraints are introduced.
 \begin{itemize}
-  \item The axiom $R <:: R$ is introduced by $\omega ~ sub'(n)$.
   \item The requirement $X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat$ is introduced by $\gamma ~ n$.
   \item \todo{explain sources of a few other requirements -- just focus on like 3}
 \end{itemize}
@@ -1057,32 +1054,32 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \subsection{Constraint solving with Chronolog}
 
 We take a logic-programming approach to solving problems $\mathcal{C}$ in such a way that calculates the coercions that justify the generated subtyping relations.
-Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for goal suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed goals in Prolog-style logic PLs}
-Chronolog accepts a set of axioms, a set of goals, a logic variable substitution, and a suspension meta-predicate $S$.
-Anytime a goal that satisfies $S$ appears, that goal is immediately suspended.
-Suspended goals are still refined by logic variable substitutions.
-Chronolog can terminate in three ways: (1) failure with unsolved goals, (2) progress with suspended goals, (3) success with no suspended goals.
+Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed constraints in Prolog-style logic PLs}
+Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
+Anytime a constraint that satisfies $S$ appears, that constraint is immediately suspended.
+Suspended constraints are still refined by logic variable substitutions.
+Chronolog can terminate in three ways: (1) failure with unsolved constraints, (2) progress with suspended constraints, (3) success with no suspended constraints.
 
 A particular choice of $S$ is critical in this context due to the presence of the \textsc{Roll} and \textsc{Unroll} rules, which can be composed infinitely by straightforward SLD resolution, violating completeness of type checking.
-Chronolog prevents such infinite regresses by supporting a global suspension meta-predicate, $S$, where goals that satisfy $S$ are immediately suspended before being processed further.
-If such a refinement results in a goal no longer satisfying $S$, then the goal is resumed.
+Chronolog prevents such infinite regresses by supporting a global suspension meta-predicate, $S$, where constraints that satisfy $S$ are immediately suspended before being processed further.
+If such a refinement results in a constraint no longer satisfying $S$, then the constraint is resumed.
 % In our implementation, we use this suspension meta-predicate:
-We use a meta-predicate for $S$ that holds of these forms of goals, where $X,Y$ are type variables, $D$ is a datatype name, $R$ is a recursion type variable, and $A,B$ are types.
+We use a meta-predicate for $S$ that holds of these forms of constraints, where $X,Y$ are type variables, $D$ is a datatype name, $R$ is a recursion type variable, and $A,B$ are types.
 \begin{mathpar}
   X <:: \sMu{D}, X <:: \sFunctorApp{D}{A}, X <:: R, \sMu{D} <:: X, \sFunctorApp{D}{A} <:: X, R <:: X, X <:: Y
 \end{mathpar}
-Suspending goal of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to goals not of suspended forms.
-In particular, the only forms of goals that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
-This allows Chronolog, for example, to attempt to solve goals of the form $X <:: A \sArr B$ with both $\textsc{Arr}$ and $\textsc{Cata}$, or to attempt to solve goals of the form $A \sAlg B <:: X$ with both $\textsc{Alg}$ and $\textsc{Cata}$.
+Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to constraints not of suspended forms.
+In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
+This allows Chronolog, for example, to attempt to solve constraints of the form $X <:: A \sArr B$ with both $\textsc{Arr}$ and $\textsc{Cata}$, or to attempt to solve constraints of the form $A \sAlg B <:: X$ with both $\textsc{Alg}$ and $\textsc{Cata}$.
 
 \begin{algorithm}[htb]
   \caption{Constraint solving with Chronolog.}
   \label{alg:solver}
   \begin{algorithmic}[1]
-    \Function{Solve}{$\mathit{axioms}, \mathit{goals}$}
+    \Function{Solve}{$\mathit{constraints}$}
     \State $\sigma \gets \emptyset$ % \Comment{Initialize as the empty logic variable substitution}
-    \While{$\mathit{goals} \neq \emptyset$}
-    \State $\mathit{result} \gets \Func{Chronolog}(S, \mathit{axioms}, \mathit{goals}, \sigma$)
+    \While{$\mathit{constraints} \neq \emptyset$}
+    \State $\mathit{result} \gets \Func{Chronolog}(S, \mathit{constraints}, \sigma$)
     % \Statex
     % Pattern-matching block
     \State \Match $\mathit{result}$ \With
@@ -1091,18 +1088,18 @@ This allows Chronolog, for example, to attempt to solve goals of the form $X <::
     \State \quad \Case $\langle \text{``success''}, \sigma' \rangle \Rightarrow$
     \Return $\sigma'$
     % \Statex
-    \State \quad \Case $\langle \text{``progress''}, \sigma', \mathit{goals}' \rangle \Rightarrow$
-    \State \qquad $\mathit{goal} \gets \textsc{Sample}(\mathit{goals}')$
-    \State \qquad $\sigma \gets \Func{Refine}(\mathit{goal}) \circ \sigma'$
-    \State \qquad $\mathit{goals} \gets \sigma(\mathit{goals}')$
+    \State \quad \Case $\langle \text{``progress''}, \sigma', \mathit{constraints}' \rangle \Rightarrow$
+    \State \qquad $\mathit{constraint} \gets \textsc{Sample}(\mathit{constraints}')$
+    \State \qquad $\sigma \gets \Func{Refine}(\mathit{constraint}) \circ \sigma'$
+    \State \qquad $\mathit{constraints} \gets \sigma(\mathit{constraints}')$
     \EndWhile
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
 
-Constraints solving is accomplished by using Chronolog inside a loop that processes any suspended goals left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
-Each iteration, a single suspended goal is chosen to be processed by \textsc{Refine}, resulting in a substitution that refines that suspended goal (and may incidentally refine other suspended goals).
-The choice of which suspended goal to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \textsc{Roll} and \textsc{Unroll} (if there is a solution).
+Constraints solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
+Each iteration, a single suspended constraint is chosen to be processed by \textsc{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
+The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \textsc{Roll} and \textsc{Unroll} (if there is a solution).
 \todoHenry{justify this statement}
 
 \begin{mathpar}
@@ -1122,10 +1119,10 @@ The choice of which suspended goal to process may affect the order in which Chro
   We show termination by demonstrating a strictly decreasing metric over each iteration of the loop in \textsc{Solve}.
   Each iteration begins with an invocation of \textsc{Chronolog}.
   If \textsc{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
-  If \textsc{Chronolog} results in $\langle \text{``progress''}, \sigma', \mathit{goals}' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\mathit{goals}'$ must be in total smaller than the original $\mathit{goals}$ from the beginning of this iteration.
+  If \textsc{Chronolog} results in $\langle \text{``progress''}, \sigma', \mathit{constraints}' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\mathit{constraints}'$ must be in total smaller than the original $\mathit{constraints}$ from the beginning of this iteration.
 
-  The substitution resulting from $\textsc{Refine}(\textit{goal})$ preserves the size of goals in all but one case.
-  When $\textsc{Refine}(\textit{goal})$ increases the size of goals in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \textsc{Chronolog} will strictly decrease the size of these goals again immediately, as follows from a case analysis on all the possible results of applying $\textsc{Refine}(\textit{goal})$ to suspended goals.
+  The substitution resulting from $\textsc{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case.
+  When $\textsc{Refine}(\textit{constraint})$ increases the size of constraints in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \textsc{Chronolog} will strictly decrease the size of these constraints again immediately, as follows from a case analysis on all the possible results of applying $\textsc{Refine}(\textit{constraint})$ to suspended constraints.
 \end{proof}
 
 \begin{theorem}[Completeness]
