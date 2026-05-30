@@ -228,7 +228,7 @@ correct.  To summarize the contributions:
 
 \todoHenry{describe $\sRecVar{f}$ notation}
 
-Figure~\ref{fig:syntax} presents the syntax for the language $\lcata$,
+Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
 through which we study coercion inference for algebraic programming.
 We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic
 operator, to indicate a $\oplus$-separated list of expressions $e$.
@@ -345,7 +345,7 @@ typing.
       \sSubRecVar{R}
     \end{array}
   \end{align*}
-\caption{Syntax of $\lcata$}
+\caption{Syntax of \lcata}
 \label{fig:syntax}
 \end{figure}
 
@@ -536,25 +536,25 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \qquad
       \langle D, \mu Y . \dots + k(\sepBy{A'_i}{~\times}) + \dots \rangle \in \datatypes
       \qquad
-      \sepBy{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}}{ }
+      \sepBy{\Gamma \vdash a_i : A_i \gsep \constraints_{a_i}}{ }
     }{
-      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
     }
 
     \inferrule[Lam]{
-      \Gamma, (x : A) \vdash b : B \gsep \mathcal{C}_b
+      \Gamma, (x : A) \vdash b : B \gsep \constraints_b
     }{
-      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \mathcal{C}_b
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \constraints_b
     }
 
     \inferrule[App]{
       % [Note]: We introduce a type variable for the supertype of the codomain of f so that B <:: A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
       \freshMetavariables{X} \qquad
-      \Gamma \vdash f : B \gsep \mathcal{C}_f \qquad
-      \Gamma \vdash a : A \gsep \mathcal{C}_a
+      \Gamma \vdash f : B \gsep \constraints_f \qquad
+      \Gamma \vdash a : A \gsep \constraints_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \mathcal{C}_f \cup \mathcal{C}_a \cup \{ B \subtypeAP{f} A \sArr X \}
+      \constraints_f \cup \constraints_a \cup \{ B \subtypeAP{f} A \sArr X \}
     }
 
     \inferrule[Gamma]{
@@ -562,40 +562,40 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \freshMetavariables{X, Y} \qquad
       \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+} \rangle \in \datatypes
       \\\\
-      \Gamma \vdash a : C \gsep \mathcal{C}_a
+      \Gamma \vdash a : C \gsep \constraints_a
       \qquad
       % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
       % \\\\
-      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}
-      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}{ }
+      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \constraints_{b_i}
+      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \constraints_{b_i}}{ }
     }{
       \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
       \gsep
       \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
-      \mathcal{C}_a \cup
-      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \mathcal{C}_{b_i})
+      \constraints_a \cup
+      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \constraints_{b_i})
     }
 
     \inferrule[Omega]{
-      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \mathcal{C}_b
+      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \constraints_b
     }{
-      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \mathcal{C}_b
+      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \constraints_b
     }
 
     \inferrule[Let]{
-      \Gamma \vdash a : A \gsep \mathcal{C}_a \qquad
-      \Gamma, (x : A') \vdash b : B \gsep \mathcal{C}_b
+      \Gamma \vdash a : A \gsep \constraints_a \qquad
+      \Gamma, (x : A') \vdash b : B \gsep \constraints_b
     }{
-      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \mathcal{C}_a \cup \{ A \subtypeAP{a} A' \} \cup \mathcal{C}_b
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ A \subtypeAP{a} A' \} \cup \constraints_b
     }
 
     % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
     % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
     % \inferrule[InferCoe]{
     %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-    %   \Gamma \vdash a : A \gsep \mathcal{C}_a
+    %   \Gamma \vdash a : A \gsep \constraints_a
     % }{
-    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \mathcal{C}_a
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \constraints_a
     % }
   \end{mathpar}
 
@@ -703,14 +703,14 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 %   \label{fig:datatype-contructor-type-inference-rules}
 % \end{figure}
 
-Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{C}$.
-This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of constraints.
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
+This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints.
 Each constraint in these sets is of the form $A \subtypeAP{a'} B$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
-The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
+The system is designed such that a solution to $\constraints$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
 
 The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
-A derivation $\Gamma \vdash a : A \mid \mathcal{C}$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\mathcal{C}$ is solvable.
+A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
 
 For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
 
@@ -822,15 +822,15 @@ of rules are equivalent.
 \end{figure}
 
 Figure~\ref{fig:declarative-subtyping-rules} shows the rules for declarative
-subtyping $A \subtype B$.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
+subtyping $A \subtype B$.  We have reflexivity rule \IRule{Refl} for datatypes.  \IRule{Arr} is the usual
 subtyping rule for function types, which is contravariant in the
-domain and covariant in the codomain.  \textsc{Cov} expresses that the
-signature functor is indeed a (covariant) functor.  \textsc{Alg}
+domain and covariant in the codomain.  \IRule{Cov} expresses that the
+signature functor is indeed a (covariant) functor.  \IRule{Alg}
 expresses that algebra types $D \sAlg A$ are covariant in their
-carriers $A$.  \textsc{Roll} and \textsc{Unroll} together express that
-$\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \textsc{Cata} expresses that
+carriers $A$.  \IRule{Roll} and \IRule{Unroll} together express that
+$\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \IRule{Cata} expresses that
 an algebra can be coerced to a function, namely the algebra's
-catamorphism.  Finally, there is the \textsc{Trans} rule, completing
+catamorphism.  Finally, there is the \IRule{Trans} rule, completing
 the definition of subtyping as a partial order.
 
 \subsection{Algorithmic subtyping}
@@ -897,10 +897,10 @@ the definition of subtyping as a partial order.
 Figure~\ref{fig:algorithmic-subtyping-rules} presents the rules for
 algorithmic subtyping $A \subtypeA B$.  We use similar names as for the
 declarative rules, but critically, the algorithmically problematic
-\textsc{Trans} rule is not present.  A consequence of this is that now
+\IRule{Trans} rule is not present.  A consequence of this is that now
 several rules that did not have premises in the declarative
 formulation, here do.  For example, compare the declarative (on the
-left) and algorithmic \textsc{Cata} rules:
+left) and algorithmic \IRule{Cata} rules:
 \[
   \begin{array}{lll}
     \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
@@ -912,7 +912,7 @@ is no rule for transitivity, which could allow those relationships to
 be taken into account after this rule is applied.  In effect,
 transitivity needs to be built into all the other rules.  We see a
 similar change from the declarative to the algorithmic versions of the
-\textsc{Roll} and \textsc{Unroll} rules, for rolling and unrolling the
+\IRule{Roll} and \IRule{Unroll} rules, for rolling and unrolling the
 signature functor.
 
 \begin{lemma}[Decrease]
@@ -1060,14 +1060,14 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 
 \subsection{Constraint solving with Chronolog}
 
-We take a logic-programming approach to solving problems $\mathcal{C}$ in such a way that calculates the coercions that justify the generated subtyping relations.
+We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
 Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension compared to rule-level techniques in Prolog variants (e.g. Prolog II). \todo{source: previous work on delayed constraints in Prolog-style logic PLs}
 Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
 Anytime a constraint that satisfies $S$ appears, that constraint is immediately suspended.
 Suspended constraints are still refined by logic variable substitutions.
 Chronolog can terminate in three ways: (1) failure with unsolved constraints, (2) progress with suspended constraints, (3) success with no suspended constraints.
 
-A particular choice of $S$ is critical in this context due to the presence of the \textsc{Roll} and \textsc{Unroll} rules, which can be composed infinitely by straightforward SLD resolution, violating completeness of type checking.
+A particular choice of $S$ is critical in this context due to the presence of the \IRule{Roll} and \IRule{Unroll} rules, which can be composed infinitely by straightforward SLD resolution, violating completeness of type checking.
 Chronolog prevents such infinite regresses by supporting a global suspension meta-predicate, $S$, where constraints that satisfy $S$ are immediately suspended before being processed further.
 If such a refinement results in a constraint no longer satisfying $S$, then the constraint is resumed.
 % In our implementation, we use this suspension meta-predicate:
@@ -1077,16 +1077,18 @@ We use a meta-predicate for $S$ that holds of these forms of constraints, where 
 \end{mathpar}
 Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to constraints not of suspended forms.
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
-This allows Chronolog, for example, to attempt to solve constraints of the form $X \subtypeA A \sArr B$ with both $\textsc{Arr}$ and $\textsc{Cata}$, or to attempt to solve constraints of the form $A \sAlg B \subtypeA X$ with both $\textsc{Alg}$ and $\textsc{Cata}$.
+This allows Chronolog, for example, to attempt to solve constraints of the form $X \subtypeA A \sArr B$ with both $\IRule{Arr}$ and $\IRule{Cata}$, or to attempt to solve constraints of the form $A \sAlg B \subtypeA X$ with both $\IRule{Alg}$ and $\IRule{Cata}$.
+
+\todoHenry{mention that \Func{Solve} is nondeterministic}
 
 \begin{algorithm}[htb]
   \caption{Constraint solving with Chronolog.}
   \label{alg:solver}
   \begin{algorithmic}[1]
-    \Function{Solve}{$\mathit{constraints}$}
+    \Function{Solve}{$\constraints$}
     \State $\sigma \gets \emptyset$ % \Comment{Initialize as the empty logic variable substitution}
-    \While{$\mathit{constraints} \neq \emptyset$}
-    \State $\mathit{result} \gets \Func{Chronolog}(S, \mathit{constraints}, \sigma$)
+    \While{$\constraints \neq \emptyset$}
+    \State $\mathit{result} \gets \Func{Chronolog}(S, \constraints, \sigma$)
     % \Statex
     % Pattern-matching block
     \State \Match $\mathit{result}$ \With
@@ -1095,10 +1097,10 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
     \State \quad \Case $\langle \text{``success''}, \sigma' \rangle \Rightarrow$
     \Return $\sigma'$
     % \Statex
-    \State \quad \Case $\langle \text{``progress''}, \sigma', \mathit{constraints}' \rangle \Rightarrow$
-    \State \qquad $\mathit{constraint} \gets \textsc{Sample}(\mathit{constraints}')$
+    \State \quad \Case $\langle \text{``progress''}, \sigma', \constraints' \rangle \Rightarrow$
+    \State \qquad $\mathit{constraint} \gets \Func{Sample}(\constraints')$
     \State \qquad $\sigma \gets \Func{Refine}(\mathit{constraint}) \circ \sigma'$
-    \State \qquad $\mathit{constraints} \gets \sigma(\mathit{constraints}')$
+    \State \qquad $\constraints \gets \sigma(\constraints')$
     \State \EndMatch
     \EndWhile
     \EndFunction
@@ -1106,45 +1108,65 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
 \end{algorithm}
 
 Constraints solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
-Each iteration, a single suspended constraint is chosen to be processed by \textsc{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
-The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \textsc{Roll} and \textsc{Unroll} (if there is a solution).
+Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
+The choice of which suspended constraint to process may affect the order in which Chronolog explores solutions but all choices lead to equivalent solutions up to permutations of \IRule{Roll} and \IRule{Unroll} (if there is a solution).
 \todoHenry{justify this statement}
 
 \begin{mathpar}
   \begin{array}{rlcrll}
-    \textsc{Refine}(\sMu{D} &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
-    \textsc{Refine}(\sFunctorApp{D}{A} &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
-    \textsc{Refine}(R &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA R) &= \{ X \mapsto R \} \\
-    &&& \textsc{Refine}(X &\subtypeA Y) &= \{ X \mapsto Y \}
+    \Func{Refine}(\sMu{D} &\subtypeA X) &=& \Func{Refine}(X &\subtypeA \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
+    \Func{Refine}(\sFunctorApp{D}{A} &\subtypeA X) &=& \Func{Refine}(X &\subtypeA \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+    \Func{Refine}(R &\subtypeA X) &=& \Func{Refine}(X &\subtypeA R) &= \{ X \mapsto R \} \\
+    &&& \Func{Refine}(X &\subtypeA Y) &= \{ X \mapsto Y \}
   \end{array}
 \end{mathpar}
 
-\begin{theorem}[Termination]
-  \label{thm:solver-termination}
-  $\textsc{Solve}$ terminates.
-\end{theorem}
+\begin{lemma}[Termination]
+  \label{lem:solver-termination}
+  For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ terminates.
+\end{lemma}
 \begin{proof}
-  We show termination by demonstrating a strictly decreasing metric over each iteration of the loop in \textsc{Solve}.
-  Each iteration begins with an invocation of \textsc{Chronolog}.
-  If \textsc{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
-  If \textsc{Chronolog} results in $\langle \text{``progress''}, \sigma', \mathit{constraints}' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\mathit{constraints}'$ must be in total smaller than the original $\mathit{constraints}$ from the beginning of this iteration.
+  We show termination by demonstrating a strictly decreasing metric over each iteration of the loop in \Func{Solve}.
+  Each iteration begins with an invocation of \Func{Chronolog}.
+  If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
+  If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
 
-  The substitution resulting from $\textsc{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case.
-  When $\textsc{Refine}(\textit{constraint})$ increases the size of constraints in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \textsc{Chronolog} will strictly decrease the size of these constraints again immediately, as follows from a case analysis on all the possible results of applying $\textsc{Refine}(\textit{constraint})$ to suspended constraints.
+  The substitution resulting from $\Func{Refine}(\textit{constraint})$ preserves the size of constraints in all but one case.
+  When $\Func{Refine}(\textit{constraint})$ increases the size of constraints in one case, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$, \Func{Chronolog} will strictly decrease the size of these constraints again immediately, as follows from a case analysis on all the possible results of applying $\Func{Refine}(\textit{constraint})$ to suspended constraints.
 \end{proof}
 
-\begin{theorem}[Completeness]
-  \label{thm:solver-completeness}
-  \textsc{Solver} is a decision procedure for constraint problems $\mathcal{C}$.
-\end{theorem}
+\begin{lemma}[Completeness]
+  \label{lem:solver-completeness}
+  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\exists \sigma' \in \eqClass{\sigma}{\sim}$ such that $\sigma' \in \Func{Solve}(\constraints)$.
+\end{lemma}
 \begin{proof}
-  \textsc{Solve} will finds all solutions (up to permutations of \textsc{Roll} and \textsc{Unroll}) to $\mathcal{C}$ because \textsc{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \textsc{Refine} preserves validity of solution $\sigma$, and \textsc{Solve} terminates by theorem \ref{thm:solver-termination}.
+  \Func{Solve} will finds all solutions (up to permutations of \IRule{Roll} and \IRule{Unroll}) to $\constraints$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by theorem \ref{lem:solver-termination}.
 \end{proof}
 
-While there may be multiple solutions to $\mathcal{C}$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \textsc{Roll} and \textsc{Unroll} \todoHenry{justify this claim}.
+While there may be multiple solutions to $\constraints$, solutions to such constraint problems generated by the procedure described in Section~\ref{sec:typechecking} are equivalent up permutations of \IRule{Roll} and \IRule{Unroll} \todoHenry{justify this claim}.
 Furthermore, solutions related by this equivalence, when applied as coercion insertions to terms, result in semantically equivalent terms where \texttt{roll} and \texttt{unroll} are semantically interpreted as identity functions \todoHenry{justify this claim}.
 
-\todoHenry{state completeness of type checking, which simply combines Theorem~\ref{thm:completeness} and Theorem~\ref{thm:solver-completeness}.}
+\begin{algorithm}[htb]
+  \caption{Type checking for \lcata.}
+  \label{alg:type-checker}
+  \begin{algorithmic}[1]
+    \Function{TypeCheck}{$\Gamma, a, A$}
+    \State $\constraints \gets \Func{Generate}(\Gamma, a, A)$
+    \State \Match $\Func{Solve}(\constraints)$ \With
+    \State \quad \Case $[~] \Rightarrow \bot$
+    \State \quad \Case $\_ \Rightarrow \top$
+    \State \EndMatch
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}
+  \label{thm:type-checker-completeness}
+  If $\Gamma \vdash a : A$ according to the declarative typing rules for \lcata displayed in Figure~\ref{fig:typing-rules}, then $\Func{TypeCheck}(\Gamma, a, A)$ (Algorithm~\ref{alg:type-checker}) accepts.
+\end{theorem}
+\begin{proof}
+  \todoHenry{Essentially, by Theorem~\ref{thm:completeness} and Lemma~\ref{lem:solver-completeness}.}
+\end{proof}
 
 \section{Returning to the Examples} % Henry
 
