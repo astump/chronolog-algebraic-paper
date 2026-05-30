@@ -694,43 +694,24 @@ The constraint generation phase also performs type inference, however in contras
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
 A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
 
-For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} results in the following constraint problem, where $X,Y,Z,W,U$ are fresh type variables and $R$ is a fresh recursion type variable:
-
-\todoHenry{Make sure to update this if the constraint generation rules change.}
-
-\todoHenry{Insert term positions on constraints, just using the terms themselves}
-
+For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
 \begin{mathpar}
   \{
-    % X is domain of λ m ...
-    % R is the recursive type var for omega
-    % Y is the output type of sub' n
-    % U is return of γ (and so is return of ω, and so is return of λ)
-    % W is the recursive param of Nat for the pattern match
-    % Z is the recursive param of Zero
-    %
-    % γ ...
-    X \sArr \sNat \sAlg U \subtypeA \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
-    % γ sub' n' ...
-    \sFunctorApp{\sNat}{Y} \subtypeA \sFunctorApp{\sNat}{W},
-    % sub' n
-    R \sArr \sMu\sNat \subtypeA R \sArr \sFunctorApp{\sNat}{Y},
-    % roll Zero
-    \sFunctorApp{\sNat}{Z} \subtypeA U,
-    % m'
-    \sMu\sNat \subtypeA U
+    \sFunctorApp{\sNat}{X} \subtypeAP{\sZero} \sMu\sNat,
+    \sMu\sNat \subtypeAP{sub' ~ n'} \sFunctorApp{\sNat}{Y}
+  \}
+\end{mathpar}
+As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatList → NatList} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+\begin{mathpar}
+  \{
+    \sFunctorApp{\sNatList}{X} \subtypeAP{\sNil} \sMu\sNatList,
+    \sNat \sAlg \sMu\sNat \subtypeAP{sub ~ h1} \sMu\sNat \sArr \sMu\sNat
   \}
 \end{mathpar}
 
-Here is where the constraints are introduced.
-\begin{itemize}
-  \item The requirement $X \sArr \sNat \sAlg U \subtypeA \sMu\sNat \sArr \sNat \sAlg \sMu\sNat$ is introduced by $\gamma ~ n$.
-  \item \todo{explain sources of a few other requirements -- just focus on like 3}
-\end{itemize}
-
-\todoHenry{Explain anything else necessary for understanding constraint generation}
-
-\todoHenry{State completeness and soundness for the constraint generation rules relative to the typing rules}
+\begin{theorem}[Completeness of \Func{Generate}]
+  If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+\end{theorem}
 
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
