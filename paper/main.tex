@@ -346,9 +346,11 @@ typing.
 \label{fig:syntax}
 \end{figure}
 
-A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is its name and $F$ is its signature functor.
-This approach was begun and developed in various early works~\cite{hagino87,goguen+77}.
-For examples presented in this paper, we define the following set of datatypes.
+A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is
+its name and $F$ is its signature functor.  This approach was proposed
+and developed in early works like~\cite{hagino87,goguen+77}.  For
+examples presented in this paper, we define the following set of
+datatypes.
 \begin{align*}
   \mathscr{D} = \{
     & \langle \sNat , \mu X . \sZero + \sSuc(X) \rangle, \\
@@ -993,15 +995,13 @@ inductively proven lemmas.
 \label{sec:agda}
 
 Types are represented by the Agda datatype \verb|Ty| in
-Figure~\ref{fig:synagda}.  For simplicity, we have single signature
+Figure~\ref{fig:synagda}.  For simplicity, we have a single signature
 functor \verb|D| and its least fixed-point \verb|μD| (note that this
   is a single identifier in Agda, not an application of a \verb|μ|
 operator to \verb|D|).  Algebra types $D \To A$ are represented just
-as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda,
-like \verb|μD|.  Arrow types are represented $\arr{A}{B}$ (as other
+as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda.  Arrow types are represented $\arr{A}{B}$ (as other
 arrow notations are already in use).  The figure declares some fixity
-information, for lighter notation where these operators are used
-later.
+information, for lighter notation below.
 
 \begin{figure}
 \begin{verbatim}
@@ -1021,9 +1021,9 @@ infixr 10 D_
 Figure~\ref{fig:algagda} show the representation of the algorithmic
 subtyping system; we omit a similar definition for declarative
 subtyping, for space reasons.  Each set of rules is represented as an
-indexed inductive type.  Each rule becomes a constructor of the type.
-For example, we have, for both types, \verb|Refl| of type
-\verb|μD <: μD|, which corresponds exactly to the \verb|Refl| rules of
+indexed inductive type, with each rule a constructor.  For example, we
+have, for both types, \verb|Refl| of type \verb|μD <: μD|, which
+corresponds exactly to the \verb|Refl| rules of
 Figures~\ref{fig:declarative-subtyping-rules}
 and~\ref{fig:algorithmic-subtyping-rules}.  Conveniently, Agda allows
 reusing constructor names across datatypes.  Dependent typing is used
@@ -1035,11 +1035,10 @@ for quantification.  For example, the \verb|Roll| constructor has type
 \verb|T : Tp| and a proof of \verb|T <:: μD|, \verb|Roll| returns a
 proof of \verb|D T <:: μD|.  Finally, the statements of soundness and
 completeness are shown in Figure~\ref{fig:sndcmpl}.  The total number
-of lines for all the Agda code is under 150.  This shows that the
-proof burden of the approach is very manageable.  Part of the reason
-for this is that the types do not contain bound variables, and so the
-technical overhead associated with reasoning in the presence of those
-does not arise.
+of lines for all the Agda code is under 150, a very modest burden of
+proof.  This is partly because types do not contain bound variables,
+and so the technical overhead associated with these (for example,
+with de Bruijn indices) is avoided.
 
 \begin{figure}
 \begin{verbatim}
@@ -1185,7 +1184,7 @@ subs = ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
     | Cons(h2, t2) →
         Cons(sub h1 h2, subs' t1 t2) } }
   \end{verbatim}
-  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}.}
+  \caption{Code for \texttt{sub} and \texttt{subs} with coercions all implicit.}
   \label{fig:example-subs-algebraic-without-coercions}
 \end{figure}
 
