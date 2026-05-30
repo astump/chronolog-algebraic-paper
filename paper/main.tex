@@ -236,7 +236,11 @@ for simplicity. Types feature least fixed points $\sMu{D}$ of signature functors
 Types $D \sAlg B$ are the types for algebras over $\sMu{D}$ computing a value of
 type $B$, the carrier of the algebra.  Recursion type variables $\sRecVar{f}$
 are introduced in the bodies of algebras, where $f$ is the name of the function
-introduced by the respective algebra.
+introduced by the respective algebra.  While type variables (which are unrelated
+to recursion type variables) appear during type checking, as detailed in
+Section~\ref{sec:typechecking}, type variables cannot appear in the surface
+syntax for types.  In this way, all types that appear in programs are ground
+types.
 
 Terms include the usual constructs of simply typed $\lambda$-calculus. There are
 also constructor applications $k(\sepBy{a}{,})$, and simple pattern-matching
@@ -347,6 +351,7 @@ recursive functional programs, albeit with more abstract typing.
 
 Throughout the remainder of this paper, we implicitly constrain each metavariable to range exclusively over the valid syntactic forms defined by its corresponding production in Figure~\ref{fig:syntax}.
 
+
 A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is
 its name and $F$ is its signature functor.  This approach was proposed
 and developed in early works like~\cite{hagino87,goguen+77}.  For
@@ -358,8 +363,6 @@ datatypes.
     & \langle \sNatList, \mu X . \sNil + \sCons(\sMu\sNat \times X) \rangle
   \}
 \end{align*}
-
-\todoHenry{note that type variables only appear in constraints, but all types inferred and that you can write in the langauge should be concrete (variable-free)}
 
 \section{Motivating examples}
 \label{sec:motivating-examples}
@@ -487,10 +490,12 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Type checking with constraints}
 \label{sec:typechecking}
 
-\todoHenry{mention we are not doing full type inference, and are just using type variables for the sake of inferring coercions. so, lambdas and lets still have annotations}
-
 We present a type checking procedure based on generating and solving subtyping constraints.
+Crucially, while type variables are introduced during the type-checking phase, they serve exclusively to facilitate constraint satisfaction rather than to support type inference. 
+Both $\lambda$-abstractions and $\textsyntax{let}$-bindings require explicit type annotations, thereby ensuring that all types occurring within a program are ground. We defer the development of a comprehensive type inference mechanism to future work.
+
 First, subtyping constraints are generated from a structurally recursive analysis of a term, where each constraint corresponds to a position in the term at which a coercion (which may end up being the identity) is required to justify the subtype relation.
+\todoHenry{name \Func{Generate} function.}
 Then, these subtyping constraints are solved by a logic-programming engine by applying the algorithmic subtyping rules in Figure~\ref{fig:algorithmic-subtyping-rules}, where each rule corresponds to a constructor of the coercion to be inserted at the constraint's associated position in the term.
 
 \begin{figure}[htb]
