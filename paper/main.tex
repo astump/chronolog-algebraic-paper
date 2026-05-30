@@ -226,40 +226,36 @@ correct.  To summarize the contributions:
 
 \section{Syntax}
 
-\todoHenry{describe $\sRecVar{f}$ notation}
+Figure~\ref{fig:syntax} presents the syntax for the language \lcata, through
+which we study coercion inference for algebraic programming. We use notation
+$\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic operator, to indicate a
+$\oplus$-separated list of expressions $e$. Datatypes $D$ are described as least
+fixed points of signature functors $F$, which we take to be polynomial functors
+for simplicity. Types feature least fixed points $\sMu{D}$ of signature functors
+(referenced by datatype name $D$), as well as usual function types $A \to B$.
+Types $D \To B$ are the types for algebras over $\sMu{D}$ computing a value of
+type $B$, the carrier of the algebra.  Recursion type variables $\sRecVar{f}$
+are introduced in the bodies of algebras, where $f$ is the name of the function
+introduced by the respective algebra.
 
-Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
-through which we study coercion inference for algebraic programming.
-We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic
-operator, to indicate a $\oplus$-separated list of expressions $e$.
-Datatypes $D$ are described as least fixed points of signature
-functors $F$, which we take to be polynomial functors for simplicity.
-Types feature least fixed points $\sMu{D}$ of signature functors
-(referenced by datatype name $D$), as well as usual function types 
-$A \to B$.  Types $D \To B$ are the types for algebras over $\sMu{D}$
-computing a value of type $B$, the carrier of the algebra.  Type variables $R$
-are introduced in the bodies of algebras.
-
-Terms include the usual constructs of simply typed $\lambda$-calculus.
-There are also constructor applications $k(\sepBy{a}{,})$, and simple
-pattern-matching with notation $\gamma a . \{
-\sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where the value of $a$
-is matched against constructor patterns $k(\sepBy{x}{,})$.  For
-totality, all constructors for $a$'s datatype must be covered.
-We distinguish applications $c(a)$ of coercions $c$, which include
-rolling, unrolling, and catamorphizing.  Coercions will be
-explained with their typing rules in Section~\ref{sec:typechecking}.
+Terms include the usual constructs of simply typed $\lambda$-calculus. There are
+also constructor applications $k(\sepBy{a}{,})$, and simple pattern-matching
+with notation $\gamma a . \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where
+the value of $a$ is matched against constructor patterns $k(\sepBy{x}{,})$.  For
+totality, all constructors for $a$'s datatype must be covered. We distinguish
+applications $c(a)$ of coercions $c$, which include rolling, unrolling, and
+catamorphizing.  Coercions will be explained with their typing rules in
+Section~\ref{sec:typechecking}.
 
 Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
-algebras~\cite{uustalu99}.  With this style, an algebra is presented
-with a function $f$ from $R$ to the carrier $B$ of the algebra.  $R$
-is an abstract type introduced in the algebra.  The input $x$ has type
-$\sFunctorApp{D}{R}$, where $D$ is the signature functor of the algebra.  The body
-$b : B$ may pattern-match on $x$ and apply $f$ to subdata of type $R$
-that are revealed.  One benefit over conventional $F$-algebras is that
-calling $f$ to recurse makes algebras appear very similar to
-conventional recursive functional programs, albeit with more abstract
-typing.
+algebras~\cite{uustalu99}.  With this style, an algebra is presented with a
+function $f$ from $\sRecVar{f}$ to the carrier $B$ of the algebra.
+$\sRecVar{f}$ is an abstract type introduced in the algebra.  The input $x$ has
+type $\sFunctorApp{D}{R}$, where $D$ is the signature functor of the algebra.
+The body $b : B$ may pattern-match on $x$ and apply $f$ to subdata of type
+$\sRecVar{f}$ that are revealed.  One benefit over conventional $F$-algebras is
+that calling $f$ to recurse makes algebras appear very similar to conventional
+recursive functional programs, albeit with more abstract typing.
 
 
 \begin{figure}[htb]
@@ -367,29 +363,6 @@ datatypes.
 
 \section{Motivating examples}
 \label{sec:motivating-examples}
-
-% [Note]: this is the old Haskell example
-% \begin{subfigure}[t]{0.45\textwidth}
-%     \centering
-%     \begin{verbatim}
-% sub :: Nat -> Nat -> Nat
-% sub m n = case n of
-%   Zero -> m
-%   Suc n' -> case sub n' of
-%     Zero -> Zero
-%     Suc m' -> m'
-
-% subs :: [Nat] -> [Nat] -> [Nat]
-% subs l1 l2 = case l1 of
-%   Nil -> Nil
-%   Cons h1 t1 -> case t1 of
-%     Nil -> Nil
-%     Cons h2 t2 ->
-%       Cons (sub h1 h2, subs t1 t2)
-%     \end{verbatim}
-%     \caption{Haskell}
-%     \label{fig:example-subs-haskell}
-%   \end{subfigure}
 
 \begin{figure}[H]
   \centering
@@ -1071,7 +1044,7 @@ A particular choice of $S$ is critical in this context due to the presence of th
 Chronolog prevents such infinite regresses by supporting a global suspension meta-predicate, $S$, where constraints that satisfy $S$ are immediately suspended before being processed further.
 If such a refinement results in a constraint no longer satisfying $S$, then the constraint is resumed.
 % In our implementation, we use this suspension meta-predicate:
-We use a meta-predicate for $S$ that holds of these forms of constraints, where $X,Y$ are type variables, $D$ is a datatype name, $R$ is a recursion type variable, and $A,B$ are types.
+We use a meta-predicate for $S$ that holds of the following forms of constraints.
 \begin{mathpar}
   X \subtypeA \sMu{D}, X \subtypeA \sFunctorApp{D}{A}, X \subtypeA R, \sMu{D} \subtypeA X, \sFunctorApp{D}{A} \subtypeA X, R \subtypeA X, X \subtypeA Y
 \end{mathpar}
