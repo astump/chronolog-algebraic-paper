@@ -122,11 +122,12 @@
 \newcommand{\isDatatype}[1]{#1 ~\text{data}}
 \newcommand{\atPos}[1]{^{#1}}
 \newcommand{\constructorOf}[4]{(#1 : \sFunctorConSig{#2}{#3}{#4}) \in \mathscr{K}(#3, #4)}
-\newcommand{\subtypeA}[2]{#1 \mathrel{<::} #2}
-\newcommand{\subtypeAtPos}[3]{#1 \mathop{\mathrel{<::}}_{#3} #2}
-% \newcommand{\atPos}[1]{}
+\newcommand{\subtype}{\mathrel{<:}}
+\newcommand{\subtypeA}{\mathrel{<::}}
+\newcommand{\subtypeAP}[1]{\mathop{\subtypeA}_{#1}}
 
 \newcommand{\Match}{\textbf{match }}
+\newcommand{\EndMatch}{\textbf{end match}}
 \newcommand{\With}{\textbf{ with}}
 \newcommand{\Case}{\textbf{case }}
 \newcommand{\Func}[1]{\textsc{#1}}

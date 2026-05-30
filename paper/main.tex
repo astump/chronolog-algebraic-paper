@@ -203,8 +203,8 @@ that solving in this manner terminates.
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
-nondeterministically guesses $B$ with $A <: B$ and $B <: C$, to solve
-$A <: C$.  We identify (Section~\ref{sec:subtyping}) an algorithmic
+nondeterministically guesses $B$ with $A \subtype B$ and $B \subtype C$, to solve
+$A \subtype C$.  We identify (Section~\ref{sec:subtyping}) an algorithmic
 set of subtyping rules, without transitivity, and prove it equivalent
 in Agda to the declarative rules.  This both ensures we can use logic
 programming (with our algorithmic rules) to solve these subtyping
@@ -290,7 +290,7 @@ typing.
       &::=&
       \cdot \mid
       \Gamma , (x : A) \mid
-      \Gamma , (R : \ast)
+      \Gamma , (R_a : \ast)
       \\[0.5em]
       %
       \text{(Datatype signature functor)} &
@@ -479,13 +479,13 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
     }
 
     \inferrule[Omega]{
-      \Gamma, (R : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B
+      \Gamma, (R_f : \ast), (f : R \sArr A), (x : \sFunctorApp{D}{R}) \vdash b : B
     }{
       \Gamma \vdash \omega f(x) . b : D \sAlg B
     }
 
     \inferrule[Subtype]{
-      \Gamma \vdash A <: A' \qquad
+      \Gamma \vdash A \subtype A' \qquad
       \Gamma \vdash a : A
     }{
       \Gamma \vdash a : A'
@@ -521,7 +521,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \overline{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}} \qquad
       \langle D, \mu Y . \dots + k(\overline{A'_i ~\times}) + \dots \rangle \in \mathscr{D}
     }{
-      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ \subtypeAtPos{A_i}{A'_i[Y \mapsto X]}{a_i}  \})
+      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
     }
 
     \inferrule[Lam]{
@@ -537,7 +537,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \Gamma \vdash a : A \gsep \mathcal{C}_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \mathcal{C}_f \cup \mathcal{C}_a \cup \{ \subtypeAtPos{B}{A \sArr X}{f} \}
+      \mathcal{C}_f \cup \mathcal{C}_a \cup \{ B \subtypeAP{f} A \sArr X \}
     }
 
     \inferrule[Gamma]{
@@ -554,9 +554,9 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     }{
       \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
       \gsep
-      \{ \subtypeAtPos{C}{\sFunctorApp{D}{X}}{a} \} \cup
+      \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
       \mathcal{C}_a \cup
-      \bigcup_i (\{ \subtypeAtPos{B_i}{Y}{b_i} \} \cup \mathcal{C}_{b_i})
+      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \mathcal{C}_{b_i})
     }
 
     \inferrule[Omega]{
@@ -569,7 +569,7 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
       \Gamma \vdash a : A \gsep \mathcal{C}_a \qquad
       \Gamma, (x : A') \vdash b : B \gsep \mathcal{C}_b
     }{
-      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \mathcal{C}_a \cup \{ \subtypeAtPos{A}{A'}{a} \} \cup \mathcal{C}_b
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \mathcal{C}_a \cup \{ A \subtypeAP{a} A' \} \cup \mathcal{C}_b
     }
 
     % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
@@ -692,8 +692,8 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \mathcal{C}$.
 This is a usual typing judgment augmented with a constraint problem $\mathcal{C}$, where $\mathcal{C}$ is a set of constraints.
-Each constraint in these sets is of the form $\subtypeAtPos{A}{B}{a'}$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
-The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $\subtypeAtPos{A}{B}{a'}$.
+Each constraint in these sets is of the form $A \subtypeAP{a'} B$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
+The system is designed such that a solution to $\mathcal{C}$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
 
 The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
@@ -715,21 +715,21 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} result
     % Z is the recursive param of Zero
     %
     % γ ...
-    X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
+    X \sArr \sNat \sAlg U \subtypeA \sMu\sNat \sArr \sNat \sAlg \sMu\sNat,
     % γ sub' n' ...
-    \sFunctorApp{\sNat}{Y} <:: \sFunctorApp{\sNat}{W},
+    \sFunctorApp{\sNat}{Y} \subtypeA \sFunctorApp{\sNat}{W},
     % sub' n
-    R \sArr \sMu\sNat <:: R \sArr \sFunctorApp{\sNat}{Y},
+    R \sArr \sMu\sNat \subtypeA R \sArr \sFunctorApp{\sNat}{Y},
     % roll Zero
-    \sFunctorApp{\sNat}{Z} <:: U,
+    \sFunctorApp{\sNat}{Z} \subtypeA U,
     % m'
-    \sMu\sNat <:: U
+    \sMu\sNat \subtypeA U
   \}
 \end{mathpar}
 
 Here is where the constraints are introduced.
 \begin{itemize}
-  \item The requirement $X \sArr \sNat \sAlg U <:: \sMu\sNat \sArr \sNat \sAlg \sMu\sNat$ is introduced by $\gamma ~ n$.
+  \item The requirement $X \sArr \sNat \sAlg U \subtypeA \sMu\sNat \sArr \sNat \sAlg \sMu\sNat$ is introduced by $\gamma ~ n$.
   \item \todo{explain sources of a few other requirements -- just focus on like 3}
 \end{itemize}
 
@@ -752,7 +752,7 @@ of rules are equivalent.
 
 \newcommand{\declcata}[1]{
   \inferrule[#1]{ }{
-    D \sAlg A <: \sMu{D} \sArr A
+    D \sAlg A \subtype \sMu{D} \sArr A
 }}
 
 \begin{figure}[htb]
@@ -765,45 +765,45 @@ of rules are equivalent.
       \isDatatype{D}
     }
     {
-      \sMu{D} <: \sMu{D}
+      \sMu{D} \subtype \sMu{D}
     }
 
     \inferrule[Arr]
     {
-      A' <: A \quad
-      B <: B'
+      A' \subtype A \quad
+      B \subtype B'
     }
     {
-      A \sArr B <: A' \sArr B'
+      A \sArr B \subtype A' \sArr B'
     }
 
     \inferrule[Cov]{
-      A <: A'
+      A \subtype A'
     }{
-      \sFunctorApp{D}{A} <: \sFunctorApp{D}{A'}
+      \sFunctorApp{D}{A} \subtype \sFunctorApp{D}{A'}
     }
 
     \inferrule[Alg]{
-      A <: A'
+      A \subtype A'
     }{
-      D \sAlg A <: D \sAlg A'
+      D \sAlg A \subtype D \sAlg A'
     }
 
     \inferrule[Roll]{ }{
-      \sFunctorApp{D}{\sMu{D}} <: \sMu{D}
+      \sFunctorApp{D}{\sMu{D}} \subtype \sMu{D}
     }
 
     \inferrule[Unroll]{ }{
-      \sMu{D} <: \sFunctorApp{D}{\sMu{D}}
+      \sMu{D} \subtype \sFunctorApp{D}{\sMu{D}}
     }
 
     \declcata{Cata}
 
     \inferrule[Trans]{
-      A <: A' \quad
+      A \subtype A' \quad
       A' < A''
     }{
-      A <: A''
+      A \subtype A''
     }
   \end{mathpar}
 
@@ -812,7 +812,7 @@ of rules are equivalent.
 \end{figure}
 
 Figure~\ref{fig:declarative-subtyping-rules} shows the rules for declarative
-subtyping $A <: B$.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
+subtyping $A \subtype B$.  We have reflexivity rule \textsc{Refl} for datatypes.  \textsc{Arr} is the usual
 subtyping rule for function types, which is contravariant in the
 domain and covariant in the codomain.  \textsc{Cov} expresses that the
 signature functor is indeed a (covariant) functor.  \textsc{Alg}
@@ -827,10 +827,10 @@ the definition of subtyping as a partial order.
 
 \newcommand{\decproccata}[1]{
   \inferrule[#1]{
-    B <:: \sMu{D} \quad
-    A <:: C
+    B \subtypeA \sMu{D} \quad
+    A \subtypeA C
   }{
-    D \sAlg A <:: B \sArr C
+    D \sAlg A \subtypeA B \sArr C
 }}
 
 \begin{figure}[htb]
@@ -843,40 +843,40 @@ the definition of subtyping as a partial order.
       \isDatatype{D}
     }
     {
-      \sMu{D} <:: \sMu{D}
+      \sMu{D} \subtypeA \sMu{D}
     }
 
     \inferrule[Arr]
     {
-      A' <:: A \quad
-      B <:: B'
+      A' \subtypeA A \quad
+      B \subtypeA B'
     }
     {
-      A \sArr B <:: A' \sArr B'
+      A \sArr B \subtypeA A' \sArr B'
     }
 
     \inferrule[Cov]{
-      A <:: A'
+      A \subtypeA A'
     }{
-      \sFunctorApp{D}{A} <:: \sFunctorApp{D}{A'}
+      \sFunctorApp{D}{A} \subtypeA \sFunctorApp{D}{A'}
     }
 
     \inferrule[Alg]{
-      A <:: A'
+      A \subtypeA A'
     }{
-      D \sAlg A <:: \sMu{D} \sAlg A'
+      D \sAlg A \subtypeA \sMu{D} \sAlg A'
     }
 
     \inferrule[Roll]{
-      A <:: \sMu{D}
+      A \subtypeA \sMu{D}
     }{
-      \sFunctorApp{D}{A} <:: \sMu{D}
+      \sFunctorApp{D}{A} \subtypeA \sMu{D}
     }
 
     \inferrule[Unroll]{
-      \sMu{D} <:: A
+      \sMu{D} \subtypeA A
     }{
-      \sMu{D} <:: \sFunctorApp{D}{A}
+      \sMu{D} \subtypeA \sFunctorApp{D}{A}
     }
 
     \decproccata{Cata}
@@ -888,7 +888,7 @@ the definition of subtyping as a partial order.
 \end{figure}
 
 Figure~\ref{fig:algorithmic-subtyping-rules} presents the rules for
-algorithmic subtyping $A <:: B$.  We use similar names as for the
+algorithmic subtyping $A \subtypeA B$.  We use similar names as for the
 declarative rules, but critically, the algorithmically problematic
 \textsc{Trans} rule is not present.  A consequence of this is that now
 several rules that did not have premises in the declarative
@@ -935,39 +935,39 @@ rules are indeed a correct version of the declarative ones.  For this,
 we prove the following theorems.
 
 \begin{theorem}[Soundness]
-  $A <:: B$ implies $A <: B$.
+  $A \subtypeA B$ implies $A \subtype B$.
 \end{theorem}
 
 \begin{theorem}[Completeness]
   \label{thm:completeness}
-  $A <: B$ implies $A <:: B$.
+  $A \subtype B$ implies $A \subtypeA B$.
 \end{theorem}
 
 The sets of rules are quite similar, so these proofs are not onerous.  They do depend on the following
 inductively proven lemmas.
 
 \begin{lemma}[roll1 (declarative)]
-  If $A <: \mu D$, then $D\ A <: \mu D$.
+  If $A \subtype \mu D$, then $D\ A \subtype \mu D$.
 \end{lemma}
 
 \begin{lemma}[roll2 (declarative)]
-  If $\mu D <: A$, then $\mu D <: D\ A$.
+  If $\mu D \subtype A$, then $\mu D \subtype D\ A$.
 \end{lemma}
 
 \begin{lemma}[refl (algorithmic)]
-  $A <:: A$.
+  $A \subtypeA A$.
 \end{lemma}
 
 \begin{lemma}[trans (algorithmic)]
-  If $A <:: B$ and $B <:: C$ then $A <:: C$.
+  If $A \subtypeA B$ and $B \subtypeA C$ then $A \subtypeA C$.
 \end{lemma}
 
 \begin{lemma}[roll (algorithmic)]
-  $D\ \mu D <: \mu D$
+  $D\ \mu D \subtype \mu D$
 \end{lemma}
 
 \begin{lemma}[unroll (algorithmic)]
-  $\mu\ D <: D\ \mu D$
+  $\mu\ D \subtype D\ \mu D$
 \end{lemma}
 
 \subsection{Formalization in Agda}
@@ -1066,11 +1066,11 @@ If such a refinement results in a constraint no longer satisfying $S$, then the 
 % In our implementation, we use this suspension meta-predicate:
 We use a meta-predicate for $S$ that holds of these forms of constraints, where $X,Y$ are type variables, $D$ is a datatype name, $R$ is a recursion type variable, and $A,B$ are types.
 \begin{mathpar}
-  X <:: \sMu{D}, X <:: \sFunctorApp{D}{A}, X <:: R, \sMu{D} <:: X, \sFunctorApp{D}{A} <:: X, R <:: X, X <:: Y
+  X \subtypeA \sMu{D}, X \subtypeA \sFunctorApp{D}{A}, X \subtypeA R, \sMu{D} \subtypeA X, \sFunctorApp{D}{A} \subtypeA X, R \subtypeA X, X \subtypeA Y
 \end{mathpar}
 Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to constraints not of suspended forms.
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
-This allows Chronolog, for example, to attempt to solve constraints of the form $X <:: A \sArr B$ with both $\textsc{Arr}$ and $\textsc{Cata}$, or to attempt to solve constraints of the form $A \sAlg B <:: X$ with both $\textsc{Alg}$ and $\textsc{Cata}$.
+This allows Chronolog, for example, to attempt to solve constraints of the form $X \subtypeA A \sArr B$ with both $\textsc{Arr}$ and $\textsc{Cata}$, or to attempt to solve constraints of the form $A \sAlg B \subtypeA X$ with both $\textsc{Alg}$ and $\textsc{Cata}$.
 
 \begin{algorithm}[htb]
   \caption{Constraint solving with Chronolog.}
@@ -1092,6 +1092,7 @@ This allows Chronolog, for example, to attempt to solve constraints of the form 
     \State \qquad $\mathit{constraint} \gets \textsc{Sample}(\mathit{constraints}')$
     \State \qquad $\sigma \gets \Func{Refine}(\mathit{constraint}) \circ \sigma'$
     \State \qquad $\mathit{constraints} \gets \sigma(\mathit{constraints}')$
+    \State \EndMatch
     \EndWhile
     \EndFunction
   \end{algorithmic}
@@ -1104,10 +1105,10 @@ The choice of which suspended constraint to process may affect the order in whic
 
 \begin{mathpar}
   \begin{array}{rlcrll}
-    \textsc{Refine}(\sMu{D} &<:: X) &=& \textsc{Refine}(X &<:: \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
-    \textsc{Refine}(\sFunctorApp{D}{A} &<:: X) &=& \textsc{Refine}(X &<:: \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
-    \textsc{Refine}(R &<:: X) &=& \textsc{Refine}(X &<:: R) &= \{ X \mapsto R \} \\
-    &&& \textsc{Refine}(X &<:: Y) &= \{ X \mapsto Y \}
+    \textsc{Refine}(\sMu{D} &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA \sMu{D}) &= \{ X \mapsto \sMu{D} \} \\
+    \textsc{Refine}(\sFunctorApp{D}{A} &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA \sFunctorApp{D}{A}) &= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+    \textsc{Refine}(R &\subtypeA X) &=& \textsc{Refine}(X &\subtypeA R) &= \{ X \mapsto R \} \\
+    &&& \textsc{Refine}(X &\subtypeA Y) &= \{ X \mapsto Y \}
   \end{array}
 \end{mathpar}
 
