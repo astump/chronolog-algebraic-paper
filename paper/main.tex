@@ -1150,10 +1150,13 @@ Furthermore, solutions related by this equivalence, when applied as coercion ins
 
 \begin{theorem}[Completeness of \Func{TypeCheck}]
   \label{thm:type-checker-completeness}
-  If $\Gamma \vdash a : A$ according to the declarative typing rules for \lcata displayed in Figure~\ref{fig:typing-rules}, then $\Func{TypeCheck}(\Gamma, a, A)$ (Algorithm~\ref{alg:type-checker}) accepts.
+  If $\Gamma \vdash a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
 \end{theorem}
 \begin{proof}
-  \todoHenry{Essentially, by Theorem~\ref{thm:completeness} and Lemma~\ref{lem:solver-completeness}.}
+  Suppose $\Gamma \vdash a : A$.
+  $\Func{Generate}(\Gamma, a, A)$ terminates (by induction over $a$) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash a : A$.
+  By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
+  By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
 \end{proof}
 
 \section{Returning to the Examples} % Henry
