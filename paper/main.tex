@@ -164,11 +164,11 @@ algebraic programming. }
 Strong functional programming is a form of pure functional programming
 where all functions are statically required to terminate on all
 inputs.  One way to achieve this is through an algebraic approach:
-datatypes are least fixed points $\mu F$ of signature functors $F$,
+datatypes are least fixed points $\sMu{F}$ of signature functors $F$,
 and recursive functions are least fixed points $\cata{a}$, called
 catamorphisms, of algebras $a$.  The functor $F$ describes one layer
-of the data, and $\mu F$ then describes data consisting of any finite
-number of layers.  We may unroll $\mu F$ to $F\ (\mu F)$, and roll it
+of the data, and $\sMu{F}$ then describes data consisting of any finite
+number of layers.  We may unroll $\sMu{F}$ to $\sFunctorApp{F}{\sMu{F}}$, and roll it
 back again.  Algebras interpret the operations declared for one layer
 of the data, and catamorphisms apply algebras across all the layers.
 There is no other mechanism for recursion or looping in the language,
@@ -226,23 +226,25 @@ correct.  To summarize the contributions:
 
 \section{Syntax}
 
+\todoHenry{describe $\sRecVar{f}$ notation}
+
 Figure~\ref{fig:syntax} presents the syntax for the language $\lcata$,
 through which we study coercion inference for algebraic programming.
-We use notation $\overline{e\ \oplus}$ where $\oplus$ is a syntactic
+We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a syntactic
 operator, to indicate a $\oplus$-separated list of expressions $e$.
 Datatypes $D$ are described as least fixed points of signature
 functors $F$, which we take to be polynomial functors for simplicity.
-Types feature least fixed points $\mu\ D$ of signature functors
+Types feature least fixed points $\sMu{D}$ of signature functors
 (referenced by datatype name $D$), as well as usual function types 
-$A \to B$.  Types $D \To B$ are the types for algebras over $\mu\ D$
+$A \to B$.  Types $D \To B$ are the types for algebras over $\sMu{D}$
 computing a value of type $B$, the carrier of the algebra.  Type variables $R$
 are introduced in the bodies of algebras.
 
 Terms include the usual constructs of simply typed $\lambda$-calculus.
-There are also constructor applications $k(\overline{a,})$, and simple
+There are also constructor applications $k(\sepBy{a}{,})$, and simple
 pattern-matching with notation $\gamma a . \{
-\overline{k(\overline{x,}) \mapsto b ~ |} \}$, where the value of $a$
-is matched against constructor patterns $k(\overline{x,})$.  For
+\sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where the value of $a$
+is matched against constructor patterns $k(\sepBy{x}{,})$.  For
 totality, all constructors for $a$'s datatype must be covered.
 We distinguish applications $c(a)$ of coercions $c$, which include
 rolling, unrolling, and catamorphizing.  Coercions will be
@@ -252,7 +254,7 @@ Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
 algebras~\cite{uustalu99}.  With this style, an algebra is presented
 with a function $f$ from $R$ to the carrier $B$ of the algebra.  $R$
 is an abstract type introduced in the algebra.  The input $x$ has type
-$D\ R$, where $D$ is the signature functor of the algebra.  The body
+$\sFunctorApp{D}{R}$, where $D$ is the signature functor of the algebra.  The body
 $b : B$ may pattern-match on $x$ and apply $f$ to subdata of type $R$
 that are revealed.  One benefit over conventional $F$-algebras is that
 calling $f$ to recurse makes algebras appear very similar to
@@ -295,7 +297,7 @@ typing.
       \\[0.5em]
       %
       \text{(Datatype signature functor)} &
-      F &::=& \mu X . \overline{k(\overline{P(X)  ~\times}) ~+}
+      F &::=& \mu X . \sepBy{k(\sepBy{P(X)}{~\times})}{~+}
       \\[0.5em]
       %
       \text{(Constructor parameter types)} &
@@ -320,12 +322,12 @@ typing.
       a, b, f
       & ::= &
       x \mid
-      k(\overline{a,}) \mid
+      k(\sepBy{a}{,}) \mid
       \lambda (x : A) . b \mid
       (f ~ a) \mid
       \omega f(x) . b \mid
       \\[0.25em] &&&
-      \gamma a . \{ \overline{k(\overline{x,}) \mapsto b ~ |} \} \mid
+      \gamma a . \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \} \mid
       \sLet{x}{A}{a}{b} \mid
       \sCoerce{c}{a}
       \\[0.5em]
@@ -469,13 +471,13 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 % Note(Henry): these are defined as macros so they can be referred to again the appendix
 \newcommand{\typingRuleOmega}{
   \inferrule[Gamma]{
-    \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \datatypes
+    \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times})}{~+} \rangle \in \datatypes
     \qquad
     a : \sFunctorApp{D}{C}
     \qquad
-    \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B}
+    \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B}{ }
   }{
-    \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~|} \} : B
+    \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : B
   }
 }
 \newcommand{\typingRuleGamma}{
@@ -532,11 +534,11 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     \inferrule[Con]{
       \freshMetavariables{X}
       \qquad
-      \langle D, \mu Y . \dots + k(\overline{A'_i ~\times}) + \dots \rangle \in \datatypes
+      \langle D, \mu Y . \dots + k(\sepBy{A'_i}{~\times}) + \dots \rangle \in \datatypes
       \qquad
-      \overline{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}}
+      \sepBy{\Gamma \vdash a_i : A_i \gsep \mathcal{C}_{a_i}}{ }
     }{
-      \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\mathcal{C}_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
     }
 
     \inferrule[Lam]{
@@ -558,16 +560,16 @@ Then, these subtyping constraints are solved by a logic-programming engine by ap
     \inferrule[Gamma]{
       % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C <:: D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i <:: Y for the outputs of each branch which are the B_i
       \freshMetavariables{X, Y} \qquad
-      \langle D, \mu X . \overline{k_i(\overline{A_{ij} ~\times}) ~+} \rangle \in \datatypes
+      \langle D, \mu X . \sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+} \rangle \in \datatypes
       \\\\
       \Gamma \vdash a : C \gsep \mathcal{C}_a
       \qquad
-      % (\forall i)~ k_i : \sFunctorConSig{\overline{A_{ij}},}{D}{X} \qquad
+      % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
       % \\\\
-      % (\forall i)~ \Gamma, \overline{x_{ij} : A_{ij},} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}
-      \overline{\Gamma, \overline{x_{ij} : A_{ij}[X \mapsto C],} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}
+      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}
+      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \mathcal{C}_{b_i}}{ }
     }{
-      \Gamma \vdash \gamma a . \{ \overline{k_i(\overline{x_{ij},}) \mapsto b_i ~ |} \} : Y
+      \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
       \gsep
       \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
       \mathcal{C}_a \cup
@@ -826,7 +828,7 @@ domain and covariant in the codomain.  \textsc{Cov} expresses that the
 signature functor is indeed a (covariant) functor.  \textsc{Alg}
 expresses that algebra types $D \sAlg A$ are covariant in their
 carriers $A$.  \textsc{Roll} and \textsc{Unroll} together express that
-$\mu F$ is equivalent to $F\ (\mu F)$.  \textsc{Cata} expresses that
+$\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \textsc{Cata} expresses that
 an algebra can be coerced to a function, namely the algebra's
 catamorphism.  Finally, there is the \textsc{Trans} rule, completing
 the definition of subtyping as a partial order.
@@ -952,11 +954,11 @@ The sets of rules are quite similar, so these proofs are not onerous.  They do d
 inductively proven lemmas.
 
 \begin{lemma}[roll1 (declarative)]
-  If $A \subtype \mu D$, then $D\ A \subtype \mu D$.
+  If $A \subtype \sMu{D}$, then $\sFunctorApp{D}{A} \subtype \sMu{D}$.
 \end{lemma}
 
 \begin{lemma}[roll2 (declarative)]
-  If $\mu D \subtype A$, then $\mu D \subtype D\ A$.
+  If $\sMu{D} \subtype A$, then $\sMu{D} \subtype \sFunctorApp{D}{A}$.
 \end{lemma}
 
 \begin{lemma}[refl (algorithmic)]
@@ -968,11 +970,11 @@ inductively proven lemmas.
 \end{lemma}
 
 \begin{lemma}[roll (algorithmic)]
-  $D\ \mu D \subtype \mu D$
+  $\sFunctorApp{D}{\sMu{D}} \subtype \sMu{D}$
 \end{lemma}
 
 \begin{lemma}[unroll (algorithmic)]
-  $\mu\ D \subtype D\ \mu D$
+  $\sMu{D} \subtype \sFunctorApp{D}{\sMu{D}}$
 \end{lemma}
 
 \subsection{Formalization in Agda}
@@ -1230,10 +1232,10 @@ Section~\ref{sec:typing} presented a sampling from the full set of typing rules 
   }
   
   \inferrule[Con]{
-    \langle D , \mu X . \cdots + k(\overline{A_i} \times) + \cdots \rangle \in \datatypes \qquad
-    \overline{\Gamma \vdash a_i : A_i}
+    \langle D , \mu X . \cdots + k(\sepBy{A_i}{~\times}) + \cdots \rangle \in \datatypes \qquad
+    \sepBy{\Gamma \vdash a_i : A_i}{ }
   }{
-    \Gamma \vdash k(\overline{a_i,}) : \sFunctorApp{D}{X}
+    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{X}
   }
   
   \inferrule[Lam]{
