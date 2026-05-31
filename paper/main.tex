@@ -1049,9 +1049,24 @@ As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatL
   \}
 \end{mathpar}
 
-\begin{theorem}[Completeness of \Func{Generate}]
-  If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
-\end{theorem}
+\begin{lemma}{Termination of \Func{Generate}}
+  \label{lem:generate-termination}
+  For any context $\Gamma$, term $a$, and type $A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
+\end{lemma}
+\begin{proof}
+  \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
+\end{proof}
+
+\begin{lemma}[Completeness of \Func{Generate}]
+  \label{lem:generate-completeness}
+  % If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+  If $\Gamma \vdash_{\lcata} a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+\end{lemma}
+\begin{proof}
+  The solution $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
+  Use these derivations along with the rule \IRule{Subtype} to construct a derivation of $\Gamma \vdash_{\lcataSub} a : A$.
+  Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}.
+\end{proof}
 
 \subsection{Constraint solving with Chronolog}
 
@@ -1169,7 +1184,7 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
 \end{theorem}
 \begin{proof}
   Suppose $\Gamma \vdash a : A$.
-  $\Func{Generate}(\Gamma, a, A)$ terminates (by induction over $a$) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash a : A$.
+  $\Func{Generate}(\Gamma, a, A)$ terminates (by Lemma~\ref{lem:generate-termination}) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-completeness}).
   By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
   By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
 \end{proof}
