@@ -1051,7 +1051,7 @@ As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatL
 
 \begin{lemma}[Termination of \Func{Generate}]
   \label{lem:generate-termination}
-  For any context $\Gamma$, term $a$, and type $A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
+  For any $\Gamma, a, A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
 \end{lemma}
 \begin{proof}
   \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
