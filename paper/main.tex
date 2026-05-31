@@ -177,7 +177,7 @@ leading to a strong guarantee: all functions written in this style
 terminate.
 
 One burden is the need to include calls to roll and unroll functors,
-and to $\cata{-}$, in code.  This adds clutter, compared to regular
+and to $\cata{\cdot}$, in code.  This adds clutter, compared to regular
 functional programming.  In this paper, we address this problem by
 automatically inserting those coercions wherever they are needed in
 code.  The resulting code looks indistinguishable from regular
@@ -447,10 +447,9 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Typing}
 \label{sec:typing}
 
-The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching, algebraic recursion, and explicit coercion.
-Some notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules is provided in Appendix~\ref{app:typing-rules}
+The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for constructing and deconstructing datatypes, algebraic recursion, and explicit coercion.
+The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}.
 
-% Note(Henry): these are defined as macros so they can be referred to again the appendix
 \newcommand{\typingRuleOmega}{
   \inferrule[Gamma]{
     \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times})}{~+}} \rangle \in \datatypes
@@ -486,21 +485,55 @@ Some notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rule
   }
 }
 
+
 \begin{figure}[htb]
   \centering
 
   \begin{mathpar}
-    \typingRuleOmega
+
+    \inferrule[Var]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A
+    }
+    
+    \inferrule[Con]{
+      \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+      \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+    }{
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+    }
+    
+    \inferrule[Lam]{
+      \Gamma , (x : A) \vdash b : B
+    }{
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B
+    }
+    
+    \inferrule[App]{
+      \Gamma \vdash f : A \sArr B \qquad 
+      \Gamma \vdash a : A
+    }{
+      \Gamma \vdash f ~ a : B
+    }
 
     \typingRuleGamma
+    
+    \typingRuleOmega
+    
+    \inferrule[Let]{
+      \Gamma, (x : A) \vdash b : B \qquad 
+      \Gamma \vdash a : A
+    }{
+      \Gamma \vdash \sLet{x}{A}{a}{b} : B
+    }
 
-    % \typingRuleSubtype
     \typingRuleCoerce
 
   \end{mathpar}
 
-  \caption{Notable typing rules for \lcata}
-  \label{fig:typing-rules}
+  \caption{Typing rules for \lcata}
+  \label{fig:typing-rules-lcata}
 \end{figure}
 
 The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
@@ -744,6 +777,69 @@ inductively proven lemmas.
   $\sMu{D} \subtype \sFunctorApp{D}{\sMu{D}}$
 \end{lemma}
 
+\subsection{Typing coercions}
+\label{sec:typing-coercions}
+
+\todoHenry{Here are the typing rules for coercions.}
+
+\begin{figure}[htb]
+  \centering
+
+  \begin{mathpar}
+    
+    \inferrule[ReflCoe]{ }{
+      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+        
+    \inferrule[RecVarCoe]{ }{
+      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
+    }
+
+    \inferrule[ArrCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
+    }{
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
+    }
+
+    \inferrule[CovCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+    }
+
+    \inferrule[AlgCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
+    }
+
+    \inferrule[RollCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
+    }{
+      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[UnrollCoe]{
+      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
+    }{
+      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[CataCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
+    }{
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
+    }
+  \end{mathpar}
+
+  \caption{Coercion typing rules.}
+  \label{fig:coercion-typing-rules}
+\end{figure}
+
+
+
 \subsection{Formalization in Agda}
 \label{sec:agda}
 
@@ -825,8 +921,7 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
   \label{fig:sndcmpl}
 \end{figure}
 
-
-\section{Type checking with constraints}
+\section{Type checking for \lcataSub}
 \label{sec:typechecking}
 
 We present a type checking procedure based on generating and solving subtyping constraints.
@@ -922,106 +1017,6 @@ Operationally, these coercions are reified as explicit function applications whi
   \caption{Constraint generation rules.}
   \label{fig:constraint-generation-rules}
 \end{figure}
-
-\begin{figure}[htb]
-  \centering
-
-  \begin{mathpar}
-    
-    \inferrule[ReflCoe]{ }{
-      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
-    }
-        
-    \inferrule[RecVarCoe]{ }{
-      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
-    }
-
-    \inferrule[ArrCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
-    }{
-      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
-    }
-
-    \inferrule[CovCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
-    }
-
-    \inferrule[AlgCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
-    }
-
-    \inferrule[RollCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
-    }{
-      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[UnrollCoe]{
-      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
-    }{
-      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[CataCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
-    }{
-      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
-    }
-  \end{mathpar}
-
-  \caption{Coercion typing rules.}
-  \label{fig:coercion-typing-rules}
-\end{figure}
-
-% \begin{figure}[htb]
-%   \centering
-%   \begin{mathpar}
-%     % Bool
-
-%     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
-
-%     \inferrule[Bool.True]{ }{
-%       \sTrue : \sFunctorConSig{}{\sBool}{A}
-%     }
-
-%     \inferrule[Bool.False]{ }{
-%       \sFalse : \sFunctorConSig{}{\sBool}{A}
-%     }
-
-%     % Nat
-
-%     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
-
-%     \inferrule[Nat.Zero]{ }{
-%       \sZero : \sFunctorConSig{}{\sNat}{A}
-%     }
-
-%     \inferrule[Nat.Suc]{ }{
-%       \sSuc : \sFunctorConSig{A}{\sNat}{A}
-%     }
-
-%     % NatList
-
-%     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
-
-%     \inferrule[NatList.Nil]{ }{
-%       \sNil : \sFunctorConSig{}{\sNatList}{A}
-%     }
-
-%     \inferrule[NatList.Cons]{ }{
-%       \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
-%     }
-%   \end{mathpar}
-
-%   \caption{Datatype constructor type inference rules.}
-%   \label{fig:datatype-contructor-type-inference-rules}
-% \end{figure}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
 This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints.
@@ -1244,8 +1239,8 @@ coalgebraic programming with coinductive types.
 
 \appendix
 
-\section{Typing rules}
-\label{app:typing-rules}
+\section{Typing rules for \lcata}
+\label{app:typing-rules-lcata}
 
 Section~\ref{sec:typing} presented a sampling from the full set of typing rules for \lcata below.
 
