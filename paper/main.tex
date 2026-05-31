@@ -539,8 +539,8 @@ The generative nature of the recursion type variable $\sRecVar{f}$ isolates it f
 Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
 The explicit coercion construct, $\sCoerce{c}{a}$, is typed by the \IRule{Coerce} rule.
-This rule relies upon a dedicated coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$, which is formalized by the inference rules presented in Figure~\ref{fig:coercion-typing-rules}.
-However, prior to detailing the coercion typing semantics, it is necessary to establish the underlying subtyping relation, which we develop in the subsequent section.
+This rule relies upon the coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$, which is formalized by the inference rules presented in Figure~\ref{fig:coercion-typing-rules}.
+However, prior to discussing coercion typing, it is necessary to establish the underlying subtyping relation, which we develop in the subsequent section.
 
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
