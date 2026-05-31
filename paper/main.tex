@@ -447,20 +447,6 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Typing}
 \label{sec:typing}
 
-% The type system for \lcata is basically the same as the simply-typed $\lambda$-calculus, but with a few extra constructs.
-
-% % \typingRules
-
-% \lcata supports exhaustive pattern-matching with the $\gamma a . \{ \dots \}$ construct.
-% The typing rule for this construct is \IRule{Gamma}.
-% The typing rule \IRule{Gamma} looks up the signature functor of the datatype of the term that is being discriminated by the pattern-match.
-% As a functor, the signature functor is parametrized by a single type parameter, which \IRule{Gamma} instantiates with the type argument $C$ corresponding to deriving $\Gamma \vdash a : D ~ C$.
-
-% \lcata has a special construct for introducing algebras, $\omega f(x) . b$.
-% The typing rule for this construct, \IRule[Omega], must take into account that a new type, $\sRecVar{f}$,  is introduced into the local context of $b$, where $\sRecVar{f}$ is associated specifically with this syntactic construct, the fact of which is encoded by the $f$ index of $\sRecVar{f}$.
-% \lcata does not support type inference or polymorphism, so this is just a very restricted form of scoped typing for the sake of modeling Mendler algebras.
-% Such a recursion type variable $\sRecVar{f}$ is not related to any other types, which ensures in a similar way that parametricity does for Mendler algebras, that $f$ can only ever be called on sub-data of $x$. 
-
 The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching and algebraic recursion.
 Some notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules is provided in Appendix~\ref{app:typing-rules}
 
