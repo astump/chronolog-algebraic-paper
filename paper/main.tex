@@ -447,18 +447,8 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 \section{Typing}
 \label{sec:typing}
 
-The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching and algebraic recursion.
+The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching, algebraic recursion, and explicit coercion.
 Some notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules is provided in Appendix~\ref{app:typing-rules}
-
-The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
-This rule resolves the signature functor associated with the datatype of the scrutinee.
-Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the typing premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
-
-The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule[Omega] rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
-This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
-Because \lcata purposely omits general polymorphism and type inference, this mechanism serves as a highly restricted form of scoped type abstraction tailored explicitly for modeling Mendler-style algebras.
-The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context. 
-Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
 % Note(Henry): these are defined as macros so they can be referred to again the appendix
 \newcommand{\typingRuleOmega}{
@@ -487,6 +477,14 @@ Analogous to the role of relational parametricity in standard Mendler encodings,
     \Gamma \vdash a : A'
   }
 }
+\newcommand{\typingRuleCoerce}{
+  \inferrule[Coerce]{
+    \Gamma \vdash c : A \subtypeA B \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash \sCoerce{c}{a} : B
+  }
+}
 
 \begin{figure}[htb]
   \centering
@@ -496,237 +494,28 @@ Analogous to the role of relational parametricity in standard Mendler encodings,
 
     \typingRuleGamma
 
-    \typingRuleSubtype
+    % \typingRuleSubtype
+    \typingRuleCoerce
+
   \end{mathpar}
 
-  \caption{Notable typing rules}
+  \caption{Notable typing rules for \lcata}
   \label{fig:typing-rules}
 \end{figure}
 
-\section{Type checking with constraints}
-\label{sec:typechecking}
+The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
+This rule resolves the signature functor associated with the datatype of the scrutinee.
+Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the typing premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
 
-We present a type checking procedure based on generating and solving subtyping constraints.
-Crucially, while type variables are introduced during the type-checking phase, they serve exclusively to facilitate constraint satisfaction rather than to support type inference. 
-Both $\lambda$-abstractions and $\textsyntax{let}$-bindings require explicit type annotations, thereby ensuring that all types occurring within a program are ground. We defer the development of a comprehensive type inference mechanism to future work.
+The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule{Omega} rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
+This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
+Because \lcata purposely omits general polymorphism and type inference, this mechanism serves as a highly restricted form of scoped type abstraction tailored explicitly for modeling Mendler-style algebras.
+The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context. 
+Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
-Initially, the constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, produces a set of subtyping constraints for a term $a$ against an expected type $A$ under the context $\Gamma$.
-This procedure operates by structural recursion on $a$, governed by the rules delineated in Figure~\ref{fig:constraint-generation-rules}.
-Each emitted constraint signifies an implicit application of the \IRule{Subtype} rule, which is requisite for constructing a valid typing derivation.
-Furthermore, every constraint is explicitly annotated with the precise sub-term at which the subsumption step occurs.
-Under the paradigm of coercive subtyping, these applications of \IRule{Subtype} are witnessed by coercions that provide computational justification for the subtyping relation.
-Operationally, these coercions are reified as explicit function applications which are inserted at the annotated sub-terms associated with the resolved constraints.
-
-\begin{figure}[htb]
-  \centering
-
-  \begin{mathpar}
-
-    \inferrule[Var]{
-      (x : A) \in \Gamma
-    }{
-      \Gamma \vdash x : A \gsep \varnothing
-    }
-
-    \inferrule[Con]{
-      \freshMetavariables{X}
-      \qquad
-      \langle D, \sSignatureFunctor{Y}{\dots + k(\sepBy{A'_i}{~\times}) + \dots} \rangle \in \datatypes
-      \qquad
-      \sepBy{\Gamma \vdash a_i : A_i \gsep \constraints_{a_i}}{ }
-    }{
-      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
-    }
-
-    \inferrule[Lam]{
-      \Gamma, (x : A) \vdash b : B \gsep \constraints_b
-    }{
-      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \constraints_b
-    }
-
-    \inferrule[App]{
-      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B \subtypeA A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
-      \freshMetavariables{X} \qquad
-      \Gamma \vdash f : B \gsep \constraints_f \qquad
-      \Gamma \vdash a : A \gsep \constraints_a
-    }{
-      \Gamma \vdash f ~ a : X \gsep
-      \constraints_f \cup \constraints_a \cup \{ B \subtypeAP{f} A \sArr X \}
-    }
-
-    \inferrule[Gamma]{
-      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C \subtypeA D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i \subtypeA Y for the outputs of each branch which are the B_i
-      \freshMetavariables{X, Y} \qquad
-      \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+}} \rangle \in \datatypes
-      \\\\
-      \Gamma \vdash a : C \gsep \constraints_a
-      \qquad
-      % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
-      % \\\\
-      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \constraints_{b_i}
-      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \constraints_{b_i}}{ }
-    }{
-      \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
-      \gsep
-      \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
-      \constraints_a \cup
-      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \constraints_{b_i})
-    }
-
-    \inferrule[Omega]{
-      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \constraints_b
-    }{
-      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \constraints_b
-    }
-
-    \inferrule[Let]{
-      \Gamma \vdash a : A \gsep \constraints_a \qquad
-      \Gamma, (x : A') \vdash b : B \gsep \constraints_b
-    }{
-      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ A \subtypeAP{a} A' \} \cup \constraints_b
-    }
-
-    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
-    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
-    % \inferrule[InferCoe]{
-    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
-    %   \Gamma \vdash a : A \gsep \constraints_a
-    % }{
-    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \constraints_a
-    % }
-  \end{mathpar}
-
-  \caption{Constraint generation rules.}
-  \label{fig:constraint-generation-rules}
-\end{figure}
-
-\begin{figure}[htb]
-  \centering
-
-  \begin{mathpar}
-    
-    \inferrule[ReflCoe]{ }{
-      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
-    }
-        
-    \inferrule[RecVarCoe]{ }{
-      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
-    }
-
-    \inferrule[ArrCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
-    }{
-      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
-    }
-
-    \inferrule[CovCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
-    }
-
-    \inferrule[AlgCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{A'}
-    }{
-      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
-    }
-
-    \inferrule[RollCoe]{
-      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
-    }{
-      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[UnrollCoe]{
-      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
-    }{
-      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
-    }
-
-    \inferrule[CataCoe]{
-      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
-      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
-    }{
-      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
-    }
-  \end{mathpar}
-
-  \caption{Coercion typing rules.}
-  \label{fig:coercion-typing-rules}
-\end{figure}
-
-% \begin{figure}[htb]
-%   \centering
-%   \begin{mathpar}
-%     % Bool
-
-%     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
-
-%     \inferrule[Bool.True]{ }{
-%       \sTrue : \sFunctorConSig{}{\sBool}{A}
-%     }
-
-%     \inferrule[Bool.False]{ }{
-%       \sFalse : \sFunctorConSig{}{\sBool}{A}
-%     }
-
-%     % Nat
-
-%     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
-
-%     \inferrule[Nat.Zero]{ }{
-%       \sZero : \sFunctorConSig{}{\sNat}{A}
-%     }
-
-%     \inferrule[Nat.Suc]{ }{
-%       \sSuc : \sFunctorConSig{A}{\sNat}{A}
-%     }
-
-%     % NatList
-
-%     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
-
-%     \inferrule[NatList.Nil]{ }{
-%       \sNil : \sFunctorConSig{}{\sNatList}{A}
-%     }
-
-%     \inferrule[NatList.Cons]{ }{
-%       \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
-%     }
-%   \end{mathpar}
-
-%   \caption{Datatype constructor type inference rules.}
-%   \label{fig:datatype-contructor-type-inference-rules}
-% \end{figure}
-
-Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
-This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints.
-Each constraint in these sets is of the form $A \subtypeAP{a'} B$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
-The system is designed such that a solution to $\constraints$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
-
-The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
-The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
-A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
-
-For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
-\begin{mathpar}
-  \{
-    \sFunctorApp{\sNat}{X} \subtypeAP{\sZero} \sMu\sNat,
-    \sMu\sNat \subtypeAP{sub' ~ n'} \sFunctorApp{\sNat}{Y}
-  \}
-\end{mathpar}
-As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatList → NatList} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
-\begin{mathpar}
-  \{
-    \sFunctorApp{\sNatList}{X} \subtypeAP{\sNil} \sMu\sNatList,
-    \sNat \sAlg \sMu\sNat \subtypeAP{sub ~ h1} \sMu\sNat \sArr \sMu\sNat
-  \}
-\end{mathpar}
-
-\begin{theorem}[Completeness of \Func{Generate}]
-  If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
-\end{theorem}
+The explicit coercion construct, $\sCoerce{c}{a}$, is typed by the \IRule{Coerce} rule.
+This rule relies upon a dedicated coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$, which is formalized by the inference rules presented in Figure~\ref{fig:coercion-typing-rules}.
+However, prior to detailing the coercion typing semantics, it is necessary to establish the underlying subtyping relation, which we develop in the subsequent section.
 
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
@@ -1035,6 +824,232 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
   \caption{Agda statements of soundness and completeness.}
   \label{fig:sndcmpl}
 \end{figure}
+
+
+\section{Type checking with constraints}
+\label{sec:typechecking}
+
+We present a type checking procedure based on generating and solving subtyping constraints.
+Crucially, while type variables are introduced during the type-checking phase, they serve exclusively to facilitate constraint satisfaction rather than to support type inference. 
+Both $\lambda$-abstractions and $\textsyntax{let}$-bindings require explicit type annotations, thereby ensuring that all types occurring within a program are ground. We defer the development of a comprehensive type inference mechanism to future work.
+
+Initially, the constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, produces a set of subtyping constraints for a term $a$ against an expected type $A$ under the context $\Gamma$.
+This procedure operates by structural recursion on $a$, governed by the rules delineated in Figure~\ref{fig:constraint-generation-rules}.
+Each emitted constraint signifies an implicit application of the \IRule{Subtype} rule, which is requisite for constructing a valid typing derivation.
+Furthermore, every constraint is explicitly annotated with the precise sub-term at which the subsumption step occurs.
+Under the paradigm of coercive subtyping, these applications of \IRule{Subtype} are witnessed by coercions that provide computational justification for the subtyping relation.
+Operationally, these coercions are reified as explicit function applications which are inserted at the annotated sub-terms associated with the resolved constraints.
+
+\begin{figure}[htb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[Var]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A \gsep \varnothing
+    }
+
+    \inferrule[Con]{
+      \freshMetavariables{X}
+      \qquad
+      \langle D, \sSignatureFunctor{Y}{\dots + k(\sepBy{A'_i}{~\times}) + \dots} \rangle \in \datatypes
+      \qquad
+      \sepBy{\Gamma \vdash a_i : A_i \gsep \constraints_{a_i}}{ }
+    }{
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
+    }
+
+    \inferrule[Lam]{
+      \Gamma, (x : A) \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \constraints_b
+    }
+
+    \inferrule[App]{
+      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B \subtypeA A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
+      \freshMetavariables{X} \qquad
+      \Gamma \vdash f : B \gsep \constraints_f \qquad
+      \Gamma \vdash a : A \gsep \constraints_a
+    }{
+      \Gamma \vdash f ~ a : X \gsep
+      \constraints_f \cup \constraints_a \cup \{ B \subtypeAP{f} A \sArr X \}
+    }
+
+    \inferrule[Gamma]{
+      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C \subtypeA D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i \subtypeA Y for the outputs of each branch which are the B_i
+      \freshMetavariables{X, Y} \qquad
+      \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+}} \rangle \in \datatypes
+      \\\\
+      \Gamma \vdash a : C \gsep \constraints_a
+      \qquad
+      % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
+      % \\\\
+      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \constraints_{b_i}
+      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \constraints_{b_i}}{ }
+    }{
+      \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
+      \gsep
+      \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
+      \constraints_a \cup
+      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \constraints_{b_i})
+    }
+
+    \inferrule[Omega]{
+      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \constraints_b
+    }
+
+    \inferrule[Let]{
+      \Gamma \vdash a : A \gsep \constraints_a \qquad
+      \Gamma, (x : A') \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ A \subtypeAP{a} A' \} \cup \constraints_b
+    }
+
+    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
+    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
+    % \inferrule[InferCoe]{
+    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
+    %   \Gamma \vdash a : A \gsep \constraints_a
+    % }{
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \constraints_a
+    % }
+  \end{mathpar}
+
+  \caption{Constraint generation rules.}
+  \label{fig:constraint-generation-rules}
+\end{figure}
+
+\begin{figure}[htb]
+  \centering
+
+  \begin{mathpar}
+    
+    \inferrule[ReflCoe]{ }{
+      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+        
+    \inferrule[RecVarCoe]{ }{
+      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
+    }
+
+    \inferrule[ArrCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
+    }{
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
+    }
+
+    \inferrule[CovCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+    }
+
+    \inferrule[AlgCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
+    }
+
+    \inferrule[RollCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
+    }{
+      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[UnrollCoe]{
+      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
+    }{
+      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[CataCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
+    }{
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
+    }
+  \end{mathpar}
+
+  \caption{Coercion typing rules.}
+  \label{fig:coercion-typing-rules}
+\end{figure}
+
+% \begin{figure}[htb]
+%   \centering
+%   \begin{mathpar}
+%     % Bool
+
+%     \inferrule[DataBool]{ }{\isDatatype{\sBool}}
+
+%     \inferrule[Bool.True]{ }{
+%       \sTrue : \sFunctorConSig{}{\sBool}{A}
+%     }
+
+%     \inferrule[Bool.False]{ }{
+%       \sFalse : \sFunctorConSig{}{\sBool}{A}
+%     }
+
+%     % Nat
+
+%     \inferrule[DataNat]{ }{\isDatatype{\sNat}}
+
+%     \inferrule[Nat.Zero]{ }{
+%       \sZero : \sFunctorConSig{}{\sNat}{A}
+%     }
+
+%     \inferrule[Nat.Suc]{ }{
+%       \sSuc : \sFunctorConSig{A}{\sNat}{A}
+%     }
+
+%     % NatList
+
+%     \inferrule[DataNatList]{ }{\isDatatype{\sNatList}}
+
+%     \inferrule[NatList.Nil]{ }{
+%       \sNil : \sFunctorConSig{}{\sNatList}{A}
+%     }
+
+%     \inferrule[NatList.Cons]{ }{
+%       \sCons : \sFunctorConSig{\sNat, A}{\sNatList}{A}
+%     }
+%   \end{mathpar}
+
+%   \caption{Datatype constructor type inference rules.}
+%   \label{fig:datatype-contructor-type-inference-rules}
+% \end{figure}
+
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
+This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints.
+Each constraint in these sets is of the form $A \subtypeAP{a'} B$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
+The system is designed such that a solution to $\constraints$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
+
+The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
+The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
+A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
+
+For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+\begin{mathpar}
+  \{
+    \sFunctorApp{\sNat}{X} \subtypeAP{\sZero} \sMu\sNat,
+    \sMu\sNat \subtypeAP{sub' ~ n'} \sFunctorApp{\sNat}{Y}
+  \}
+\end{mathpar}
+As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatList → NatList} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+\begin{mathpar}
+  \{
+    \sFunctorApp{\sNatList}{X} \subtypeAP{\sNil} \sMu\sNatList,
+    \sNat \sAlg \sMu\sNat \subtypeAP{sub ~ h1} \sMu\sNat \sArr \sMu\sNat
+  \}
+\end{mathpar}
+
+\begin{theorem}[Completeness of \Func{Generate}]
+  If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+\end{theorem}
 
 \subsection{Constraint solving with Chronolog}
 
