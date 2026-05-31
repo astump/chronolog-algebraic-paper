@@ -250,9 +250,10 @@ $k(\sepBy{a}{,})$, and simple pattern-matching with notation $\gamma a
 is matched against constructor patterns $k(\sepBy{x}{,})$.  If such a
 pattern matches, then the term reduces to the body $b$ for that
 case. For totality, all constructors for $a$'s datatype must be
-covered. We distinguish applications $c(a)$ of coercions $c$, which
-include rolling, unrolling, and catamorphizing.  Coercions will be
-explained with their typing rules in Section~\ref{sec:typechecking}.
+covered. To apply a coercion $c$ to term $a$, we write
+$\sCoerce{c}{a}$.  Coercions, which include rolling, unrolling, and
+catamorphizing, will be explained with their typing rules in
+Section~\ref{sec:typechecking}.
 
 Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
 algebras~\cite{uustalu99}.  With this style, an algebra is presented with a
@@ -419,7 +420,7 @@ returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
 case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
 algebras are Mendler-style, the type of \verb|sub'| is
 \verb|R_f → μ Nat|, where \verb|R_f| is the abstract type introduced by
-the algebra.  The input $n$ has type \verb|Nat R_f|, and so its subdatum
+the algebra.  The input \verb|n| has type \verb|Nat R_f|, and so its subdatum
 \verb|n'| has type \verb|R_f|.  So the call \verb|sub' n'| is
 well-typed.  To pattern-match on the output of this call requires
 unrolling \verb|μ Nat| with \verb|unroll id|.  The \verb|id| is
@@ -461,7 +462,7 @@ Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 % Such a recursion type variable $\sRecVar{f}$ is not related to any other types, which ensures in a similar way that parametricity does for Mendler algebras, that $f$ can only ever be called on sub-data of $x$. 
 
 The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for pattern matching and algebraic recursion.
-A sampling of the notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules are provided in Appendix~\ref{app:typing-rules}
+Some notable typing rules of \lcata are presented in Figure~\ref{fig:typing-rules}, and the full set of typing rules is provided in Appendix~\ref{app:typing-rules}
 
 The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
 This rule resolves the signature functor associated with the datatype of the scrutinee.
@@ -1066,7 +1067,7 @@ We use a meta-predicate for $S$ that holds of the following forms of constraints
 \begin{mathpar}
   X \subtypeA \sMu{D}, X \subtypeA \sFunctorApp{D}{A}, X \subtypeA R, \sMu{D} \subtypeA X, \sFunctorApp{D}{A} \subtypeA X, R \subtypeA X, X \subtypeA Y
 \end{mathpar}
-Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of the all possible rule applications to constraints not of suspended forms.
+Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of all the possible rule applications to constraints not of suspended forms.
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
 Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
 This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
