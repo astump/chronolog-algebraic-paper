@@ -202,13 +202,14 @@ If not, an outer loop of our algorithm handles them specially.
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
-nondeterministically guesses $B$ with $A \subtype B$ and $B \subtype C$, to solve
-$A \subtype C$.  We identify (Section~\ref{sec:subtyping}) an algorithmic
-set of subtyping rules, without transitivity, and prove it equivalent
-to the declarative rules.  This both ensures we can use logic
-programming (with our algorithmic rules) to solve these subtyping
-constraints, and also assures us that the algorithmic rules are indeed
-correct.  To summarize our contributions:
+nondeterministically guesses $B$ with $A \subtype B$ and $B \subtype
+C$, to solve $A \subtype C$.  We identify
+(Section~\ref{sec:subtyping}) an algorithmic set of subtyping rules,
+without transitivity, and prove it equivalent, in Agda, to the
+declarative rules.  This both ensures we can use logic programming
+(with our algorithmic rules) to solve these subtyping constraints, and
+also assures us that the algorithmic rules are indeed correct.  To
+summarize our contributions:
 \begin{itemize}
   \item We propose a new approach to total algebraic programming,
     where calls for rolling and unrolling signature functors
@@ -219,7 +220,7 @@ correct.  To summarize our contributions:
     to avoid infinite unrolling of functors. We prove termination of
     our algorithm.
   \item We propose an algorithmic subtyping system, and prove it
-    equivalent to the declarative one in Agda.
+    equivalent to the declarative one.
 \end{itemize}
 
 
@@ -539,19 +540,19 @@ The generative nature of the recursion type variable $\sRecVar{f}$ isolates it f
 Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
 The explicit coercion construct, $\sCoerce{c}{a}$, is typed by the \IRule{Coerce} rule.
-This rule relies upon the coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$, which is formalized by the inference rules presented in Figure~\ref{fig:coercion-typing-rules}.
-However, prior to discussing coercion typing, it is necessary to establish the underlying subtyping relation, which we develop in the subsequent section.
+This rule relies upon a coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$.  To explain this,
+we must first consider the underlying subtyping relation.
 
 \section{Subtyping} % Aaron
 \label{sec:subtyping}
 
-We begin with the declarative subtyping rules corresponding to the
-coercions of Figure~\ref{fig:coercion-typing-rules}, and then
-propose an algorithmic version, where all metavariables in the
-premises of the rule are already present in the conclusion, and the
-sizes of the constraints decrease.  This ensures that SLD resolution
-will not diverge on ground constraints.  We prove that the two sets
-of rules are equivalent.
+We begin with the natural declarative subtyping rules.  These are not
+algorithmic, though, as we will detail.  So we next propose an
+algorithmic version, where all metavariables in the premises of the
+rule are already present in the conclusion, and the sizes of the
+constraints decrease.  This ensures that SLD resolution will not
+diverge on ground constraints.  We prove that the two sets of rules
+are equivalent.  Then we can formulate the coercion typing rules.
 
 \subsection{Declarative subtyping}
 
@@ -624,6 +625,12 @@ $\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \IRule{Cata} expresses t
 an algebra can be coerced to a function, namely the algebra's
 catamorphism.  Finally, there is the \IRule{Trans} rule, completing
 the definition of subtyping as a partial order.
+
+While these rules are intuitive and express the coercions needed, they
+are not algorithmic when read from conclusion to premises.  The
+reason, as mentioned in the introduction, is the \IRule{Trans} rule,
+which introduces a new metavariable in the premises.  Proof search
+would diverge with this rule.  We address this problem next.
 
 \subsection{Algorithmic subtyping}
 
@@ -731,7 +738,8 @@ signature functor.
 While Theorem~\ref{thm:dec} ensures that we can test ground subtyping
 constraints using proof search, we must confirm that the algorithmic
 rules are indeed a correct version of the declarative ones.  For this,
-we prove the following theorems.
+we prove the following theorems.  All theorems in this subsection have
+been formalized and proven in Agda.
 
 \begin{theorem}[Soundness]
   $A \subtypeA B$ implies $A \subtype B$.
@@ -742,32 +750,37 @@ we prove the following theorems.
   $A \subtype B$ implies $A \subtypeA B$.
 \end{theorem}
 
-The sets of rules are quite similar, so these proofs are not onerous.  They do depend on the following
-inductively proven lemmas.
+\noindent The sets of rules are quite similar, so these proofs are not onerous.  They do depend on the following
+lemmas:
 
-\begin{lemma}[roll1 (declarative)]
-  If $A \subtype \sMu{D}$, then $\sFunctorApp{D}{A} \subtype \sMu{D}$.
+\begin{lemma}[roll/unroll declarative/algorithmic]
+  \
+  
+  \begin{enumerate}
+    \item If $A \subtype \sMu{D}$, then $\sFunctorApp{D}{A} \subtype \sMu{D}$.
+\item  If $\sMu{D} \subtype A$, then $\sMu{D} \subtype \sFunctorApp{D}{A}$.
+\item  $\sFunctorApp{D}{\sMu{D}} \subtypeA \sMu{D}$
+\item  $\sMu{D} \subtypeA \sFunctorApp{D}{\sMu{D}}$
+\end{enumerate}
 \end{lemma}
 
-\begin{lemma}[roll2 (declarative)]
-  If $\sMu{D} \subtype A$, then $\sMu{D} \subtype \sFunctorApp{D}{A}$.
-\end{lemma}
+\begin{lemma}[partial order algorithmic]
+  \
 
-\begin{lemma}[refl (algorithmic)]
-  $A \subtypeA A$.
-\end{lemma}
+  \begin{enumerate}
+\item  $A \subtypeA A$.
+\item  If $A \subtypeA B$ and $B \subtypeA C$ then $A \subtypeA C$.
+  \end{enumerate}
+  \end{lemma}
 
-\begin{lemma}[trans (algorithmic)]
-  If $A \subtypeA B$ and $B \subtypeA C$ then $A \subtypeA C$.
-\end{lemma}
+\noindent As an aside: with the declarative subtyping rules, there are
+multiple derivations for any derivable subtyping statement.  This is
+due to the presence of transitivity, and a derivable reflexivity rule.
+But for algorithmic subtyping, the situation is much more constrained:
 
-\begin{lemma}[roll (algorithmic)]
-  $\sFunctorApp{D}{\sMu{D}} \subtype \sMu{D}$
-\end{lemma}
-
-\begin{lemma}[unroll (algorithmic)]
-  $\sMu{D} \subtype \sFunctorApp{D}{\sMu{D}}$
-\end{lemma}
+\begin{theorem}[Uniqueness]
+  There is at most one derivation of $A \subtypeA B$.
+\end{theorem}
 
 \subsection{Typing coercions}
 \label{sec:typing-coercions}
@@ -832,86 +845,6 @@ This allows us to straightforwardly translate a derivation of $A \subtypeA B$ to
   \label{fig:coercion-typing-rules}
 \end{figure}
 
-\subsection{Formalization in Agda}
-\label{sec:agda}
-
-Types are represented by the Agda datatype \verb|Ty| in
-Figure~\ref{fig:synagda}.  For simplicity, we have a single signature
-functor \verb|D| and its least fixed-point \verb|μD| (note that this
-  is a single identifier in Agda, not an application of a \verb|μ|
-operator to \verb|D|).  Algebra types $D \sAlg A$ are represented just
-as \verb|D⇒ A|.  Note that \verb|D⇒| is also a single symbol in Agda.  Arrow types are represented $\arr{A}{B}$ (as other
-arrow notations are already in use).  The figure declares some fixity
-information, for lighter notation below.
-
-\begin{figure}
-\begin{verbatim}
-data Tp : Set where
-  D_ : Tp → Tp
-  _⟶_ : Tp → Tp → Tp
-  D⇒ : Tp → Tp
-  μD : Tp
-
-infixr 9 _⟶_
-infixr 10 D_
-\end{verbatim}
-  \caption{Agda definition of types.}
-  \label{fig:synagda}
-\end{figure}
-
-Figure~\ref{fig:algagda} show the representation of the algorithmic
-subtyping system; we omit a similar definition for declarative
-subtyping, for space reasons.  Each set of rules is represented as an
-indexed inductive type, with each rule a constructor.  For example, we
-have, for both types, \verb|Refl| of type \verb|μD <: μD|, which
-corresponds exactly to the \verb|Refl| rules of
-Figures~\ref{fig:declarative-subtyping-rules}
-and~\ref{fig:algorithmic-subtyping-rules}.  Conveniently, Agda allows
-reusing constructor names across datatypes.  Dependent typing is used
-for quantification.  For example, the \verb|Roll| constructor has type
-\begin{verbatim}
-{T : Tp} → T <:: μD → D T <:: μD
-\end{verbatim}
-\noindent This is a dependent function type, stating that give
-\verb|T : Tp| and a proof of \verb|T <:: μD|, \verb|Roll| returns a
-proof of \verb|D T <:: μD|.  Finally, the statements of soundness and
-completeness are shown in Figure~\ref{fig:sndcmpl}.  The total number
-of lines for all the Agda code is under 150, a very modest burden of
-proof.  This is partly because types do not contain bound variables,
-and so the technical overhead associated with these (for example,
-with de Bruijn indices) is avoided.
-
-\begin{figure}
-\begin{verbatim}
-infix 5 _<::_
-
-data _<::_ : Tp → Tp → Set where
-  Refl : μD <:: μD
-  Arr : {T1 T2 T1' T2' : Tp} →
-         T1' <:: T1 →
-         T2 <:: T2' →
-         T1 ⟶ T2 <:: T1' ⟶ T2'
-  Roll : {T : Tp} → T <:: μD → D T <:: μD
-  Unroll : {T : Tp} → μD <:: T → μD <:: D T
-  Cov : {T1 T2 : Tp} → T1 <:: T2 → D T1 <:: D T2
-  Alg : {T1 T2 : Tp} → T1 <:: T2 → D⇒ T1 <:: D⇒ T2
-  Cata : {T T1 T2 : Tp} →
-        T1 <:: μD →
-        T <:: T2 →
-        D⇒ T <:: T1 ⟶ T2
-\end{verbatim}
-  \caption{Agda definition of algorithmic subtyping.}
-  \label{fig:algagda}
-\end{figure}
-
-\begin{figure}
-\begin{verbatim}
-Soundness    : {T T' : Tp} → T <:: T' → T <: T'
-Completeness : {T T' : Tp} → T <: T'  → T <:: T'
-\end{verbatim}
-  \caption{Agda statements of soundness and completeness.}
-  \label{fig:sndcmpl}
-\end{figure}
 
 \section{Type checking for \lcataSub}
 \label{sec:typechecking}
