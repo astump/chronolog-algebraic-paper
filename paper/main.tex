@@ -916,7 +916,7 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \section{Type checking for \lcataSub}
 \label{sec:typechecking}
 
-The language \lcataSub coincides with \lcata, differing only in the elision of the explicit coercion construct, $\sCoerce{c}{a}$, and the introduction of the following typing rule for implicit subtyping.
+Let \lcataSub be the language that coincides with \lcata except in eliding the explicit coercion construct, $\sCoerce{c}{a}$, and introducing the following typing rule for implicit subtyping.
 \newcommand{\typingRuleSubtype}{
   \inferrule[Subtype]{
     \Gamma \vdash A \subtypeA A' \qquad
@@ -928,6 +928,7 @@ The language \lcataSub coincides with \lcata, differing only in the elision of t
 \begin{mathpar}
   \typingRuleSubtype
 \end{mathpar}
+We develop \lcataSub to be a version of \lcata where the burden of explicit coercions is alleviated by implicit inference of coercions.
 
 In this section, we formalize a constraint-based type-checking algorithm for \lcataSub. 
 Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference. 
