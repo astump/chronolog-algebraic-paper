@@ -530,7 +530,7 @@ The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}
 
 The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
 This rule resolves the signature functor associated with the datatype of the scrutinee.
-Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the typing premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
+Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
 
 The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule{Omega} rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
 This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
@@ -778,22 +778,24 @@ due to the presence of transitivity, and a derivable reflexivity rule.
 But for algorithmic subtyping, the situation is much more constrained:
 
 \begin{theorem}[Uniqueness]
+  \label{thm:uniqueness}
   There is at most one derivation of $A \subtypeA B$.
 \end{theorem}
 
 \subsection{Typing coercions}
 \label{sec:typing-coercions}
 
-Now that we have formalized subtyping in \lcataSub, we present the coercion typing of \lcata in Figure~\ref{fig:coercion-typing-rules}.
-These rules exactly correspond to the algorithmic subtyping rules from Figure~\ref{fig:algorithmic-subtyping-rules}.
-This allows us to straightforwardly translate a derivation of $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$ for the sake of inferring the explicit coercions to insert into a term of \lcataSub to result in a valid term of \lcata.
+Having established the formalization of subtyping in \lcataSub, we present the coercion typing system for \lcata in Figure~\ref{fig:coercion-typing-rules}.
+These rules exhibit an exact structural correspondence with the algorithmic subtyping relation defined in Figure~\ref{fig:algorithmic-subtyping-rules}.
+This isomorphism enables a systematic, constructive translation from any valid subtyping derivation $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$.
+Consequently, this correspondence forms the foundation of our elaboration semantics, allowing us to infer and insert the explicit coercions necessary to translate a well-typed \lcataSub term into a valid \lcata term.
 
 \begin{figure}[htb]
   \centering
 
   \begin{mathpar}
     
-    \inferrule[ReflCoe]{ }{
+    \inferrule[ReflDataCoe]{ }{
       \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
     }
         
@@ -860,6 +862,7 @@ Let \lcataSub be the language that coincides with \lcata except in eliding the e
 \begin{mathpar}
   \typingRuleSubtype
 \end{mathpar}
+The comprehensive typing rules for \lcataSub are compiled for reference in Appendix~\ref{app:typing-rules-lcataSub}
 We develop \lcataSub to be a version of \lcata where the burden of explicit coercions is alleviated by implicit inference of coercions.
 
 In this section, we formalize a constraint-based type-checking algorithm for \lcataSub. 
@@ -983,7 +986,7 @@ Each constraint is annotated with the particular sub-term of \texttt{subs} that 
 
 \begin{lemma}[Termination of \Func{Generate}]
   \label{lem:generate-termination}
-  $\Gamma, a, A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
+  $\Func{Generate}(\Gamma, a, A)$ terminates.
 \end{lemma}
 \begin{proof}
   \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
@@ -1021,13 +1024,15 @@ Suspending constraint of these forms prevents Chronolog from applying rules in a
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
 Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
 This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
-This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
-Each solution corresponds to a specific set of derivations for the original subtyping constraints, where each derivation can be interpreted as a coercion justifying the corresponding subtyping relation.
+For the purposes of type checking, we only need to determine if \Func{Solve} results in zero or non-zero solutions.
 
-We introduce an equivalence relation, denoted $\sim$, over the space of solutions: two solutions are deemed $\sim$-equivalent if their application to the term that originally generated the constraints yields semantically equivalent terms.
-We posit that all solutions discovered by \Func{Solve} reside within a single $\sim$-equivalence class: $\forall \sigma, \sigma' \in \Func{Solve}(\constraints), \sigma \sim \sigma'$.
-To illustrate, certain coercions manifest as the identity function (for instance, when justifying a reflexive relation of the form $A \subtypeA A$) or are semantically equivalent to the identity (such as \textsyntax{roll} and \textsyntax{unroll}, which serve strictly as static typing markers and erase to identities dynamically).
-Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via distinct compositions of subtyping rules, or that employ \IRule{Roll} and \IRule{Unroll} in varying permutations, uniformly collapse into the same $\sim$-equivalence class.
+% This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
+% Each solution corresponds to a specific set of derivations for the original subtyping constraints, where each derivation can be interpreted as a coercion justifying the corresponding subtyping relation.
+
+% We introduce an equivalence relation, denoted $\sim$, over the space of solutions: two solutions are deemed $\sim$-equivalent if their application to the term that originally generated the constraints yields semantically equivalent terms.
+% We posit that all solutions discovered by \Func{Solve} reside within a single $\sim$-equivalence class: $\forall \sigma, \sigma' \in \Func{Solve}(\constraints), \sigma \sim \sigma'$.
+% To illustrate, certain coercions manifest as the identity function (for instance, when justifying a reflexive relation of the form $A \subtypeA A$) or are semantically equivalent to the identity (such as \textsyntax{roll} and \textsyntax{unroll}, which serve strictly as static typing markers and erase to identities dynamically).
+% Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via distinct compositions of subtyping rules, or that employ \IRule{Roll} and \IRule{Unroll} in varying permutations, uniformly collapse into the same $\sim$-equivalence class.
 
 \begin{algorithm}[htb]
   \caption{Constraint solving with Chronolog.}
@@ -1133,20 +1138,30 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
   \begin{algorithmic}[1]
     \Function{TypeCheck}{$\Gamma, a, A$}
     \State $\constraints \gets \Func{Generate}(\Gamma, a, A)$
-    \State \Match $\Func{Solve}(\constraints)$ \With
-    \State \quad \Case $[~] \Rightarrow \bot$
-    \State \quad \Case $\_ \Rightarrow \top$
-    \State \EndMatch
+    % \State \Match $\Func{Solve}(\constraints)$ \With
+    % \State \quad \Case $[~] \Rightarrow \bot$
+    % \State \quad \Case $\_ \Rightarrow \top$
+    % \State \EndMatch
+    % 
+    % \If{$\Func{Solve}(\constraints) = [~]$}
+    % \State \Return $\bot$
+    % \Else 
+    % \State \Return $\top$
+    % \EndIf
+    % 
+    % \LineIf{$\Func{Solve}(\constraints) = [~]$}{\Return $\bot$}{\Return $\top$}
+    % \State \Return \textbf{if} $\Func{Solve}(\constraints) = [~]$ \textbf{then} $\bot$ \textbf{else} $\top$
+    \State \Return $\Func{Solve}(\constraints) \neq \varnothing$
     \EndFunction
   \end{algorithmic}
 \end{algorithm}
 
 \begin{theorem}[Completeness of \Func{TypeCheck}]
   \label{thm:type-checker-completeness}
-  If $\Gamma \vdash a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
+  If $\Gamma \vdash_{\lcataSub} a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
 \end{theorem}
 \begin{proof}
-  Suppose $\Gamma \vdash a : A$.
+  Suppose $\Gamma \vdash_{\lcataSub} a : A$.
   $\Func{Generate}(\Gamma, a, A)$ terminates (by Lemma~\ref{lem:generate-termination}) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-completeness}).
   By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
   By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
@@ -1211,7 +1226,14 @@ processes constraints with respect to an algorithmic version of the
 subtyping rules.  This algorithmic subtyping relation is proved
 equivalent to the declarative one, in Agda.
 
-Future work includes richer forms of algebraic programming.  One
+Furthermore, we mechanically verified (Lemma~\ref{thm:uniqueness}) that the
+algorithmic typing judgment admits unique derivations at ground types. While
+establishing the mere satisfiability of the generated constraint problems (which
+include type variables) is sufficient for the purposes of type checking, we
+defer to future work the demonstration of a suitable equivalence relation that
+characterizes the solutions produced by \Func{Solve}.
+
+Future work also includes richer forms of algebraic programming.  One
 powerful generalization of structural recursion is to recursive
 coalgebras~\cite{capretta+06}.  This encompasses divide-and-conquer
 algorithms, which are beyond the scope of structural recursion.  A
@@ -1224,51 +1246,51 @@ coalgebraic programming with coinductive types.
 
 \appendix
 
-\section{Typing rules for \lcata}
-\label{app:typing-rules-lcata}
+% \section{Typing rules for \lcata}
+% \label{app:typing-rules-lcata}
 
-\begin{mathpar}
+% \begin{mathpar}
 
-  \inferrule[Var]{
-    (x : A) \in \Gamma
-  }{
-    \Gamma \vdash x : A
-  }
+%   \inferrule[Var]{
+%     (x : A) \in \Gamma
+%   }{
+%     \Gamma \vdash x : A
+%   }
   
-  \inferrule[Con]{
-    \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
-    \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
-  }{
-    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
-  }
+%   \inferrule[Con]{
+%     \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+%     \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+%   }{
+%     \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+%   }
   
-  \inferrule[Lam]{
-    \Gamma , (x : A) \vdash b : B
-  }{
-    \Gamma \vdash \lambda (x : A) . b : A \sArr B
-  }
+%   \inferrule[Lam]{
+%     \Gamma , (x : A) \vdash b : B
+%   }{
+%     \Gamma \vdash \lambda (x : A) . b : A \sArr B
+%   }
   
-  \inferrule[App]{
-    \Gamma \vdash f : A \sArr B \qquad 
-    \Gamma \vdash a : A
-  }{
-    \Gamma \vdash f ~ a : B
-  }
+%   \inferrule[App]{
+%     \Gamma \vdash f : A \sArr B \qquad 
+%     \Gamma \vdash a : A
+%   }{
+%     \Gamma \vdash f ~ a : B
+%   }
 
-  \typingRuleGamma
+%   \typingRuleGamma
   
-  \typingRuleOmega
+%   \typingRuleOmega
   
-  \inferrule[Let]{
-    \Gamma, (x : A) \vdash b : B \qquad 
-    \Gamma \vdash a : A
-  }{
-    \Gamma \vdash \sLet{x}{A}{a}{b} : B
-  }
+%   \inferrule[Let]{
+%     \Gamma, (x : A) \vdash b : B \qquad 
+%     \Gamma \vdash a : A
+%   }{
+%     \Gamma \vdash \sLet{x}{A}{a}{b} : B
+%   }
 
-  \typingRuleSubtype
+%   \typingRuleSubtype
 
-\end{mathpar}
+% \end{mathpar}
 
 \section{Typing rules for \lcataSub}
 \label{app:typing-rules-lcataSub}

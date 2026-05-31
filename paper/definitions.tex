@@ -85,9 +85,9 @@
 \newcommand{\highlightTwo}[1]{\colorbox{blue!15}{\ensuremath{#1}}}
 
 % \newcommand{\lcata}[0]{\ensuremath{\mathcal{L}_{\textit{cata}}}\xspace}
-\newcommand{\lcata}[0]{\ensuremath{\mathcal{L}_{{\llparenthesis \cdot \rrparenthesis}}\xspace}}
+\newcommand{\lcata}[0]{\ensuremath{\mathcal{L}_{{\llparenthesis \cdot \rrparenthesis}}}\xspace}
 % \newcommand{\lcataSub}[0]{\ensuremath{\mathcal{L}_{\textit{cata}-}}\xspace}
-\newcommand{\lcataSub}[0]{\ensuremath{\mathcal{L}_{{\llparenthesis \cdot \rrparenthesis-}}\xspace}}
+\newcommand{\lcataSub}[0]{\ensuremath{\mathcal{L}_{{\llparenthesis \cdot \rrparenthesis-}}}\xspace}
 
 \newcommand{\constraints}{\ensuremath{\mathcal{C}}}
 
@@ -151,6 +151,9 @@
 \newcommand{\EndMatch}{\textbf{end match}}
 \newcommand{\With}{\textbf{ with}}
 \newcommand{\Case}{\textbf{case }}
+\algnewcommand{\LineIf}[3]{%
+    \State \algorithmicif\ #1\ \algorithmicthen\ #2\ \algorithmicelse\ #3%
+}
 
 % functions
 \newcommand{\textFunc}{\textsf}
