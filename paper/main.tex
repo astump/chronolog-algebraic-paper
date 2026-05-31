@@ -933,14 +933,14 @@ We develop \lcataSub to be a version of \lcata where the burden of explicit coer
 In this section, we formalize a constraint-based type-checking algorithm for \lcataSub. 
 Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference. 
 Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground. 
-The development of a full type reconstruction mechanism is left to future work.
+The development of a full type inference mechanism is left to future work.
 
-The constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, generates a set of subtyping constraints necessary to check a term $a$ against an expected type $A$ under a typing context $\Gamma$. 
-This procedure is defined by structural recursion on the term $a$, following the rules formalized in Figure~\ref{fig:constraint-generation-rules}.
-Each emitted constraint corresponds to an implied application of the \IRule{Subtype} rule required to construct a valid typing derivation; furthermore, each constraint is implicitly localized to the specific subterm at which subsumption is mandated.
-Within the framework of coercive subtyping, these subsumption steps are witnessed by coercions that provide computational evidence for the underlying subtyping relation.
-Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
-We omit a rigorous formalization of this coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
+The constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, generates a set of subtyping constraints necessary to check a term $a$ against an expected type $A$ under a typing context $\Gamma$.
+This algorithm follows a straightforward algorithmic application of the rules in Figure~\ref{fig:constraint-generation-rules} by recursion on the structure of $a$.
+Each generated constraint corresponds to an implied application of the \IRule{Subtype} rule required to construct a valid typing derivation; furthermore, each constraint is implicitly localized to the specific subterm at which subsumption is mandated.
+% Within the framework of coercive subtyping, these subsumption steps are witnessed by coercions that provide computational evidence for the underlying subtyping relation.
+% Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
+We omit a rigorous formalization of the coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
 
 \begin{figure}[htb]
   \centering
