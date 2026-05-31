@@ -302,13 +302,12 @@ recursive functional programs, albeit with more abstract typing.
       \\[0.5em]
       %
       \text{(Datatype signature functor)} &
-      F &::=& \lambda X . \sepBy{k(\sepBy{P(X)}{~\times})}{~+}
+      F &::=& \lambda X . \sepBy{k(\sepBy{P_X}{~\times})}{~+}
       \\[0.5em]
       %
       \text{(Constructor parameter types)} &
-      P(X) &::=&
+      P_X &::=&
       X \mid
-      \sFunctorApp{D}{P(X)} \mid
       \sMu{D}
       \\[0.5em]
       %
@@ -1054,17 +1053,44 @@ Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via di
   \end{algorithmic}
 \end{algorithm}
 
-Constraints solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
-Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
-Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$. 
+We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Func{Refine} to refine any suspended constraints left over each iteration, as show in Algorithm~\ref{alg:solver}.
+\Func{Refine} is defined by the following cases, in order of decreasing priority.
+% \begin{itemize}
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{R} \}$ if $(X \subtypeA R) \in \constraints$ or $(R \subtypeA X) \in \constraints$.
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $X \subtypeA \sMu{D} \in \constraints$ or $(\sMu{D} \in X) \in \constraints$.
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sFunctorApp{D}{A} \}$ if $X \subtypeA \sFunctorApp{D}{A} \in \constraints$ or $(\sFunctorApp{D}{A} \in X) \in \constraints$.
+%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints$ or $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X})) \subtypeA X) \in \constraints}$.
+%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints \}$ otherwise.
+% \end{itemize}
+
 \begin{mathpar}
-  \begin{array}{rlrll}
-    \Func{Refine}(\{ \dots, \sMu{D} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sMu{D}, \dots \}) &:= \{ X \mapsto \sMu{D} \} \\
-    \Func{Refine}(\{ \dots, R &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA R, \dots \}) &:= \{ X \mapsto R \} \\
-    No && \Func{Refine}(\{ \dots, X &\subtypeA Y, \dots \}) &:= \{ X \mapsto Y \} \\
-    \Func{Refine}(\{ \dots, \sFunctorApp{D}{A} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{A}, \dots \}) &:= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
-  \end{array}
+  \Func{Refine}(\constraints) := \begin{cases}
+    \{ X \mapsto R \} ~\text{if}~ (X \subtypeA R) \in \constraints ~\text{or}~ (R \subtypeA X) \in \constraints ~\text{else}
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sMu{D}) \in \constraints ~\text{or}~ (\sMu{D} \in X) \in \constraints ~\text{else}
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X) \in \constraints
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints
+    % \\
+    % \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \subtypeA X \in \constraints) \} ~\text{otherwise}
+  \end{cases}
 \end{mathpar}
+
+% Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
+% \Func{Refine} 
+
+% Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
+% Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$. 
+% \begin{mathpar}
+%   \begin{array}{rlrll}
+%     && \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \}) &:= \bot  \\
+%     \Func{Refine}(\{ \dots, \sMu{D} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sMu{D}, \dots \}) &:= \{ X \mapsto \sMu{D} \} \\
+%     \Func{Refine}(\{ \dots, R &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA R, \dots \}) &:= \{ X \mapsto R \} \\
+%     && \Func{Refine}(\{ \dots, X &\subtypeA Y, \dots \}) &:= \{ X \mapsto Y \} \\
+%     \Func{Refine}(\{ \dots, \sFunctorApp{D}{A} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{A}, \dots \}) &:= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+%   \end{array}
+% \end{mathpar}
 
 % 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
 % 2. if two constraints have the same type variable, then 
@@ -1080,21 +1106,25 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
   $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
-  We show termination by demonstrating that \todoHenry{define what the termination metric is} is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
+  We show termination by demonstrating that the total size of typing constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
   Each iteration begins with an invocation of \Func{Chronolog}.
   If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
   If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
-
-  The substitution resulting from $\Func{Refine}(\constraints)$ preserves the size of constraints in all but one case, $\Func{Refine}(\{ \dots, X \subtypeA \sFunctorApp{D}{A}, \dots \}$ or $\Func{Refine}(\{ \dots, \sFunctorApp{D}{A} \subtypeA X, \dots \}$, where it results in $\{ X \mapsto \sFunctorApp{D}{Y} \}$ where $Y$ is a fresh type variable.
-  In this case, \todoHenry{argue that even in this case, decreasing metric}
+  The substitution resulting from $\Func{Refine}(\constraints)$ does not increase the total size of constraints in any case.
 \end{proof}
 
 \begin{lemma}[Completeness of \Func{Solve}]
   \label{lem:solver-completeness}
-  If $\sigma$ is a solution to a constraint problem $\constraints$, then $\eqClass{\sigma}{\sim} \cap \Func{Solve}(\constraints) \neq \varnothing$.
+  If there exists a solution to a constraint problem $\constraints$, then $\Func{Solve}(\constraints) \neq \varnothing$.
 \end{lemma}
 \begin{proof}
-  \Func{Solve} finds all solutions to $\constraints$ up to $\sim$ because \Func{Chronolog} attempts every valid application of the algorithmic subtyping rules which are complete by Theorem~\ref{thm:completeness}, \Func{Refine} preserves validity of solution $\sigma$, and \Func{Solve} terminates by Theorem \ref{lem:solver-termination}.
+  Suppose there exists a solution to $\constraints$.
+  \Func{Chronolog} nondeterministically attempts every valid application of the algorithmic subtyping rules, which are complete by Theorem~\ref{thm:completeness}.
+  \Func{Refine}'s handling of $X \subtypeA R$ and $R \subtypeA X$ constraints does not violate completeness since $R$ is unrelated to any other type.
+  \Func{Refine}'s handling of $X \subtypeA \sMu{D}$ and $\sMu{D} \subtypeA X$ constraints does not violate completeness since, after \Func{Refine} has already handled the previous cases, any other appearances of $X$, once substituted for $\sMu{D}$, may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy the constraints at those appearances.
+  \Func{Refine}'s handling of $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))})$ and $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X)$ constraints does not violate completeness since $X \mapsto \sMu{D}$ is the only solution to such constraints.
+  \Func{Refine}'s handling of $X \subtypeA \sFunctorApp{D}{A}$ and $\sFunctorApp{D}{A} \subtypeA X$ constraints does not violate completeness since, as there is an assumed solution to $\constraints$ and \Func{Refine} has already handled the previous cases, $A$ must be of the form $\sFunctorApp{D}{(\dots (\sFunctorApp{D}{Y}))}$ (where $Y$ is a distinct type variable from $X$) or $\sFunctorApp{D}{(\dots (\sMu{D}))}$, and so any other appearances of $X$ may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy any other relations to the constraints at those appearances.
+  The result follows since \Func{Solve} terminates by Lemma~\ref{lem:solver-termination}.
 \end{proof}
 
 \begin{algorithm}[htb]
