@@ -772,7 +772,9 @@ inductively proven lemmas.
 \subsection{Typing coercions}
 \label{sec:typing-coercions}
 
-\todoHenry{Here are the typing rules for coercions.}
+Now that we have formalized subtyping in \lcataSub, we present the coercion typing of \lcata in Figure~\ref{fig:coercion-typing-rules}.
+These rules exactly correspond to the algorithmic subtyping rules from Figure~\ref{fig:algorithmic-subtyping-rules}.
+This allows us to straightforwardly translate a derivation of $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$ for the sake of inferring the explicit coercions to insert into a term of \lcataSub to result in a valid term of \lcata.
 
 \begin{figure}[htb]
   \centering
@@ -829,8 +831,6 @@ inductively proven lemmas.
   \caption{Coercion typing rules.}
   \label{fig:coercion-typing-rules}
 \end{figure}
-
-
 
 \subsection{Formalization in Agda}
 \label{sec:agda}
@@ -1065,7 +1065,7 @@ Each constraint is annotated with the particular sub-term of \texttt{subs} that 
 \begin{proof}
   The solution $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
   Use these derivations along with the rule \IRule{Subtype} to construct a derivation of $\Gamma \vdash_{\lcataSub} a : A$.
-  Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}.
+  Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}, as described in \ref{sec:typing-coercions}.
 \end{proof}
 
 \subsection{Constraint solving with Chronolog}
