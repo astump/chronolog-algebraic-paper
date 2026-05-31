@@ -444,7 +444,7 @@ programming like this with lighter syntax?  We return with our
 positive answer for these examples in
 Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
 
-\section{Typing}
+\section{Typing for \lcata}
 \label{sec:typing}
 
 The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for constructing and deconstructing datatypes, algebraic recursion, and explicit coercion.
@@ -466,14 +466,6 @@ The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}
     \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B
   }{
     \Gamma \vdash \omega f(x) . b : D \sAlg B
-  }
-}
-\newcommand{\typingRuleSubtype}{
-  \inferrule[Subtype]{
-    \Gamma \vdash A \subtype A' \qquad
-    \Gamma \vdash a : A
-  }{
-    \Gamma \vdash a : A'
   }
 }
 \newcommand{\typingRuleCoerce}{
@@ -924,9 +916,23 @@ Completeness : {T T' : Tp} → T <: T'  → T <:: T'
 \section{Type checking for \lcataSub}
 \label{sec:typechecking}
 
-We present a type checking procedure based on generating and solving subtyping constraints.
-Crucially, while type variables are introduced during the type-checking phase, they serve exclusively to facilitate constraint satisfaction rather than to support type inference. 
-Both $\lambda$-abstractions and $\textsyntax{let}$-bindings require explicit type annotations, thereby ensuring that all types occurring within a program are ground. We defer the development of a comprehensive type inference mechanism to future work.
+The language \lcataSub coincides with \lcata, differing only in the elision of the explicit coercion construct, $\sCoerce{c}{a}$, and the introduction of the following typing rule for implicit subtyping.
+\newcommand{\typingRuleSubtype}{
+  \inferrule[Subtype]{
+    \Gamma \vdash A \subtypeA A' \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash a : A'
+  }
+}
+\begin{mathpar}
+  \typingRuleSubtype
+\end{mathpar}
+
+In this section, we formalize a constraint-based type-checking algorithm for \lcataSub. 
+Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference. 
+Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground. 
+The development of a full type reconstruction mechanism is left to future work.
 
 Initially, the constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, produces a set of subtyping constraints for a term $a$ against an expected type $A$ under the context $\Gamma$.
 This procedure operates by structural recursion on $a$, governed by the rules delineated in Figure~\ref{fig:constraint-generation-rules}.
@@ -1143,7 +1149,7 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
 \end{proof}
 
 \begin{algorithm}[htb]
-  \caption{Type checking for \lcata.}
+  \caption{Type checking for \lcataSub.}
   \label{alg:type-checker}
   \begin{algorithmic}[1]
     \Function{TypeCheck}{$\Gamma, a, A$}
@@ -1242,7 +1248,51 @@ coalgebraic programming with coinductive types.
 \section{Typing rules for \lcata}
 \label{app:typing-rules-lcata}
 
-Section~\ref{sec:typing} presented a sampling from the full set of typing rules for \lcata below.
+\begin{mathpar}
+
+  \inferrule[Var]{
+    (x : A) \in \Gamma
+  }{
+    \Gamma \vdash x : A
+  }
+  
+  \inferrule[Con]{
+    \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+    \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+  }{
+    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+  }
+  
+  \inferrule[Lam]{
+    \Gamma , (x : A) \vdash b : B
+  }{
+    \Gamma \vdash \lambda (x : A) . b : A \sArr B
+  }
+  
+  \inferrule[App]{
+    \Gamma \vdash f : A \sArr B \qquad 
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash f ~ a : B
+  }
+
+  \typingRuleGamma
+  
+  \typingRuleOmega
+  
+  \inferrule[Let]{
+    \Gamma, (x : A) \vdash b : B \qquad 
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash \sLet{x}{A}{a}{b} : B
+  }
+
+  \typingRuleSubtype
+
+\end{mathpar}
+
+\section{Typing rules for \lcataSub}
+\label{app:typing-rules-lcataSub}
 
 \begin{mathpar}
 
