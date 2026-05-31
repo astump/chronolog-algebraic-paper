@@ -935,12 +935,12 @@ Although type variables are introduced during constraint generation, their purpo
 Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground. 
 The development of a full type reconstruction mechanism is left to future work.
 
-Initially, the constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, produces a set of subtyping constraints for a term $a$ against an expected type $A$ under the context $\Gamma$.
-This procedure operates by structural recursion on $a$, governed by the rules delineated in Figure~\ref{fig:constraint-generation-rules}.
-Each emitted constraint signifies an implicit application of the \IRule{Subtype} rule, which is requisite for constructing a valid typing derivation.
-Furthermore, every constraint is explicitly annotated with the precise sub-term at which the subsumption step occurs.
-Under the paradigm of coercive subtyping, these applications of \IRule{Subtype} are witnessed by coercions that provide computational justification for the subtyping relation.
-Operationally, these coercions are reified as explicit function applications which are inserted at the annotated sub-terms associated with the resolved constraints.
+The constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, generates a set of subtyping constraints necessary to check a term $a$ against an expected type $A$ under a typing context $\Gamma$. 
+This procedure is defined by structural recursion on the term $a$, following the rules formalized in Figure~\ref{fig:constraint-generation-rules}.
+Each emitted constraint corresponds to an implied application of the \IRule{Subtype} rule required to construct a valid typing derivation; furthermore, each constraint is implicitly localized to the specific subterm at which subsumption is mandated.
+Within the framework of coercive subtyping, these subsumption steps are witnessed by coercions that provide computational evidence for the underlying subtyping relation.
+Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
+We omit a rigorous formalization of this coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
 
 \begin{figure}[htb]
   \centering
@@ -958,9 +958,9 @@ Operationally, these coercions are reified as explicit function applications whi
       \qquad
       \langle D, \sSignatureFunctor{Y}{\dots + k(\sepBy{A'_i}{~\times}) + \dots} \rangle \in \datatypes
       \qquad
-      \sepBy{\Gamma \vdash a_i : A_i \gsep \constraints_{a_i}}{ }
+      \sepBy{\Gamma \vdash \highlightOne{a_i} : A_i \gsep \constraints_{a_i}}{ }
     }{
-      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ A_i \subtypeAP{a_i} A'_i[Y \mapsto X] \})
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ \highlightOne{A_i \subtypeA A'_i[Y \mapsto X]} \})
     }
 
     \inferrule[Lam]{
@@ -972,11 +972,11 @@ Operationally, these coercions are reified as explicit function applications whi
     \inferrule[App]{
       % [Note]: We introduce a type variable for the supertype of the codomain of f so that B \subtypeA A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
       \freshMetavariables{X} \qquad
-      \Gamma \vdash f : B \gsep \constraints_f \qquad
+      \Gamma \vdash \highlightOne{f} : B \gsep \constraints_f \qquad
       \Gamma \vdash a : A \gsep \constraints_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \constraints_f \cup \constraints_a \cup \{ B \subtypeAP{f} A \sArr X \}
+      \constraints_f \cup \constraints_a \cup \{ \highlightOne{B \subtypeA A} \sArr X \}
     }
 
     \inferrule[Gamma]{
@@ -984,18 +984,18 @@ Operationally, these coercions are reified as explicit function applications whi
       \freshMetavariables{X, Y} \qquad
       \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+}} \rangle \in \datatypes
       \\\\
-      \Gamma \vdash a : C \gsep \constraints_a
+      \Gamma \vdash \highlightOne{a} : C \gsep \constraints_a
       \qquad
       % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
       % \\\\
       % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \constraints_{b_i}
-      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B_i \gsep \constraints_{b_i}}{ }
+      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash \highlightTwo{b_i} : B_i \gsep \constraints_{b_i}}{ }
     }{
       \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
       \gsep
-      \{ C \subtypeAP{a} \sFunctorApp{D}{X} \} \cup
+      \{ \highlightOne{C \subtypeA \sFunctorApp{D}{X}} \} \cup
       \constraints_a \cup
-      \bigcup_i (\{ B_i \subtypeAP{b_i} Y \} \cup \constraints_{b_i})
+      \bigcup_i (\{ \highlightTwo{B_i \subtypeA Y} \} \cup \constraints_{b_i})
     }
 
     \inferrule[Omega]{
@@ -1005,10 +1005,10 @@ Operationally, these coercions are reified as explicit function applications whi
     }
 
     \inferrule[Let]{
-      \Gamma \vdash a : A \gsep \constraints_a \qquad
+      \Gamma \vdash \highlightOne{a} : A \gsep \constraints_a \qquad
       \Gamma, (x : A') \vdash b : B \gsep \constraints_b
     }{
-      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ A \subtypeAP{a} A' \} \cup \constraints_b
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ \highlightOne{A \subtypeA A'} \} \cup \constraints_b
     }
 
     % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
@@ -1026,15 +1026,14 @@ Operationally, these coercions are reified as explicit function applications whi
 \end{figure}
 
 Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
-This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints.
-Each constraint in these sets is of the form $A \subtypeAP{a'} B$, where $a'$ is a specific sub-term of $a$, including its unique location within $a$.
-The system is designed such that a solution to $\constraints$ specifies an insertion of coercions around sub-terms of $a$, where each coercion inserted at a position $a'$ corresponds to one of the original required constraints $A \subtypeAP{a'} B$.
+This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints of the form $A \subtypeA B$.
 
 The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
 The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
 A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
 
 For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+Each constraint is annotated with the particular sub-term of \texttt{sub} that it is linked to during constraint generation.
 \begin{mathpar}
   \{
     \sFunctorApp{\sNat}{X} \subtypeAP{\sZero} \sMu\sNat,
@@ -1042,6 +1041,7 @@ For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as de
   \}
 \end{mathpar}
 As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatList → NatList} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+Each constraint is annotated with the particular sub-term of \texttt{subs} that it is linked to during constraint generation.
 \begin{mathpar}
   \{
     \sFunctorApp{\sNatList}{X} \subtypeAP{\sNil} \sMu\sNatList,
@@ -1218,7 +1218,7 @@ subs = ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
   \label{fig:example-subs-algebraic-without-coercions}
 \end{figure}
 
-The type checking procedure described in previous sections collects and solves the implied subtyping constraints, which determine an insertion of coercions into these terms which matches the manual usage of explicit coercions in the original examples.
+The type checking procedure described in previous sections collects and solves the implied subtyping constraints, which upon success determines a valid typing derivation for the term in \lcata with the inferred coercions explicitly inserted.
 
 \section{Related Work} % Aaron
 
