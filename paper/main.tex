@@ -1051,7 +1051,7 @@ As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatL
 
 \begin{lemma}[Termination of \Func{Generate}]
   \label{lem:generate-termination}
-  For any $\Gamma, a, A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
+  $\Gamma, a, A$, $\Func{Generate}(\Gamma, a, A)$ terminates.
 \end{lemma}
 \begin{proof}
   \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
@@ -1144,7 +1144,7 @@ Then \Func{Refine}, defined by the following cases in order of decreasing priori
 
 \begin{lemma}[Termination of \Func{Solve}]
   \label{lem:solver-termination}
-  For any constraint problem $\constraints$, $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
+  $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
   We show termination by demonstrating that \todoHenry{define what the termination metric is} is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
