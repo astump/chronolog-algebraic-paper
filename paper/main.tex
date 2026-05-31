@@ -909,7 +909,7 @@ We omit a rigorous formalization of the coercion elaboration phase (the algorith
       \Gamma \vdash a : A \gsep \constraints_a
     }{
       \Gamma \vdash f ~ a : X \gsep
-      \constraints_f \cup \constraints_a \cup \{ \highlightOne{B \subtypeA A} \sArr X \}
+      \constraints_f \cup \constraints_a \cup \{ \highlightOne{B \subtypeA A \sArr X} \}
     }
 
     \inferrule[Gamma]{
