@@ -1,4 +1,4 @@
-module Uniqueness where
+module Metatheory.Uniqueness where
 
 open import lib
 open import Tp
@@ -10,6 +10,7 @@ uniqueness : ∀{T1 T2 : Tp} →
               d1 ≡ d2
 uniqueness {T1} {T2} Refl Refl = refl
 uniqueness {T1} {T2} ReflV ReflV = refl
+uniqueness {T1} {T2} ReflR ReflR = refl
 uniqueness {T1} {T2} (Arr d1 d2) (Arr d3 d4) with uniqueness d1 d3 | uniqueness d2 d4
 uniqueness {T1} {T2} (Arr d1 d2) (Arr d3 d4) | refl | refl = refl
 uniqueness {T1} {T2} (Roll d1) (Roll d2) with uniqueness d1 d2

@@ -3,7 +3,7 @@ open import Tp
 open import Declarative
 open import Decproc
 
-module Completeness where
+module Metatheory.Completeness where
 
 completeness : ∀{T T' : Tp} →
                T <: T' →
@@ -17,3 +17,4 @@ completeness (Trans d d₁) = trans<:: (completeness d) (completeness d₁)
 completeness Cata = Cata refl<:: refl<::
 completeness (Alg d) = Alg (completeness d)
 completeness ReflV = ReflV
+completeness ReflR = ReflR

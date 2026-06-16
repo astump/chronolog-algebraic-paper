@@ -3,7 +3,7 @@ open import Tp
 open import Declarative
 open import Decproc
 
-module Soundness where
+module Metatheory.Soundness where
 
 soundness : ∀{T T' : Tp} →
             T <:: T' →

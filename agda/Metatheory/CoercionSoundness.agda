@@ -15,7 +15,7 @@ open import Decproc
 open import Tm
 open import Ctm
 open import Declarative
-open import Soundness
+open import Metatheory.Soundness
 
 infix 4 _▹_
 

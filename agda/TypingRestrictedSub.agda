@@ -3,7 +3,7 @@ module TypingRestrictedSub where
 open import lib
 open import Tp
 open import Tm
-open import Declarative
+open import Decproc
 
 infix 7 ⊢r_!_
 
@@ -17,7 +17,7 @@ data ⊢r_!_ : Tm → Tp → Set where
   App : ∀{X A B : Tp}{t1 t2 : Tm} →
          ⊢r t1 ! X →
          ⊢r t2 ! A →
-         X <: A ⟶ B → 
+         X <:: A ⟶ B → 
          ⊢r t1 · t2 ! B
 
   Suc : ∀{A : Tp} → 
@@ -30,13 +30,13 @@ data ⊢r_!_ : Tm → Tp → Set where
          ⊢r n ! X →
          ⊢r cz ! B1 →
          ⊢r cs ! B2 →
-         X <: D A →
-         B1 <: B →
-         B2 <: A ⟶ B → 
+         X <:: D A →
+         B1 <:: B →
+         B2 <:: A ⟶ B → 
          ⊢r (Case n cz cs) ! B
 
   Alg : ∀{X : Tp}{Y : Tp → Tp}{b : Tm} →
         (∀{R : Tp} → ⊢r b ! Y R) →
-        (∀{R : Tp} → Y R <: (R ⟶ X) ⟶ D R ⟶ X) → 
+        (∀{R : Tp} → Y R <:: (R ⟶ X) ⟶ D R ⟶ X) → 
         ⊢r (Alg b) ! D⇒ X
 
