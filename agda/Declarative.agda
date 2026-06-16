@@ -8,15 +8,16 @@ infix 5 _<:_
 data _<:_ : Tp → Tp → Set where
   Refl : μD <: μD
   ReflV : ∀{n : ℕ} → V n <: V n
+  ReflR : ∀{n : ℕ} → R n <: R n
   Arr : ∀{T1 T2 T1' T2' : Tp} → 
          T1' <: T1 →
          T2 <: T2' →
          T1 ⟶ T2 <: T1' ⟶ T2'
+  Cata : ∀{X : Tp} → D⇒ X <: μD ⟶ X
   Roll : D μD <: μD  
   Unroll : μD <: D μD
   Cov : ∀{T1 T2 : Tp} → T1 <: T2 → D T1 <: D T2
   Trans : ∀{T1 T2 T3 : Tp} → T1 <: T2 → T2 <: T3 → T1 <: T3
-  Cata : ∀{X : Tp} → D⇒ X <: μD ⟶ X
   Alg : ∀{T1 T2 : Tp} → T1 <: T2 → D⇒ T1 <: D⇒ T2
 
 -- not actually needed for soundness or completeness
@@ -26,6 +27,7 @@ refl<: {D T} = Cov (refl<:{T})
 refl<: {T ⟶ T'} = Arr (refl<:{T}) (refl<:{T'})
 refl<: {D⇒ X} = Alg (refl<:{X})
 refl<: {V n} = ReflV
+refl<: {R n} = ReflR
 
 roll1 : ∀{T : Tp} →
         T <: μD → 

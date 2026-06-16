@@ -8,6 +8,7 @@ data Tp : Set where
   D⇒ : Tp → Tp
   μD : Tp 
   V : ℕ → Tp -- type variables, for reasoning about solving non-ground constraints 
+  R : ℕ → Tp -- variables introduced in bodies of algebras
 
 infixr 9 _⟶_
 infixr 10 D_

@@ -8,18 +8,19 @@ infix 5 _<::_
 data _<::_ : Tp → Tp → Set where
   Refl : μD <:: μD
   ReflV : ∀{n : ℕ} → V n <:: V n
+  ReflR : ∀{n : ℕ} → R n <:: R n
   Arr : ∀{T1 T2 T1' T2' : Tp} → 
          T1' <:: T1 →
          T2 <:: T2' →
          T1 ⟶ T2 <:: T1' ⟶ T2'
-  Roll : ∀ {T : Tp} → T <:: μD → D T <:: μD
-  Unroll : ∀ {T : Tp} → μD <:: T → μD <:: D T
-  Cov : ∀{T1 T2 : Tp} → T1 <:: T2 → D T1 <:: D T2
-  Alg : ∀{T1 T2 : Tp} → T1 <:: T2 → D⇒ T1 <:: D⇒ T2
   Cata : ∀{T T1 T2 : Tp} →
         T1 <:: μD →
         T <:: T2 →
         D⇒ T <:: T1 ⟶ T2  
+  Roll : ∀ {T : Tp} → T <:: μD → D T <:: μD
+  Unroll : ∀ {T : Tp} → μD <:: T → μD <:: D T
+  Cov : ∀{T1 T2 : Tp} → T1 <:: T2 → D T1 <:: D T2
+  Alg : ∀{T1 T2 : Tp} → T1 <:: T2 → D⇒ T1 <:: D⇒ T2
 
 refl<:: : ∀{T} → T <:: T
 refl<:: {μD} = Refl
@@ -27,6 +28,7 @@ refl<:: {D T} = Cov (refl<::{T})
 refl<:: {T ⟶ T'} = Arr (refl<::{T}) (refl<::{T'})
 refl<:: {D⇒ T} = Alg (refl<::{T})
 refl<:: {V n} = ReflV
+refl<:: {R n} = ReflR
 
 trans<:: : ∀{T1 T2 T3 : Tp} →
           (d1 : T1 <:: T2) →
@@ -44,6 +46,7 @@ trans<:: (Alg d1) (Alg d2) = Alg (trans<:: d1 d2)
 trans<:: (Alg d1) (Cata d2 d3) = Cata d2 (trans<:: d1 d3)
 trans<:: (Cata d1 d2) (Arr d3 d4) = Cata (trans<:: d3 d1) (trans<:: d2 d4)
 trans<:: ReflV ReflV = ReflV
+trans<:: ReflR ReflR = ReflR
 
 roll : D μD <:: μD
 roll = Roll Refl
