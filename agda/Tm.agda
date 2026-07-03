@@ -13,3 +13,4 @@ data Tm : Set where
   Zero : Tm
   Case : Tm → Tm → Tm → Tm
   Alg : Tm → Tm
+

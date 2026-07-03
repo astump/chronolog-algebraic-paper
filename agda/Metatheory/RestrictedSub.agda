@@ -13,10 +13,13 @@ module Metatheory.RestrictedSub where
 open import lib
 open import Tp
 open import Tm
+open import TmC
+open import Coe
 open import Decproc
 open import Typing
 open import TypingRestrictedSub
 import Metatheory.Completeness
+import Metatheory.Uniqueness
 
 strengthen⟶ : ∀{T A A' B : Tp} →
                T <:: A ⟶ B →
@@ -38,3 +41,31 @@ completeness (Case{B = B} d d1 d2) | T , d' , s | T' , d1' , s1 | T'' , d2' , s2
 completeness (Alg x) = _ , ((Alg (λ{R} → fst (snd' (completeness (x{R})))) λ{R} → snd (snd' (completeness (x{R})))) , refl<::)
 completeness (Sub x d) with completeness d
 completeness (Sub x d) | T , d' , s = _ , (d' , (trans<:: s (Metatheory.Completeness.completeness x)))
+
+{-
+
+K : A → B1 → A
+a : A
+b : B1'
+with B1' <: B1
+
+Then K a b will have different typing derivation from
+
+K : A → B2 → A
+a : A
+b : B2'
+with B2' <: B2
+
+-}
+
+uniqueness : ∀{t : Tm}{T T' : Tp} →
+             (d : ⊢r t ! T) →
+             (d' : ⊢r t ! T') →
+             ⟨ d ⟩ ≡ ⟨ d' ⟩ 
+uniqueness S S = refl
+uniqueness K K = refl
+uniqueness (App d d₁ x) (App d' d'' x₁) = {!!}
+uniqueness Suc Suc = refl
+uniqueness Zero Zero = refl
+uniqueness (Case d d₁ d₂ x x₁ x₂) (Case d' d'' d''' x₃ x₄ x₅) = {!!}
+uniqueness (Alg x x₁) (Alg x₂ x₃) = {!!}

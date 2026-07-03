@@ -1,9 +1,11 @@
 module TypingRestrictedSub where
 
-open import lib
+open import lib hiding ( _⟨_⟩_ )
 open import Tp
 open import Tm
+open import TmC
 open import Decproc
+open import Coe
 
 infix 7 ⊢r_!_
 
@@ -13,6 +15,19 @@ data ⊢r_!_ : Tm → Tp → Set where
 
   K : ∀{A B : Tp} →
       ⊢r K ! A ⟶ B ⟶ A
+
+  -- this still allows flexibility for coercing f a b: coerce f or coerce f a.
+  --
+  -- Another point: maybe can prove terms have unique minimal types, and then the
+  -- application case where we have
+  --
+  --   f : X    a : A    X <: A -> B
+  --
+  -- and
+  --
+  --   f : X'    a : A'    X' <: A' -> B
+  --
+  -- could get simpler, because there would be minimal X'' for f and A'' for a.
 
   App : ∀{X A B : Tp}{t1 t2 : Tm} →
          ⊢r t1 ! X →
@@ -40,3 +55,15 @@ data ⊢r_!_ : Tm → Tp → Set where
         (∀{R : Tp} → Y R <:: (R ⟶ X) ⟶ D R ⟶ X) → 
         ⊢r (Alg b) ! D⇒ X
 
+infix 8 ⟨_⟩
+
+⟨_⟩ : ∀{t : Tm}{X : Tp} →
+       ⊢r t ! X →
+       TmC
+⟨ S ⟩ = S
+⟨ K ⟩ = K
+⟨ App d d₁ x ⟩ = App ⟨ d ⟩ ⟨ d₁ ⟩ ⟪ x ⟫ 
+⟨ Suc ⟩ = Suc
+⟨ Zero ⟩ = Zero
+⟨ Case d d₁ d₂ x x₁ x₂ ⟩ = Case ⟨ d ⟩ ⟨ d₁ ⟩ ⟨ d₂ ⟩ ⟪ x ⟫ ⟪ x₁ ⟫ ⟪ x₂ ⟫ 
+⟨ Alg d x ⟩ = Alg ⟨ d{μD} ⟩ ⟪ x{μD} ⟫
