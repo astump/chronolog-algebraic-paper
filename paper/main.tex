@@ -218,12 +218,16 @@ summarize our contributions:
   \item We realize this approach with constraint-generating typing,
     and a constraint solver based on logic programming, modified
     to avoid infinite unrolling of functors. We prove termination of
-    our algorithm.
+    our algorithm.  
   \item We propose an algorithmic subtyping system, and prove it
     equivalent to the declarative one.
 \end{itemize}
 
-
+The implementation and proofs, respectively, are available at:
+\begin{tabular}{ll} 
+\ \ \ &  \url{https://github.com/rybla/algebraic-programming-with-coercive-subtyping} \\
+\ \ \ &  \url{https://github.com/astump/chronolog-algebraic-paper}
+\end{tabular}
 \section{Syntax}
 
 Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
@@ -256,15 +260,34 @@ $\sCoerce{c}{a}$.  Coercions, which include rolling, unrolling, and
 catamorphizing, will be explained with their typing rules in
 Section~\ref{sec:typechecking}.
 
-Algebras are denoted $\omega f(x) . b$.  We here use Mendler-style
-algebras~\cite{uustalu99}.  With this style, an algebra is presented with a
-function $f$ from $\sRecVar{f}$ to the carrier $B$ of the algebra.
-$\sRecVar{f}$ is an abstract type introduced in the algebra.  The input $x$ has
-type $\sFunctorApp{D}{\sRecVar{f}}$, where $D$ is the signature functor of the algebra.
-The body $b : B$ may pattern-match on $x$ and apply $f$ to subdata of type
-$\sRecVar{f}$ that are revealed.  One benefit over conventional $F$-algebras is
-that calling $f$ to recurse makes algebras appear very similar to conventional
-recursive functional programs, albeit with more abstract typing.
+Algebras are denoted $\omega f(x) . b$, which we adopt in so-called
+Mendler style~\cite{uustalu99}.  Let us briefly review these.
+Standard $F$-algebras are typed as
+\[
+a : F\ X \to X
+\]
+\noindent where $X$ is the carrier of the algebra; that is, the type
+of the values computed by the algebra.  The algebra $a$ takes input of
+type $F\ X$.  This input looks like a value of the datatype, but with
+subdata replaced by their recursively computed values of type $X$.
+Given such an algebra, its catamorphism $\cata{a}$ is typed as
+\[
+\cata{a} : \sMu{F} \to X
+\]
+
+\noindent With Mendler-style algebras, we have a different typing for $a$:
+\[
+a : (\sRecVar{f} \to X) \to F\ \sRecVar{f} \to X
+\]
+\noindent Here, $a$ takes in two inputs.  The first is a function $f$
+from some abstract type $\sRecVar{f}$ to $X$. The second input is a
+value $x$ of type $\sFunctorApp{F}{\sRecVar{f}}$.  This is similar to
+the input for an $F$-algebra, but with the abstract type $\sRecVar{f}$
+in place of the carrier.  Mendler algebras are closer to usual
+programming practice, because the algebra may pattern-match on $x$ to
+reveal subdata of type $\sRecVar{f}$, and then apply $f$ to those to
+recurse.  This is syntactically similar to making a recursive call in
+a standard functional programming language.
 
 
 \begin{figure}[htb]
@@ -1209,11 +1232,13 @@ subdata for an inductive type~\cite{mendler91}.  The algebraic
 approach has been applied for modular implementation of
 interpreters~\cite{swierstra08}.  Charity is a strong functional
 programming language based on categorical abstractions for initial
-algebras and final coalgebras~\citep{charity92}. Tofu uses the
-Calculus of Constructions as a language for defining terminating
-functions, again based on categorical ideas~\citep{tofu10}.  Charity
-and Tofu both support coinductive datatypes, which we did not study
-here.
+algebras and final coalgebras~\citep{charity92}.  Recursion is done
+via $F$-algebras, and there is no automatic conversion from algebras
+to functions.  This makes the code examples seem somewhat alien. Tofu
+uses the Calculus of Constructions as a language for defining
+terminating functions, again based on categorical
+ideas~\citep{tofu10}.  Charity and Tofu both support coinductive
+datatypes, which we did not study here.
 
 \section{Conclusion and future work} % Aaron
 
@@ -1241,8 +1266,20 @@ different approach to divide-and-conquer recursion has also been
 considered by~\citet{abreu+23}.  There, algebras call functions to
 pass between various abstract types.  These would be excellent
 candidates for inference using coercive subtyping, as we proposed in
-this paper.  It would also be interesting to infer coercions for
-coalgebraic programming with coinductive types.
+this paper.  Interestingly, there are additional coercions from the
+types $D \sAlg X$ of algebras that would arise from applying our
+approach to that work.  This provides further motivation for
+maintaining algebras as separate syntactic constructs, and inferring
+uses of \textit{cata}.  It would also be interesting to infer
+coercions for coalgebraic programming with coinductive types.
+
+Another avenue of future work is to prove \emph{coherence} for \lcata.
+This property states that if $\Gamma \vdash_{\lcata} a_1 : A$ and
+$\Gamma \vdash_{\lcata} a_2 : A$, and if $|a_1| = |a_2|$, then $a_1$
+and $a_2$ are semantically equivalent.  That is, inserting coercions
+in different places in the same term does not change it semantics.  We
+conjecture this is true, but proving this property can be technically
+involved (cf.~\cite{biernacki18}).
 
 \appendix
 
