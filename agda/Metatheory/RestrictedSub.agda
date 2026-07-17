@@ -56,7 +56,7 @@ a : A
 b : B2'
 with B2' <: B2
 
--}
+
 
 uniqueness : ∀{t : Tm}{T T' : Tp} →
              (d : ⊢r t ! T) →
@@ -69,3 +69,4 @@ uniqueness Suc Suc = refl
 uniqueness Zero Zero = refl
 uniqueness (Case d d₁ d₂ x x₁ x₂) (Case d' d'' d''' x₃ x₄ x₅) = {!!}
 uniqueness (Alg x x₁) (Alg x₂ x₃) = {!!}
+-}
