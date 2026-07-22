@@ -1,0 +1,1386 @@
+%Version 3.1 December 2024
+% See section 11 of the User Manual for version history
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%                                                                 %%
+%% Please do not use \input{...} to include other tex files.       %%
+%% Submit your LaTeX manuscript as one .tex document.              %%
+%%                                                                 %%
+%% All additional figures and files should be attached             %%
+%% separately and not embedded in the \TeX\ document itself.       %%
+%%                                                                 %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
+
+%%=======================================================%%
+%% to print line numbers in the margin use lineno option %%
+%%=======================================================%%
+
+%%\documentclass[lineno,pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%=========================================================================================%%
+%% the documentclass is set to pdflatex as default. You can delete it if not appropriate.  %%
+%%=========================================================================================%%
+
+%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+
+%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove Numbered in the optional parenthesis.
+%%The option is available for: sn-basic.bst, sn-chicago.bst%
+
+%%\documentclass[pdflatex,sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
+%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
+\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style
+%%\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
+%%\documentclass[pdflatex,sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
+%%\documentclass[pdflatex,sn-vancouver-num]{sn-jnl}% Vancouver Numbered Reference Style
+%%\documentclass[pdflatex,sn-vancouver-ay]{sn-jnl}% Vancouver Author Year Reference Style
+%%\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style
+%%\documentclass[pdflatex,sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
+
+%%%% Standard Packages
+%%<additional latex packages if required can be included here>
+
+\usepackage{graphicx}%
+\usepackage{multirow}%
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}%
+\usepackage{mathrsfs}%
+\usepackage[title]{appendix}%
+\usepackage{xcolor}%
+\usepackage{textcomp}%
+\usepackage{manyfoot}%
+\usepackage{booktabs}%
+\usepackage{algorithm}%
+\usepackage{algorithmicx}%
+\usepackage{algpseudocode}%
+\usepackage{listings}%
+\usepackage{stmaryrd}
+\usepackage{xspace}
+\usepackage{amsmath}
+\usepackage{mathpartir}
+\usepackage{subcaption}
+\usepackage{tcolorbox}
+\usepackage{contour}
+\usepackage{etoolbox}
+
+\contourlength{1pt}
+
+%%%%
+
+%%%%%=============================================================================%%%%
+%%%%  Remarks: This template is provided to aid authors with the preparation
+%%%%  of original research articles intended for submission to journals published
+%%%%  by Springer Nature. The guidance has been prepared in partnership with
+%%%%  production teams to conform to Springer Nature technical requirements.
+%%%%  Editorial and presentation requirements differ among journal portfolios and
+%%%%  research disciplines. You may find sections in this template are irrelevant
+%%%%  to your work and are empowered to omit any such section if allowed by the
+%%%%  journal you intend to submit to. The submission guidelines and policies
+%%%%  of the journal take precedence. A detailed User Manual is available in the
+%%%%  template package for technical guidance.
+%%%%%=============================================================================%%%%
+
+%% as per the requirement new theorem styles can be included as shown below
+\theoremstyle{thmstyleone}%
+\newtheorem{theorem}{Theorem}%  meant for continuous numbers
+%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
+%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
+\newtheorem{lemma}[theorem]{Lemma}%
+\newtheorem{proposition}[theorem]{Proposition}%
+%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
+
+\theoremstyle{thmstyletwo}%
+\newtheorem{example}{Example}%
+\newtheorem{remark}{Remark}%
+
+\theoremstyle{thmstylethree}%
+\newtheorem{definition}{Definition}%
+
+\raggedbottom
+%%\unnumbered% uncomment this for unnumbered level heads
+
+
+\include{definitions}
+
+\begin{document}
+
+\title{Convenient Algebraic Programming with Coercive Subtyping}
+
+\author*[1]{\fnm{Henry} \sur{Blanchette}}
+\email{blancheh@umd.edu}
+
+\author*[2]{Aaron Stump}
+\email{stumpaa@bc.edu}
+
+\affil[1]{\orgname{University of Maryland}}
+\affil[2]{\orgname{Boston College}}
+
+% \begin{CCSXML}
+%   <ccs2012>
+%   <concept>
+%   <concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
+%   <concept_desc>Software and its engineering~Functional languages</concept_desc>
+%   <concept_significance>500</concept_significance>
+%   </concept>
+%   <concept>
+%   <concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
+%   <concept_desc>Software and its engineering~Recursion</concept_desc>
+%   <concept_significance>500</concept_significance>
+%   </concept>
+%   </ccs2012>
+% \end{CCSXML}
+
+% \ccsdesc[500]{Software and its engineering~Functional languages}
+% \ccsdesc[300]{Software and its engineering~Recursion}
+
+\keywords{termination, algebraic programming, coercive subtyping}
+
+\abstract{ This paper presents a system for more convenient algebraic
+  programming, where datatypes are defined as least fixed points of
+  covariant signature functors, and recursive functions are defined as
+  homomorphisms from initial algebras.
+  This approach requires rolling and unrolling fixed points,
+  and conversion of algebras to functions that recurse over data. To
+  alleviate the burden of these extra operations, in this paper we
+  propose to insert them automatically, using coercive subtyping. The
+  type checker generates subtyping constraints, which are then solved
+  with the help of a custom logic programming engined called
+  Chronolog. The subtyping axioms are given to Chronolog as rules,
+  which uses them to solve the subtyping constraints. To avoid
+  infinite applications of rules for unrolling signature functors,
+  Chronolog provides a mechanism for suspending and resuming certain
+  forms of constraints. The subtyping axioms presented to Chronolog are an
+  equivalent algorithmic version of the usual declarative rules for
+algebraic programming. }
+
+\maketitle
+
+\section{Introduction} % Aaron
+
+% Algebraic programming as an example of total functional programming (cite Turner)
+% Mendler-style algebra
+% Burden of inserting roll/unroll and cata
+% We will reduce this burden using coercive subtyping to infer the coercions
+
+The discipline of strong functional programming statically requires
+that functions terminate on all inputs.  One way to achieve this is
+through an algebraic approach: datatypes are least fixed points
+$\sMu{F}$ of signature functors $F$, and recursive functions are least
+fixed points $\cata{a}$, called catamorphisms, of algebras $a$.  The
+functor $F$ describes one layer of the data, and $\sMu{F}$ then
+describes data consisting of any finite number of layers.  We may
+unroll $\sMu{F}$ to $\sFunctorApp{F}{\sMu{F}}$, and roll it back
+again.  Algebras interpret the operations declared for one layer of
+the data, and catamorphisms apply algebras across all the layers.
+There is no other mechanism for recursion or looping in the language,
+leading to a strong guarantee: all functions written in this style
+terminate.
+
+One burden is the need to include calls to roll and unroll functors,
+and to $\cata{\cdot}$, in code.  This adds clutter, compared to regular
+functional programming.  In this paper, we address this problem by
+automatically inserting those coercions wherever they are needed in
+code.  The resulting code looks indistinguishable from regular
+pure-functional code, and yet falls within the algebraic style, thus
+assuring termination.  To insert these calls automatically, we turn to
+\emph{coercive subtyping}.  The type checker generates subtyping
+constraints that need to hold, in order for the term to be well-typed.
+The constraints are processed by a constraint solver, generating
+coercions that are then inserted at the places where the subtyping
+constraints were generated.
+
+To implement this, we make use of a custom logic-programming engine
+called Chronolog.  The subtyping axioms are given to Chronolog as
+rules.  Chronolog then uses standard SLD resolution to search for
+proofs of the constraints, instantiating type variables during proof
+search via unification.  The rules for rolling and unrolling
+signatures would, if handled naively, lead to diverging proof search.
+Instead, Chronolog provides a mechanism to indicate that certain
+problematic constraints should be suspended.  These suspended constraints may be
+resumed if they are instantiated during solving of other constraints.
+If not, an outer loop of our algorithm handles them specially.
+
+Standard subtyping rules generally are not suitable for logic
+programming, due to the presence of a transitivity rule, which
+nondeterministically guesses $B$ with $A \subtype B$ and $B \subtype
+C$, to solve $A \subtype C$.  We identify
+(Section~\ref{sec:subtyping}) an algorithmic set of subtyping rules,
+without transitivity, and prove it equivalent, in Agda, to the
+declarative rules.  This both ensures we can use logic programming
+(with our algorithmic rules) to solve these subtyping constraints, and
+also assures us that the algorithmic rules are indeed correct.  To
+summarize our contributions:
+\begin{itemize}
+  \item We propose a new approach to total algebraic programming,
+    where calls for rolling and unrolling signature functors
+    and turning algebras into catamorphisms are inferred by coercive
+    subtyping.
+  \item We realize this approach with constraint-generating typing,
+    and a constraint solver based on logic programming, modified
+    to avoid infinite unrolling of functors. We prove termination of
+    our algorithm.
+  \item We propose an algorithmic subtyping system, and prove it
+    equivalent to the declarative one.
+\end{itemize}
+
+The implementation and proofs, respectively, are available at:
+\begin{tabular}{ll}
+\ \ \ &  \url{https://github.com/rybla/algebraic-programming-with-coercive-subtyping} \\
+\ \ \ &  \url{https://github.com/astump/chronolog-algebraic-paper}
+\end{tabular}
+\section{Syntax}
+
+Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
+through which we study coercion inference for algebraic
+programming. We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a
+syntactic operator, to indicate a $\oplus$-separated list of
+expressions $e$. Datatypes are described as least fixed points of
+signature functors $F$, which we take to be polynomial functors for
+simplicity. Least fixed points of signature functors, referenced by
+datatype name $D$, are denoted $\sMu{D}$.  We have usual function
+types $A \sArr B$.  Types $D \sAlg B$ are the types for algebras over
+$\sMu{D}$ computing a value of type $B$, the carrier of the algebra.
+Recursion type variables $\sRecVar{f}$ are introduced in the bodies of
+algebras, where $f$ is the name of the function introduced by the
+respective algebra.  While type variables (which are unrelated to
+recursion type variables) appear during type checking, as detailed in
+Section~\ref{sec:typechecking}, they are not allowed in the surface
+syntax for types.  In this way, all types that appear in programs are
+ground types.
+
+Terms include the usual constructs of simply typed
+$\lambda$-calculus. There are also constructor applications
+$k(\sepBy{a}{,})$, and simple pattern-matching with notation $\gamma a
+. \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \}$, where the value of $a$
+is matched against constructor patterns $k(\sepBy{x}{,})$.  If such a
+pattern matches, then the term reduces to the body $b$ for that
+case. For totality, all constructors for $a$'s datatype must be
+covered. To apply a coercion $c$ to term $a$, we write
+$\sCoerce{c}{a}$.  Coercions, which include rolling, unrolling, and
+catamorphizing, will be explained with their typing rules in
+Section~\ref{sec:typechecking}.
+
+Algebras are denoted $\omega f(x) . b$, which we adopt in so-called
+Mendler style~\cite{uustalu99}.  Let us briefly review these.
+Standard $F$-algebras are typed as
+\[
+a : F\ X \to X
+\]
+\noindent where $X$ is the carrier of the algebra; that is, the type
+of the values computed by the algebra.  The algebra $a$ takes input of
+type $F\ X$.  This input looks like a value of the datatype, but with
+subdata replaced by their recursively computed values of type $X$.
+Given such an algebra, its catamorphism $\cata{a}$ is typed as
+\[
+\cata{a} : \sMu{F} \to X
+\]
+
+\noindent With Mendler-style algebras, we have a different typing for $a$:
+\[
+a : (\sRecVar{f} \to X) \to F\ \sRecVar{f} \to X
+\]
+\noindent Here, $a$ takes in two inputs.  The first is a function $f$
+from some abstract type $\sRecVar{f}$ to $X$. The second input is a
+value $x$ of type $\sFunctorApp{F}{\sRecVar{f}}$.  This is similar to
+the input for an $F$-algebra, but with the abstract type $\sRecVar{f}$
+in place of the carrier.  Mendler algebras are closer to usual
+programming practice, because the algebra may pattern-match on $x$ to
+reveal subdata of type $\sRecVar{f}$, and then apply $f$ to those to
+recurse.  This is syntactically similar to making a recursive call in
+a standard functional programming language.
+
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{align*}
+    \begin{array}{lrcl}
+      \text{(Datatype names)} &
+      D &\in& \{ \sNat, \sNatList, \dots \}
+      \\[0.5em]
+      %
+      \text{(Constructor names)} &
+      k &\in& \{ \sZero, \sSuc, \sNil, \sCons, \dots \}
+      \\[0.5em]
+      %
+      \text{(Term variables)} &
+      x &\in& \textbf{TermVars}
+      \\[0.5em]
+      %
+      \text{(Recursion type variables)} &
+      % R &\in& \textbf{RecTypeVars}
+      R &::=& \sRecVar{f}
+      \\[0.5em]
+      %
+      \text{(Type variables)} &
+      X, Y &\in& \textbf{TypeVars}
+      \\[0.5em]
+      %
+      \text{(Contexts)} &
+      \Gamma
+      &::=&
+      \cdot \mid
+      \Gamma , (x : A) \mid
+      \Gamma , (\sRecVar{f} : \ast)
+      \\[0.5em]
+      %
+      \text{(Datatype signature functor)} &
+      F &::=& \lambda X . \sepBy{k(\sepBy{P_X}{~\times})}{~+}
+      \\[0.5em]
+      %
+      \text{(Constructor parameter types)} &
+      P_X &::=&
+      X \mid
+      \sMu{D}
+      \\[0.5em]
+      %
+      \text{(Types)} &
+      A, B
+      & ::= &
+      X \mid
+      R \mid
+      \sMu{D} \mid
+      \sFunctorApp{D}{A} \mid
+      A \sArr B \mid
+      D \sAlg B
+      \\[0.5em]
+      %
+      \text{(Terms)} &
+      a, b, f
+      & ::= &
+      x \mid
+      k(\sepBy{a}{,}) \mid
+      \lambda (x : A) . b \mid
+      (f ~ a) \mid
+      \omega f(x) . b \mid
+      \\[0.25em] &&&
+      \gamma a . \{ \sepBy{k(\sepBy{x}{,}) \mapsto b}{~|} \} \mid
+      \sLet{x}{A}{a}{b} \mid
+      \sCoerce{c}{a}
+      \\[0.5em]
+      \text{(Coercions)} &
+      c, c_1, c_2
+      & ::= &
+      \sCata{c_1}{c_2} \mid
+      \sRoll{c} \mid
+      \sUnroll{c} \mid
+      \sSubCov{D}{c} \mid
+      \\[0.25em] &&&
+      \sSubData{D} \mid
+      \sSubArr{c_1}{c_2} \mid
+      \sSubAlg{D}{c} \mid
+      \sSubRecVar{R}
+    \end{array}
+  \end{align*}
+\caption{Syntax of \lcata}
+\label{fig:syntax}
+\end{figure}
+
+% this practice is so standard we do not need to say we are following it:
+%
+%Throughout the remainder of this paper, we implicitly constrain each metavariable to range exclusively over the valid syntactic forms defined by its corresponding production in Figure~\ref{fig:syntax}.
+
+
+A datatype is defined by a tuple $\langle D , F \rangle$ where $D$ is
+its name and $F$ is its signature functor.  This approach was proposed
+and developed in early works like~\cite{hagino87,goguen+77}.  For
+examples presented in this paper, we define the following set of
+datatypes.
+\begin{align*}
+  \datatypes := \{
+    & \langle \sNat , \sSignatureFunctor{X}{\sZero + \sSuc(X)} \rangle, \\
+    & \langle \sNatList, \sSignatureFunctor{X}{\sNil + \sCons(\sMu\sNat \times X)} \rangle
+  \}
+\end{align*}
+
+\section{Motivating examples}
+\label{sec:motivating-examples}
+
+\begin{figure}[tb]
+  \centering
+
+  % sub h1 expected type is μNatList -> μNatList
+  % sub h1 inferred type is NatList => μNatList
+  % D := NatList
+  % A := μNatList
+  % B := μNatList
+  % C := μNatList
+  % B \subtypeA μD <--> μNatList \subtypeA μNatList
+  % A \subtypeA C <--> μNatList \subtypeA μNatList
+  \begin{subfigure}[t]{1.0\textwidth}
+  \begin{verbatim}
+sub : μ Nat → Nat ⇒ μ Nat =
+  λ m . ω sub'(n) . γ n .
+    { Zero → m
+    | Suc(n') → γ unroll id - sub' n' .
+        { Zero → roll id - Zero
+        | Suc(m') → m' } }
+
+subs : NatList ⇒ μ NatList → μ NatList =
+  ω subs'(l1) . λ l2 . γ l1 .
+    { Nil → Nil
+    | Cons(h1, t1) → γ unroll id - l2 .
+        { Nil → roll id - Nil
+        | Cons(h2, t2) →
+          (roll id) -
+            (Cons(cata id id - sub h1 h2, subs' t1 t2)) } }
+  \end{verbatim}
+  \end{subfigure}
+  \caption{Algebraic implementation of \texttt{sub} and \texttt{subs}, with explicit coercions. }
+  \label{fig:example-subs-algebraic-with-coercions}
+\end{figure}
+
+Figure~\ref{fig:example-subs-algebraic-with-coercions} shows code with
+explicit coercions, for two functions.  The \verb|sub| function
+subtracts two natural numbers, and \verb|subs| proceeds through a two
+lists of numbers, subtracting corresponding elements.  So subtracting
+the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
+$[7,7,7]$, for example.  Let us see how the different kinds
+of coercions are used.  The \verb|sub| function takes in the minuend \verb|m|
+and returns an algebra, which can be used to recurse through the
+subtrahend \verb|n|.  The code matches (with $\gamma$) on \verb|n|,
+returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
+case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
+algebras are Mendler-style, the type of \verb|sub'| is
+\verb|R_f → μ Nat|, where \verb|R_f| is the abstract type introduced by
+the algebra.  The input \verb|n| has type \verb|Nat R_f|, and so its subdatum
+\verb|n'| has type \verb|R_f|.  So the call \verb|sub' n'| is
+well-typed.  To pattern-match on the output of this call requires
+unrolling \verb|μ Nat| with \verb|unroll id|.  The \verb|id| is
+the identity coercion, indicating that the subtyping is only happening
+at the top level of the type.  In the \verb|Zero| case of this match
+on unrolled \verb|sub' n'|, the code returns \verb|Zero|.
+Constructors' return types are applications of signature functors.
+Here, \verb|Zero| can be given type \verb|Nat (μ Nat)|, which is then
+coerced to \verb|μ Nat| by \verb|roll|.  The function \verb|subs| does
+similar rolling and unrolling, but also invokes subtraction
+(\verb|sub|).  Since \verb|sub| returns an algebra, the code uses
+\verb|cata| to coerce that to the function which accepts the
+subtrahend.
+
+Thanks to the restrictions imposed by Mendler-style algebras, these
+functions have the desirable property that they are guaranteed to
+terminate on all inputs.  Nevertheless, we expect the reader will
+agree that the code is rather burdened with coercions.  This
+raises the question we address in this paper: can we support algebraic
+programming like this with lighter syntax?  We return with our
+positive answer for these examples in
+Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
+
+\section{Typing for \lcata}
+\label{sec:typing}
+
+The type system of \lcata conservatively extends that of the simply-typed $\lambda$-calculus with specialized constructs for constructing and deconstructing datatypes, algebraic recursion, and explicit coercion.
+The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}.
+
+\newcommand{\typingRuleOmega}{
+  \inferrule[Gamma]{
+    \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times})}{~+}} \rangle \in \datatypes
+    \qquad
+    \Gamma \vdash a : \sFunctorApp{D}{C}
+    \qquad
+    \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash b_i : B}{ }
+  }{
+    \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : B
+  }
+}
+\newcommand{\typingRuleGamma}{
+  \inferrule[Omega]{
+    \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B
+  }{
+    \Gamma \vdash \omega f(x) . b : D \sAlg B
+  }
+}
+\newcommand{\typingRuleCoerce}{
+  \inferrule[Coerce]{
+    \Gamma \vdash c : A \subtypeA B \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash \sCoerce{c}{a} : B
+  }
+}
+
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[Var]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A
+    }
+
+    \inferrule[Con]{
+      \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+      \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+    }{
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+    }
+
+    \inferrule[Lam]{
+      \Gamma , (x : A) \vdash b : B
+    }{
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B
+    }
+
+    \inferrule[App]{
+      \Gamma \vdash f : A \sArr B \qquad
+      \Gamma \vdash a : A
+    }{
+      \Gamma \vdash f ~ a : B
+    }
+
+    \typingRuleGamma
+
+    \typingRuleOmega
+
+    \inferrule[Let]{
+      \Gamma, (x : A) \vdash b : B \qquad
+      \Gamma \vdash a : A
+    }{
+      \Gamma \vdash \sLet{x}{A}{a}{b} : B
+    }
+
+    \typingRuleCoerce
+
+  \end{mathpar}
+
+  \caption{Typing rules for \lcata}
+  \label{fig:typing-rules-lcata}
+\end{figure}
+
+The $\gamma a . \{ \dots \}$ construct for pattern matching is typed by the \IRule{Gamma} rule.
+This rule resolves the signature functor associated with the datatype of the scrutinee.
+Because the signature functor abstracts over a single type parameter, \IRule{Gamma} instantiates it with the type argument $C$, satisfying the premise $\Gamma \vdash a : \sFunctorApp{D}{C}$.
+
+The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule{Omega} rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
+This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
+Because \lcata purposely omits general polymorphism and type inference, this mechanism serves as a highly restricted form of scoped type abstraction tailored explicitly for modeling Mendler-style algebras.
+The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context.
+Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
+
+The explicit coercion construct, $\sCoerce{c}{a}$, is typed by the \IRule{Coerce} rule.
+This rule relies upon a coercion typing judgment of the form $\Gamma \vdash c : A \subtypeA B$.  To explain this,
+we must first consider the underlying subtyping relation.
+
+\section{Subtyping} % Aaron
+\label{sec:subtyping}
+
+We begin with the natural declarative subtyping rules.  These are not
+algorithmic, though, as we will detail.  So we next propose an
+algorithmic version, where all metavariables in the premises of the
+rule are already present in the conclusion, and the sizes of the
+constraints decrease.  This ensures that SLD resolution will not
+diverge on ground constraints.  We prove that the two sets of rules
+are equivalent.  Then we can formulate the coercion typing rules.
+
+\subsection{Declarative subtyping}
+
+\newcommand{\declcata}[1]{
+  \inferrule[#1]{ }{
+    D \sAlg A \subtype \sMu{D} \sArr A
+}}
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[Refl]{ }
+    {
+      \sMu{D} \subtype \sMu{D}
+    }
+
+    \inferrule[Arr]
+    {
+      A' \subtype A \quad
+      B \subtype B'
+    }
+    {
+      A \sArr B \subtype A' \sArr B'
+    }
+
+    \inferrule[Cov]{
+      A \subtype A'
+    }{
+      \sFunctorApp{D}{A} \subtype \sFunctorApp{D}{A'}
+    }
+
+    \inferrule[Alg]{
+      A \subtype A'
+    }{
+      D \sAlg A \subtype D \sAlg A'
+    }
+
+    \inferrule[Roll]{ }{
+      \sFunctorApp{D}{\sMu{D}} \subtype \sMu{D}
+    }
+
+    \inferrule[Unroll]{ }{
+      \sMu{D} \subtype \sFunctorApp{D}{\sMu{D}}
+    }
+
+    \declcata{Cata}
+
+    \inferrule[Trans]{
+      A \subtype A' \quad
+      A' < A''
+    }{
+      A \subtype A''
+    }
+  \end{mathpar}
+
+  \caption{Declarative subtyping rules.}
+  \label{fig:declarative-subtyping-rules}
+\end{figure}
+
+Figure~\ref{fig:declarative-subtyping-rules} shows the rules for declarative
+subtyping $A \subtype B$.  We have reflexivity rule \IRule{Refl} for datatypes.  \IRule{Arr} is the usual
+subtyping rule for function types, which is contravariant in the
+domain and covariant in the codomain.  \IRule{Cov} expresses that the
+signature functor is indeed a (covariant) functor.  \IRule{Alg}
+expresses that algebra types $D \sAlg A$ are covariant in their
+carriers $A$.  \IRule{Roll} and \IRule{Unroll} together express that
+$\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \IRule{Cata} expresses that
+an algebra can be coerced to a function, namely the algebra's
+catamorphism.  Finally, there is the \IRule{Trans} rule, completing
+the definition of subtyping as a partial order.
+
+While these rules are intuitive and express the coercions needed, they
+are not algorithmic when read from conclusion to premises.  The
+reason, as mentioned in the introduction, is the \IRule{Trans} rule,
+which introduces a new metavariable in the premises.  Proof search
+would diverge with this rule.  We address this problem next.
+
+\subsection{Algorithmic subtyping}
+
+\newcommand{\decproccata}[1]{
+  \inferrule[#1]{
+    B \subtypeA \sMu{D} \quad
+    A \subtypeA C
+  }{
+    D \sAlg A \subtypeA B \sArr C
+}}
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[Refl]{ }
+    {
+      \sMu{D} \subtypeA \sMu{D}
+    }
+
+    \inferrule[Arr]
+    {
+      A' \subtypeA A \quad
+      B \subtypeA B'
+    }
+    {
+      A \sArr B \subtypeA A' \sArr B'
+    }
+
+    \inferrule[Cov]{
+      A \subtypeA A'
+    }{
+      \sFunctorApp{D}{A} \subtypeA \sFunctorApp{D}{A'}
+    }
+
+    \inferrule[Alg]{
+      A \subtypeA A'
+    }{
+      D \sAlg A \subtypeA \sMu{D} \sAlg A'
+    }
+
+    \inferrule[Roll]{
+      A \subtypeA \sMu{D}
+    }{
+      \sFunctorApp{D}{A} \subtypeA \sMu{D}
+    }
+
+    \inferrule[Unroll]{
+      \sMu{D} \subtypeA A
+    }{
+      \sMu{D} \subtypeA \sFunctorApp{D}{A}
+    }
+
+    \decproccata{Cata}
+
+  \end{mathpar}
+
+  \caption{Algorithmic subtyping rules.}
+  \label{fig:algorithmic-subtyping-rules}
+\end{figure}
+
+Figure~\ref{fig:algorithmic-subtyping-rules} presents the rules for
+algorithmic subtyping $A \subtypeA B$.  We use similar names as for the
+declarative rules, but critically, the algorithmically problematic
+\IRule{Trans} rule is not present.  A consequence of this is that now
+several rules that did not have premises in the declarative
+formulation, here do.  For example, compare the declarative (on the
+left) and algorithmic \IRule{Cata} rules:
+\[
+  \begin{array}{lll}
+    \declcata{\ } &\ \ \ \ \ & \decproccata{\ }
+  \end{array}
+\]
+\noindent The algorithmic rule needs to take into account subtyping
+relationships between the components in the conclusion, because there
+is no rule for transitivity, which could allow those relationships to
+be taken into account after this rule is applied.  In effect,
+transitivity needs to be built into all the other rules.  We see a
+similar change from the declarative to the algorithmic versions of the
+\IRule{Roll} and \IRule{Unroll} rules, for rolling and unrolling the
+signature functor.
+
+\begin{lemma}[Decrease]
+  \label{lem:decrease}
+  For all rules of Figure~\ref{fig:algorithmic-subtyping-rules}, the sizes
+  of the constraints in the premises are less than the size of the constraint
+  in the conclusion.
+\end{lemma}
+
+\begin{theorem}[Decidability]
+  \label{thm:dec}
+  It is decidable whether or not two types are in the algorithmic subtyping
+  relation.
+\end{theorem}
+\begin{proof}
+  Bottom-up application of the rules to ground types is guaranteed to terminate,
+  by Lemma~\ref{lem:decrease}.  Therefore, proof search may be used as a decision
+  procedure for algorithmic subtyping of ground types.
+\end{proof}
+
+\subsection{Equivalence of declarative and algorithmic subtyping}
+\label{sec:equiv}
+
+While Theorem~\ref{thm:dec} ensures that we can test ground subtyping
+constraints using proof search, we must confirm that the algorithmic
+rules are indeed a correct version of the declarative ones.  For this,
+we prove the following theorems.  All theorems in this subsection have
+been formalized and proven in Agda.
+
+\begin{theorem}[Soundness]
+  $A \subtypeA B$ implies $A \subtype B$.
+\end{theorem}
+
+\begin{theorem}[Completeness]
+  \label{thm:completeness}
+  $A \subtype B$ implies $A \subtypeA B$.
+\end{theorem}
+
+\noindent The sets of rules are quite similar, so these proofs are not onerous.  They do depend on the following
+lemmas:
+
+\begin{lemma}[roll/unroll declarative/algorithmic]
+  \
+
+  \begin{enumerate}
+    \item If $A \subtype \sMu{D}$, then $\sFunctorApp{D}{A} \subtype \sMu{D}$.
+\item  If $\sMu{D} \subtype A$, then $\sMu{D} \subtype \sFunctorApp{D}{A}$.
+\item  $\sFunctorApp{D}{\sMu{D}} \subtypeA \sMu{D}$
+\item  $\sMu{D} \subtypeA \sFunctorApp{D}{\sMu{D}}$
+\end{enumerate}
+\end{lemma}
+
+\begin{lemma}[partial order algorithmic]
+  \
+
+  \begin{enumerate}
+\item  $A \subtypeA A$.
+\item  If $A \subtypeA B$ and $B \subtypeA C$ then $A \subtypeA C$.
+  \end{enumerate}
+  \end{lemma}
+
+\noindent As an aside: with the declarative subtyping rules, there are
+multiple derivations for any derivable subtyping statement.  This is
+due to the presence of transitivity, and a derivable reflexivity rule.
+But for algorithmic subtyping, the situation is much more constrained:
+
+\begin{theorem}[Uniqueness]
+  \label{thm:uniqueness}
+  There is at most one derivation of $A \subtypeA B$.
+\end{theorem}
+
+\subsection{Typing coercions}
+\label{sec:typing-coercions}
+
+Having established the formalization of subtyping in \lcataSub, we present the coercion typing system for \lcata in Figure~\ref{fig:coercion-typing-rules}.
+These rules exhibit an exact structural correspondence with the algorithmic subtyping relation defined in Figure~\ref{fig:algorithmic-subtyping-rules}.
+This isomorphism enables a systematic, constructive translation from any valid subtyping derivation $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$.
+Consequently, this correspondence forms the foundation of our elaboration semantics, allowing us to infer and insert the explicit coercions necessary to translate a well-typed \lcataSub term into a valid \lcata term.
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[ReflDataCoe]{ }{
+      \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
+    }
+
+    \inferrule[RecVarCoe]{ }{
+      \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
+    }
+
+    \inferrule[ArrCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{A'}{A} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{B}{B'}
+    }{
+      \Gamma \vdash \sSubArr{c_1}{c_2} : \sCoerceSig{A \sArr B}{A' \sArr B'}
+    }
+
+    \inferrule[CovCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubCov{D}{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sFunctorApp{D}{A'}}
+    }
+
+    \inferrule[AlgCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{A'}
+    }{
+      \Gamma \vdash \sSubAlg{D}{c} : \sCoerceSig{D \sAlg A}{D \sAlg A'}
+    }
+
+    \inferrule[RollCoe]{
+      \Gamma \vdash c : \sCoerceSig{A}{\sMu{D}}
+    }{
+      \Gamma \vdash \sRoll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[UnrollCoe]{
+      \Gamma \vdash c : \sCoerceSig{\sMu{D}}{A}
+    }{
+      \Gamma \vdash \sUnroll{c} : \sCoerceSig{\sFunctorApp{D}{A}}{\sMu{D}}
+    }
+
+    \inferrule[CataCoe]{
+      \Gamma \vdash c_1 : \sCoerceSig{B}{D} \qquad
+      \Gamma \vdash c_2 : \sCoerceSig{A}{C}
+    }{
+      \Gamma \vdash \sCata{c_1}{c_2} : \sCoerceSig{D \sAlg A}{B \sArr C}
+    }
+  \end{mathpar}
+
+  \caption{Coercion typing rules.}
+  \label{fig:coercion-typing-rules}
+\end{figure}
+
+
+\section{Type checking for \lcataSub}
+\label{sec:typechecking}
+
+Let \lcataSub be the language that coincides with \lcata except in eliding the explicit coercion construct, $\sCoerce{c}{a}$, and introducing the following typing rule for implicit subtyping.
+\newcommand{\typingRuleSubtype}{
+  \inferrule[Subtype]{
+    \Gamma \vdash A \subtypeA A' \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash a : A'
+  }
+}
+\begin{mathpar}
+  \typingRuleSubtype
+\end{mathpar}
+The comprehensive typing rules for \lcataSub are compiled for reference in Appendix~\ref{app:typing-rules-lcataSub}
+We develop \lcataSub to be a version of \lcata where the burden of explicit coercions is alleviated by implicit inference of coercions.
+
+In this section, we formalize a constraint-based type-checking algorithm for \lcataSub.
+Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference.
+Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground.
+The development of a full type inference mechanism is left to future work.
+
+The constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, generates a set of subtyping constraints necessary to check a term $a$ against an expected type $A$ under a typing context $\Gamma$.
+This algorithm follows a straightforward algorithmic application of the rules in Figure~\ref{fig:constraint-generation-rules} by recursion on the structure of $a$.
+Each generated constraint corresponds to an implied application of the \IRule{Subtype} rule required to construct a valid typing derivation; furthermore, each constraint is implicitly localized to the specific subterm at which subsumption is mandated.
+% Within the framework of coercive subtyping, these subsumption steps are witnessed by coercions that provide computational evidence for the underlying subtyping relation.
+% Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
+We omit a rigorous formalization of the coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{mathpar}
+
+    \inferrule[Var]{
+      (x : A) \in \Gamma
+    }{
+      \Gamma \vdash x : A \gsep \varnothing
+    }
+
+    \inferrule[Con]{
+      \freshMetavariables{X}
+      \qquad
+      \langle D, \sSignatureFunctor{Y}{\dots + k(\sepBy{A'_i}{~\times}) + \dots} \rangle \in \datatypes
+      \qquad
+      \sepBy{\Gamma \vdash \highlightOne{a_i} : A_i \gsep \constraints_{a_i}}{ }
+    }{
+      \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{Y} \gsep \bigcup_{i} (\constraints_{a_i} \cup \{ \highlightOne{A_i \subtypeA A'_i[Y \mapsto X]} \})
+    }
+
+    \inferrule[Lam]{
+      \Gamma, (x : A) \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \lambda (x : A) . b : A \sArr B \gsep \constraints_b
+    }
+
+    \inferrule[App]{
+      % [Note]: We introduce a type variable for the supertype of the codomain of f so that B \subtypeA A -> X is allowed, and then any subtyping required to make A fit is done on f rather than a
+      \freshMetavariables{X} \qquad
+      \Gamma \vdash \highlightOne{f} : B \gsep \constraints_f \qquad
+      \Gamma \vdash a : A \gsep \constraints_a
+    }{
+      \Gamma \vdash f ~ a : X \gsep
+      \constraints_f \cup \constraints_a \cup \{ \highlightOne{B \subtypeA A \sArr X} \}
+    }
+
+    \inferrule[Gamma]{
+      % [Note]: C is the type of the thing being discriminated, which should be a subtype of D(X), where X is the type variable for the recursive parameter of D, which could be refined by C \subtypeA D(X). And Y is the type variable for the output of the entire pattern match, which is refined by B_i \subtypeA Y for the outputs of each branch which are the B_i
+      \freshMetavariables{X, Y} \qquad
+      \langle D, \sSignatureFunctor{X}{\sepBy{k_i(\sepBy{A_{ij}}{~\times}) ~+}} \rangle \in \datatypes
+      \\\\
+      \Gamma \vdash \highlightOne{a} : C \gsep \constraints_a
+      \qquad
+      % (\forall i)~ k_i : \sFunctorConSig{\sepBy{A_{ij}}}{,}{D}{X} \qquad
+      % \\\\
+      % (\forall i)~ \Gamma, \sepBy{x_{ij} : A_{ij}}{,} \vdash b_i : B_i \gsep \constraints_{b_i}
+      \sepBy{\Gamma, \sepBy{x_{ij} : A_{ij}[X \mapsto C]}{,} \vdash \highlightTwo{b_i} : B_i \gsep \constraints_{b_i}}{ }
+    }{
+      \Gamma \vdash \gamma a . \{ \sepBy{k_i(\sepBy{x_{ij}}{,}) \mapsto b_i}{~|} \} : Y
+      \gsep
+      \{ \highlightOne{C \subtypeA \sFunctorApp{D}{X}} \} \cup
+      \constraints_a \cup
+      \bigcup_i (\{ \highlightTwo{B_i \subtypeA Y} \} \cup \constraints_{b_i})
+    }
+
+    \inferrule[Omega]{
+      \Gamma, (\sRecVar{f} : \ast), (f : \sRecVar{f} \sArr A), (x : \sFunctorApp{D}{\sRecVar{f}}) \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \omega f(x) . b : D \sAlg B \gsep \constraints_b
+    }
+
+    \inferrule[Let]{
+      \Gamma \vdash \highlightOne{a} : A \gsep \constraints_a \qquad
+      \Gamma, (x : A') \vdash b : B \gsep \constraints_b
+    }{
+      \Gamma \vdash \sLet{x}{A'}{a}{b} : B \gsep \constraints_a \cup \{ \highlightOne{A \subtypeA A'} \} \cup \constraints_b
+    }
+
+    % [Note from Henry]: Actually this is unneeded in the subtype constraint generation rules, since coercions should only appear in solved terms.
+    % % [Note from Henry]: since this is already a coercion, requires that the domain *exactly* matches the inferred type of the arg
+    % \inferrule[InferCoe]{
+    %   \Gamma \vdash c : \sCoerceSig{A}{B} \qquad
+    %   \Gamma \vdash a : A \gsep \constraints_a
+    % }{
+    %   \Gamma \vdash \sCoerce{c}{a} : B \gsep \constraints_a
+    % }
+  \end{mathpar}
+
+  \caption{Constraint generation rules.}
+  \label{fig:constraint-generation-rules}
+\end{figure}
+
+Constraint generation for a term $a$ in context $\Gamma$ is performed by applying the constraint generation rules in Figure~\ref{fig:constraint-generation-rules} recursively on the structure of $a$, which upon success produces a derivation of $\Gamma \vdash a : A \mid \constraints$.
+This is a usual typing judgment augmented with a constraint problem $\constraints$, where $\constraints$ is a set of constraints of the form $A \subtypeA B$.
+
+The constraint generation phase also performs type inference, however in contrast to usual type inference and checking procedures, this procedure cannot decide a term to be mal-typed.
+The constraint generation procedure will generate a constraint problem for any well-formed and well-scoped $\Gamma, a, A$.
+A derivation $\Gamma \vdash a : A \mid \constraints$ merely states that $a$ has type $A$ \textit{only if} the constraint problem $\constraints$ is solvable.
+
+For example, constraint generation for \texttt{sub : Nat → Nat ⇒ Nat} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+Each constraint is annotated with the particular sub-term of \texttt{sub} that it is linked to during constraint generation.
+\begin{mathpar}
+  \{
+    \sFunctorApp{\sNat}{X} \subtypeAP{\sZero} \sMu\sNat,
+    \sMu\sNat \subtypeAP{sub' ~ n'} \sFunctorApp{\sNat}{Y}
+  \}
+\end{mathpar}
+As another example, constraint generation for \texttt{subs : NatList ⇒ μ NatList → NatList} (as defined \textit{without} explicit coercions in figure \ref{fig:example-subs-algebraic-without-coercions}) results in a superset of the following constraints, where all type variables are fresh.
+Each constraint is annotated with the particular sub-term of \texttt{subs} that it is linked to during constraint generation.
+\begin{mathpar}
+  \{
+    \sFunctorApp{\sNatList}{X} \subtypeAP{\sNil} \sMu\sNatList,
+    \sNat \sAlg \sMu\sNat \subtypeAP{sub ~ h1} \sMu\sNat \sArr \sMu\sNat
+  \}
+\end{mathpar}
+
+\begin{lemma}[Termination of \Func{Generate}]
+  \label{lem:generate-termination}
+  $\Func{Generate}(\Gamma, a, A)$ terminates.
+\end{lemma}
+\begin{proof}
+  \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
+\end{proof}
+
+\begin{lemma}[Completeness of \Func{Generate}]
+  \label{lem:generate-completeness}
+  % If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+  If $\Gamma \vdash_{\lcata} a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+\end{lemma}
+\begin{proof}
+  The solution $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
+  Use these derivations along with the rule \IRule{Subtype} to construct a derivation of $\Gamma \vdash_{\lcataSub} a : A$.
+  Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}, as described in \ref{sec:typing-coercions}.
+\end{proof}
+
+\subsection{Constraint solving with Chronolog}
+
+We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
+Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension to rule-level techniques in previous work~\cite{Clark1982,Naish1982,residuation2019}.
+Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
+Anytime a constraint that satisfies $S$ appears, that constraint is immediately suspended.
+Suspended constraints are still refined by logic variable substitutions.
+Chronolog can terminate in three ways: (1) failure with unsolved constraints, (2) progress with suspended constraints, (3) success with no suspended constraints.
+
+A particular choice of $S$ is critical in this context due to the presence of the \IRule{Roll} and \IRule{Unroll} rules, which can be composed infinitely by straightforward SLD resolution, violating completeness of type checking.
+Chronolog prevents such infinite regresses by supporting a global suspension meta-predicate, $S$, where constraints that satisfy $S$ are immediately suspended before being processed further.
+If such a refinement results in a constraint no longer satisfying $S$, then the constraint is resumed.
+% In our implementation, we use this suspension meta-predicate:
+We use a meta-predicate for $S$ that holds of the following forms of constraints.
+\begin{mathpar}
+  X \subtypeA \sMu{D}, X \subtypeA \sFunctorApp{D}{A}, X \subtypeA R, \sMu{D} \subtypeA X, \sFunctorApp{D}{A} \subtypeA X, R \subtypeA X, X \subtypeA Y
+\end{mathpar}
+Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of all the possible rule applications to constraints not of suspended forms.
+In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
+Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
+This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
+For the purposes of type checking, we only need to determine if \Func{Solve} results in zero or non-zero solutions.
+
+% This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
+% Each solution corresponds to a specific set of derivations for the original subtyping constraints, where each derivation can be interpreted as a coercion justifying the corresponding subtyping relation.
+
+% We introduce an equivalence relation, denoted $\sim$, over the space of solutions: two solutions are deemed $\sim$-equivalent if their application to the term that originally generated the constraints yields semantically equivalent terms.
+% We posit that all solutions discovered by \Func{Solve} reside within a single $\sim$-equivalence class: $\forall \sigma, \sigma' \in \Func{Solve}(\constraints), \sigma \sim \sigma'$.
+% To illustrate, certain coercions manifest as the identity function (for instance, when justifying a reflexive relation of the form $A \subtypeA A$) or are semantically equivalent to the identity (such as \textsyntax{roll} and \textsyntax{unroll}, which serve strictly as static typing markers and erase to identities dynamically).
+% Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via distinct compositions of subtyping rules, or that employ \IRule{Roll} and \IRule{Unroll} in varying permutations, uniformly collapse into the same $\sim$-equivalence class.
+
+\begin{algorithm}[tb]
+  \caption{Constraint solving with Chronolog.}
+  \label{alg:solver}
+  \begin{algorithmic}[1]
+    \Function{Solve}{$\constraints$}
+    \State $\sigma \gets \emptyset$ % \Comment{Initialize as the empty logic variable substitution}
+    \While{$\constraints \neq \emptyset$}
+    % \Statex
+    % Pattern-matching block
+    \State \Match $\Func{Chronolog}(S, \constraints)$ \With
+    \State \quad \Case $\langle \text{``failure''} \rangle \Rightarrow$ \Return $\bot$
+    % \Statex
+    \State \quad \Case $\langle \text{``success''}, \sigma' \rangle \Rightarrow$
+    \Return $\sigma'$
+    % \Statex
+    \State \quad \Case $\langle \text{``progress''}, \sigma', \constraints' \rangle \Rightarrow$
+    \State \qquad $\sigma \gets \Func{Refine}(\constraints') \circ \sigma'$
+    \State \qquad $\constraints \gets \sigma(\constraints')$
+    \State \EndMatch
+    \EndWhile
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Func{Refine} to refine any suspended constraints left over each iteration, as show in Algorithm~\ref{alg:solver}.
+\Func{Refine} is defined by the following cases, in order of decreasing priority.
+% \begin{itemize}
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{R} \}$ if $(X \subtypeA R) \in \constraints$ or $(R \subtypeA X) \in \constraints$.
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $X \subtypeA \sMu{D} \in \constraints$ or $(\sMu{D} \in X) \in \constraints$.
+%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sFunctorApp{D}{A} \}$ if $X \subtypeA \sFunctorApp{D}{A} \in \constraints$ or $(\sFunctorApp{D}{A} \in X) \in \constraints$.
+%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints$ or $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X})) \subtypeA X) \in \constraints}$.
+%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints \}$ otherwise.
+% \end{itemize}
+
+\begin{mathpar}
+  \Func{Refine}(\constraints) := \begin{cases}
+    \{ X \mapsto R \} ~\text{if}~ (X \subtypeA R) \in \constraints ~\text{or}~ (R \subtypeA X) \in \constraints ~\text{else}
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sMu{D}) \in \constraints ~\text{or}~ (\sMu{D} \in X) \in \constraints ~\text{else}
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X) \in \constraints
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints
+    % \\
+    % \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \subtypeA X \in \constraints) \} ~\text{otherwise}
+  \end{cases}
+\end{mathpar}
+
+% Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
+% \Func{Refine}
+
+% Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
+% Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$.
+% \begin{mathpar}
+%   \begin{array}{rlrll}
+%     && \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \}) &:= \bot  \\
+%     \Func{Refine}(\{ \dots, \sMu{D} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sMu{D}, \dots \}) &:= \{ X \mapsto \sMu{D} \} \\
+%     \Func{Refine}(\{ \dots, R &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA R, \dots \}) &:= \{ X \mapsto R \} \\
+%     && \Func{Refine}(\{ \dots, X &\subtypeA Y, \dots \}) &:= \{ X \mapsto Y \} \\
+%     \Func{Refine}(\{ \dots, \sFunctorApp{D}{A} &\subtypeA X, \dots \}) ,& \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{A}, \dots \}) &:= \{ X \mapsto \sFunctorApp{D}{Y} \} ~\text{where}~ Y ~\text{fresh} \\
+%   \end{array}
+% \end{mathpar}
+
+% 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
+% 2. if two constraints have the same type variable, then
+%   a. it occurs on the same side of the constraints, and not on the opposite side; and
+%   b. the sets of type variables for the opposite sides of those constraints are disjoint
+
+% These invariants seem to hold for the rules of Figure 4, although I would appreciate your confirmation.
+
+% If so, then solving suspended goals should preserve invariant (2), I am thinking.  And this would mean that substituting with the result of Refine would indeed decrease the number of type variables.
+
+\begin{lemma}[Termination of \Func{Solve}]
+  \label{lem:solver-termination}
+  $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
+\end{lemma}
+\begin{proof}
+  We show termination by demonstrating that the total size of typing constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
+  Each iteration begins with an invocation of \Func{Chronolog}.
+  If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
+  If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
+  The substitution resulting from $\Func{Refine}(\constraints)$ does not increase the total size of constraints in any case.
+\end{proof}
+
+\begin{lemma}[Completeness of \Func{Solve}]
+  \label{lem:solver-completeness}
+  If there exists a solution to a constraint problem $\constraints$, then $\Func{Solve}(\constraints) \neq \varnothing$.
+\end{lemma}
+\begin{proof}
+  Suppose there exists a solution to $\constraints$.
+  \Func{Chronolog} nondeterministically attempts every valid application of the algorithmic subtyping rules, which are complete by Theorem~\ref{thm:completeness}.
+  \Func{Refine}'s handling of $X \subtypeA R$ and $R \subtypeA X$ constraints does not violate completeness since $R$ is unrelated to any other type.
+  \Func{Refine}'s handling of $X \subtypeA \sMu{D}$ and $\sMu{D} \subtypeA X$ constraints does not violate completeness since, after \Func{Refine} has already handled the previous cases, any other appearances of $X$, once substituted for $\sMu{D}$, may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy the constraints at those appearances.
+  \Func{Refine}'s handling of $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))})$ and $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X)$ constraints does not violate completeness since $X \mapsto \sMu{D}$ is the only solution to such constraints.
+  \Func{Refine}'s handling of $X \subtypeA \sFunctorApp{D}{A}$ and $\sFunctorApp{D}{A} \subtypeA X$ constraints does not violate completeness since, as there is an assumed solution to $\constraints$ and \Func{Refine} has already handled the previous cases, $A$ must be of the form $\sFunctorApp{D}{(\dots (\sFunctorApp{D}{Y}))}$ (where $Y$ is a distinct type variable from $X$) or $\sFunctorApp{D}{(\dots (\sMu{D}))}$, and so any other appearances of $X$ may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy any other relations to the constraints at those appearances.
+  The result follows since \Func{Solve} terminates by Lemma~\ref{lem:solver-termination}.
+\end{proof}
+
+\begin{algorithm}[tb]
+  \caption{Type checking for \lcataSub.}
+  \label{alg:type-checker}
+  \begin{algorithmic}[1]
+    \Function{TypeCheck}{$\Gamma, a, A$}
+    \State $\constraints \gets \Func{Generate}(\Gamma, a, A)$
+    % \State \Match $\Func{Solve}(\constraints)$ \With
+    % \State \quad \Case $[~] \Rightarrow \bot$
+    % \State \quad \Case $\_ \Rightarrow \top$
+    % \State \EndMatch
+    %
+    % \If{$\Func{Solve}(\constraints) = [~]$}
+    % \State \Return $\bot$
+    % \Else
+    % \State \Return $\top$
+    % \EndIf
+    %
+    % \LineIf{$\Func{Solve}(\constraints) = [~]$}{\Return $\bot$}{\Return $\top$}
+    % \State \Return \textbf{if} $\Func{Solve}(\constraints) = [~]$ \textbf{then} $\bot$ \textbf{else} $\top$
+    \State \Return $\Func{Solve}(\constraints) \neq \varnothing$
+    \EndFunction
+  \end{algorithmic}
+\end{algorithm}
+
+\begin{theorem}[Completeness of \Func{TypeCheck}]
+  \label{thm:type-checker-completeness}
+  If $\Gamma \vdash_{\lcataSub} a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
+\end{theorem}
+\begin{proof}
+  Suppose $\Gamma \vdash_{\lcataSub} a : A$.
+  $\Func{Generate}(\Gamma, a, A)$ terminates (by Lemma~\ref{lem:generate-termination}) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-completeness}).
+  By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
+  By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
+\end{proof}
+
+\section{Returning to the Examples} % Henry
+
+Recall the examples from Section~\ref{sec:motivating-examples} where \texttt{sub} and \texttt{subs} were implemented algebraically.
+Explicit coercions using \texttt{unroll}, \texttt{roll}, and \texttt{cata} were required to operate with the representation of datatypes as fixed points of signature functors and the functional interpretation of algebras via a catamorphism.
+Now, with the machinery of coercive subtyping in place, we can write those examples without any coercions, as demonstrated in Figured~\ref{fig:example-subs-algebraic-without-coercions}.
+
+\begin{figure}[tb]
+  \centering
+
+  \begin{verbatim}
+sub : μ Nat → Nat ⇒ μ Nat
+sub = λ (m : μ Nat) . ω sub'(n) . γ n .
+  { Zero → m
+  | Suc(n') → γ sub' n' .
+    { Zero → Zero
+    | Suc(m') → m' } }
+
+subs : NatList ⇒ μ NatList → μ NatList
+subs = ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
+  { Nil → Nil
+  | Cons(h1, t1) → γ l2 .
+    { Nil → Nil
+    | Cons(h2, t2) →
+        Cons(sub h1 h2, subs' t1 t2) } }
+  \end{verbatim}
+  \caption{Code for \texttt{sub} and \texttt{subs} with coercions all implicit.}
+  \label{fig:example-subs-algebraic-without-coercions}
+\end{figure}
+
+The type checking procedure described in previous sections collects and solves the implied subtyping constraints, which upon success determines a valid typing derivation for the term in \lcata with the inferred coercions explicitly inserted.
+
+\section{Related Work} % Aaron
+
+Turner introduced the term \emph{strong functional programming},
+presented several arguments in favor of the approach, and proposed
+using structural termination as an \emph{elementary} way to realize
+such a language~\cite{turner95}.  Mendler proposed a recursor using an
+abstract type to ensure that recursive calls are permitted only on
+subdata for an inductive type~\cite{mendler91}.  The algebraic
+approach has been applied for modular implementation of
+interpreters~\cite{swierstra08}.  Charity is a strong functional
+programming language based on categorical abstractions for initial
+algebras and final coalgebras~\citep{charity92}.  Recursion is done
+via $F$-algebras, and there is no automatic conversion from algebras
+to functions.  This makes the code examples seem somewhat alien. Tofu
+uses the Calculus of Constructions as a language for defining
+terminating functions, again based on categorical
+ideas~\citep{tofu10}.  Charity and Tofu both support coinductive
+datatypes, which we did not study here.
+
+% [TODO] expand upon comparison to Tofu and Chaity?
+
+\section{Conclusion and future work} % Aaron
+
+Total algebraic programming can be made more feasible by inferring the
+basic coercions necessary for the method: rolling and unrolling
+signature functors, and turning an algebra into its catamorphism.
+Type inference generates subtyping constraints, whose solutions
+correspond to the needed coercions.  A logic-programming engine
+processes constraints with respect to an algorithmic version of the
+subtyping rules.  This algorithmic subtyping relation is proved
+equivalent to the declarative one, in Agda.
+
+Furthermore, we mechanically verified (Lemma~\ref{thm:uniqueness}) that the
+algorithmic typing judgment admits unique derivations at ground types. While
+establishing the mere satisfiability of the generated constraint problems (which
+include type variables) is sufficient for the purposes of type checking, we
+defer to future work the demonstration of a suitable equivalence relation that
+characterizes the solutions produced by \Func{Solve}.
+
+Future work also includes richer forms of algebraic programming.  One
+powerful generalization of structural recursion is to recursive
+coalgebras~\cite{capretta+06}.  This encompasses divide-and-conquer
+algorithms, which are beyond the scope of structural recursion.  A
+different approach to divide-and-conquer recursion has also been
+considered by~\citet{abreu+23}.  There, algebras call functions to
+pass between various abstract types.  These would be excellent
+candidates for inference using coercive subtyping, as we proposed in
+this paper.  Interestingly, there are additional coercions from the
+types $D \sAlg X$ of algebras that would arise from applying our
+approach to that work.  This provides further motivation for
+maintaining algebras as separate syntactic constructs, and inferring
+uses of \textit{cata}.  It would also be interesting to infer
+coercions for coalgebraic programming with coinductive types.
+
+Another avenue of future work is to prove \emph{coherence} for \lcata.
+This property states that if $\Gamma \vdash_{\lcata} a_1 : A$ and
+$\Gamma \vdash_{\lcata} a_2 : A$, and if $|a_1| = |a_2|$, then $a_1$
+and $a_2$ are semantically equivalent.  That is, inserting coercions
+in different places in the same term does not change it semantics.  We
+conjecture this is true, but proving this property can be technically
+involved (cf.~\cite{biernacki18}).
+
+\appendix
+
+% \section{Typing rules for \lcata}
+% \label{app:typing-rules-lcata}
+
+% \begin{mathpar}
+
+%   \inferrule[Var]{
+%     (x : A) \in \Gamma
+%   }{
+%     \Gamma \vdash x : A
+%   }
+
+%   \inferrule[Con]{
+%     \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+%     \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+%   }{
+%     \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+%   }
+
+%   \inferrule[Lam]{
+%     \Gamma , (x : A) \vdash b : B
+%   }{
+%     \Gamma \vdash \lambda (x : A) . b : A \sArr B
+%   }
+
+%   \inferrule[App]{
+%     \Gamma \vdash f : A \sArr B \qquad
+%     \Gamma \vdash a : A
+%   }{
+%     \Gamma \vdash f ~ a : B
+%   }
+
+%   \typingRuleGamma
+
+%   \typingRuleOmega
+
+%   \inferrule[Let]{
+%     \Gamma, (x : A) \vdash b : B \qquad
+%     \Gamma \vdash a : A
+%   }{
+%     \Gamma \vdash \sLet{x}{A}{a}{b} : B
+%   }
+
+%   \typingRuleSubtype
+
+% \end{mathpar}
+
+\section{Typing rules for \lcataSub}
+\label{app:typing-rules-lcataSub}
+
+\begin{mathpar}
+
+  \inferrule[Var]{
+    (x : A) \in \Gamma
+  }{
+    \Gamma \vdash x : A
+  }
+
+  \inferrule[Con]{
+    \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
+    \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
+  }{
+    \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
+  }
+
+  \inferrule[Lam]{
+    \Gamma , (x : A) \vdash b : B
+  }{
+    \Gamma \vdash \lambda (x : A) . b : A \sArr B
+  }
+
+  \inferrule[App]{
+    \Gamma \vdash f : A \sArr B \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash f ~ a : B
+  }
+
+  \typingRuleGamma
+
+  \typingRuleOmega
+
+  \inferrule[Let]{
+    \Gamma, (x : A) \vdash b : B \qquad
+    \Gamma \vdash a : A
+  }{
+    \Gamma \vdash \sLet{x}{A}{a}{b} : B
+  }
+
+  \typingRuleSubtype
+
+\end{mathpar}
+
+% Richer patterns of recursion, as in POPL 2023 paper
+
+%\bibliographystyle{plain}
+\bibliography{paper.bib}
+
+\end{document}
