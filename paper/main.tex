@@ -137,14 +137,15 @@ constraints were generated.
 
 To implement this, we make use of a custom logic-programming engine
 called Chronolog.  The subtyping axioms are given to Chronolog as
-rules.  Chronolog then uses standard SLD resolution to search for
-proofs of the constraints, instantiating type variables during proof
-search via unification.  The rules for rolling and unrolling
-signatures would, if handled naively, lead to diverging proof search.
-Instead, Chronolog provides a mechanism to indicate that certain
-problematic constraints should be suspended.  These suspended constraints may be
-resumed if they are instantiated during solving of other constraints.
-If not, an outer loop of our algorithm handles them specially.
+rules.  Chronolog then uses standard SLD resolution
+(\cite{apt+82,Kowalski1974}) to search for proofs of the constraints,
+instantiating type variables during proof search via unification.  The
+rules for rolling and unrolling signatures would, if handled naively,
+lead to diverging proof search.  Instead, Chronolog provides a
+mechanism to indicate that certain problematic constraints should be
+suspended.  These suspended constraints may be resumed if they are
+instantiated during solving of other constraints.  If not, an outer
+loop of our algorithm handles them specially.
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
@@ -170,6 +171,7 @@ summarize our contributions:
 \end{itemize}
 
 The implementation and proofs, respectively, are available at:
+
 \begin{tabular}{ll}
 \ \ \ &  \url{https://github.com/rybla/algebraic-programming-with-coercive-subtyping} \\
 \ \ \ &  \url{https://github.com/astump/chronolog-algebraic-paper}
@@ -180,16 +182,16 @@ Figure~\ref{fig:syntax} presents the syntax for the language \lcata,
 through which we study coercion inference for algebraic
 programming. We use notation $\sepBy{e}{~\oplus}$ where $\oplus$ is a
 syntactic operator, to indicate a $\oplus$-separated list of
-expressions $e$. Datatypes are described as least fixed points of
-signature functors $F$, which we take to be polynomial functors for
-simplicity. Least fixed points of signature functors, referenced by
-datatype name $D$, are denoted $\sMu{D}$.  We have usual function
-types $A \sArr B$.  Types $D \sAlg B$ are the types for algebras over
-$\sMu{D}$ computing a value of type $B$, the carrier of the algebra.
-Recursion type variables $\sRecVar{f}$ are introduced in the bodies of
-algebras, where $f$ is the name of the function introduced by the
-respective algebra.  While type variables (which are unrelated to
-recursion type variables) appear during type checking, as detailed in
+expressions $e$. Datatypes are based on signature functors $F$, which
+we take to be polynomial functors for simplicity. Least fixed points
+of signature functors, referenced by datatype name $D$, are denoted
+$\sMu{D}$.  We have usual function types $A \sArr B$.  Types $D \sAlg
+B$ are the types for algebras over $\sMu{D}$ computing a value of type
+$B$, the carrier of the algebra.  Recursion type variables
+$\sRecVar{f}$ are introduced in the bodies of algebras, where $f$ is
+the name of the function introduced by the respective algebra.  While
+type variables (which are unrelated to recursion type variables)
+appear during type checking, as detailed in
 Section~\ref{sec:typechecking}, they are not allowed in the surface
 syntax for types.  In this way, all types that appear in programs are
 ground types.
@@ -226,14 +228,17 @@ Given such an algebra, its catamorphism $\cata{a}$ is typed as
 a : (\sRecVar{f} \to X) \to F\ \sRecVar{f} \to X
 \]
 \noindent Here, $a$ takes in two inputs.  The first is a function $f$
-from some abstract type $\sRecVar{f}$ to $X$. The second input is a
-value $x$ of type $\sFunctorApp{F}{\sRecVar{f}}$.  This is similar to
-the input for an $F$-algebra, but with the abstract type $\sRecVar{f}$
-in place of the carrier.  Mendler algebras are closer to usual
-programming practice, because the algebra may pattern-match on $x$ to
-reveal subdata of type $\sRecVar{f}$, and then apply $f$ to those to
-recurse.  This is syntactically similar to making a recursive call in
-a standard functional programming language.
+from $\sRecVar{f}$ (the recursion type variable) to $X$. The second
+input is a value $x$ of type $\sFunctorApp{F}{\sRecVar{f}}$.  This is
+similar to the input for an $F$-algebra, but with $\sRecVar{f}$ in
+place of the carrier.  The recursion type variables are abstract: no
+other information about them is available to algebras.
+
+Mendler algebras are closer to usual programming practice, because the
+algebra may pattern-match on $x$ to reveal subdata of type
+$\sRecVar{f}$, and then apply $f$ to those to recurse.  This is
+syntactically similar to making a recursive call in a standard
+functional programming language.
 
 
 \begin{figure}[tb]
@@ -517,15 +522,15 @@ we must first consider the underlying subtyping relation.
 \label{sec:subtyping}
 
 We begin with the natural declarative subtyping rules.  These are not
-algorithmic when read from conclusions to premises due to the presence of the
-\IRule{Trans} rule, which introduces a new metavariable in its premises that
-does not appear in in its conclusion, and so can be applied ad infinitum.  So we
-next propose an algorithmic version, where all metavariables in the premises of
-the rule are already present in the conclusion, and the sizes of the constraints
-decrease.  This ensures that selective definite linear clause (SLD)
-resolution~\cite{Kowalski1974} will not diverge on ground constraints.  We prove
-that the two sets of rules are equivalent.  Then we can formulate the coercion
-typing rules.
+algorithmic when read from conclusions to premises due to the presence
+of the \IRule{Trans} rule, which introduces a new metavariable in its
+premises that does not appear in in its conclusion, and so can be
+applied ad infinitum.  So we next propose an algorithmic version,
+where all metavariables in the premises of the rule are already
+present in the conclusion, and the sizes of the constraints decrease.
+This ensures that SLD resolution will not diverge on ground constraints.
+We prove that the two sets of rules are equivalent.  Then we can
+formulate the coercion typing rules.
 
 \subsection{Declarative subtyping}
 
@@ -845,7 +850,7 @@ Let \lcataSub be the language that coincides with \lcata except in eliding the e
 \begin{mathpar}
   \typingRuleSubtype
 \end{mathpar}
-The comprehensive typing rules for \lcataSub are compiled for reference in Appendix~\ref{app:typing-rules-lcataSub}
+The comprehensive typing rules for \lcataSub are compiled for reference in Appendix~\ref{app:typing-rules-lcataSub}.
 We develop \lcataSub to be a version of \lcata where the burden of explicit coercions is alleviated by implicit inference of coercions.
 
 In this section, we formalize a constraint-based type-checking algorithm for \lcataSub.
@@ -1001,7 +1006,8 @@ Each constraint is annotated with the particular sub-term of \texttt{subs} that 
 
 \subsection{Constraint solving with Chronolog}
 
-We take a logic-programming approach to solving problems $\constraints$ in such a way that calculates the coercions that justify the generated subtyping relations.
+We take a logic-programming approach to solving problems $\constraints$, where the coercions that justify the generated subtyping relations are
+calculated along the way.
 Our implementation uses a logic-programming engine, Chronolog, which adopts an alternative technique for constraint suspension to rule-level techniques in previous work~\cite{Clark1982,Naish1982,residuation2019}.
 Chronolog accepts a set of constraints, a logic variable substitution, and a suspension meta-predicate $S$.
 Anytime a constraint that satisfies $S$ appears, that constraint is immediately suspended.
@@ -1014,14 +1020,14 @@ If such a refinement results in a constraint no longer satisfying $S$, then the 
 % In our implementation, we use this suspension meta-predicate:
 We use a meta-predicate for $S$ that holds of the following forms of constraints.
 \begin{mathpar}
-  X \subtypeA \sMu{D}, X \subtypeA \sFunctorApp{D}{A}, X \subtypeA R, \sMu{D} \subtypeA X, \sFunctorApp{D}{A} \subtypeA X, R \subtypeA X, X \subtypeA Y
+  X \subtypeA \sMu{D}\ \ \ X \subtypeA \sFunctorApp{D}{A}\ \ \ X \subtypeA R\ \ \  \sMu{D} \subtypeA X\ \ \  \sFunctorApp{D}{A} \subtypeA X\ \ \ R \subtypeA X\ \ \ X \subtypeA Y
 \end{mathpar}
 Suspending constraint of these forms prevents Chronolog from applying rules in a cycle, which follows from a case analysis of all the possible rule applications to constraints not of suspended forms.
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
 Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
 This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
 Search branches that reach states where \textit{no} rules may be applied are pruned with no backtracking.
-For the purposes of type checking, we only need to determine if \Func{Solve} results in zero or non-zero solutions.
+For type checking, we only need to check whether \Func{Solve} results solutions or not.
 
 % This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
 % Each solution corresponds to a specific set of derivations for the original subtyping constraints, where each derivation can be interpreted as a coercion justifying the corresponding subtyping relation.
@@ -1082,7 +1088,7 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
 \end{mathpar}
 
 This particular prioritization of refinements arises from case analysis of the various situations one can encounter at the end of a Chronolog run inside \Func{Solve}, where each suspended constraints is of the form specified by $S$ and we must choose a substitution of a single type variable that narrows the solutions the \textit{least} (for the sake of completeness) while also not introducing additional type variables (for the sake of termination).
-For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
+For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose to refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 % \Func{Refine}
