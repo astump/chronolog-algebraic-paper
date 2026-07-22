@@ -767,6 +767,12 @@ These rules exhibit an exact structural correspondence with the algorithmic subt
 This isomorphism enables a systematic, constructive translation from any valid subtyping derivation $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$.
 Consequently, this correspondence forms the foundation of our elaboration semantics, allowing us to infer and insert the explicit coercions necessary to translate a well-typed \lcataSub term into a valid \lcata term.
 
+Most of the coercion typing rules have uniquely associated coercions.
+For example, \IRule{ArrCoe} is associated with the coercion \verb|arr| and \IRule{CovCoe} is associated with the coercion \verb|cov|.
+However, the base case coercion typing rules \IRule{ReflDataCoe} and \IRule{RecVarCoe} are each associated merely with the identity coercion \verb|id| (at their respectful types).
+These account for why the examples in Figure~\ref{fig:example-subs-algebraic-with-coercions} require uses of \verb|id| at the leaves of each coercion.
+While \lcata does not support universal quantification in types, these coercions are polymorphic primitives, where the type arguments are always inferred during type checking.
+
 \begin{figure}[tb]
   \centering
 
