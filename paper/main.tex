@@ -1163,20 +1163,20 @@ Now, with the machinery of coercive subtyping in place, we can write those examp
   \centering
 
   \begin{verbatim}
-sub : μ Nat → Nat ⇒ μ Nat
-sub = λ (m : μ Nat) . ω sub'(n) . γ n .
-  { Zero → m
-  | Suc(n') → γ sub' n' .
-    { Zero → Zero
-    | Suc(m') → m' } }
+sub : μ Nat → Nat ⇒ μ Nat =
+  λ (m : μ Nat) . ω sub'(n) . γ n .
+    { Zero → m
+    | Suc(n') → γ sub' n' .
+      { Zero → Zero
+      | Suc(m') → m' } }
 
-subs : NatList ⇒ μ NatList → μ NatList
-subs = ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
-  { Nil → Nil
-  | Cons(h1, t1) → γ l2 .
+subs : NatList ⇒ μ NatList → μ NatList =
+  ω subs'(l1) . λ (l2 : μ NatList) . γ l1 .
     { Nil → Nil
-    | Cons(h2, t2) →
-        Cons(sub h1 h2, subs' t1 t2) } }
+    | Cons(h1, t1) → γ l2 .
+      { Nil → Nil
+      | Cons(h2, t2) →
+          Cons(sub h1 h2, subs' t1 t2) } }
   \end{verbatim}
   \caption{Code for \texttt{sub} and \texttt{subs} with coercions all implicit.}
   \label{fig:example-subs-algebraic-without-coercions}
