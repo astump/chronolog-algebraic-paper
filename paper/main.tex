@@ -392,17 +392,19 @@ algebras are Mendler-style, the type of \verb|sub'| is
 the algebra.  The input \verb|n| has type \verb|Nat R_f|, and so its subdatum
 \verb|n'| has type \verb|R_f|.  So the call \verb|sub' n'| is
 well-typed.  To pattern-match on the output of this call requires
-unrolling \verb|μ Nat| with \verb|unroll id|.  The \verb|id| is
+unrolling \verb|μ Nat| with \verb|unroll id|, written \verb|unroll id - sub' n'|.
+The \verb|id| is
 the identity coercion, indicating that the subtyping is only happening
 at the top level of the type.  In the \verb|Zero| case of this match
 on unrolled \verb|sub' n'|, the code returns \verb|Zero|.
 Constructors' return types are applications of signature functors.
 Here, \verb|Zero| can be given type \verb|Nat (μ Nat)|, which is then
-coerced to \verb|μ Nat| by \verb|roll|.  The function \verb|subs| does
+coerced to \verb|μ Nat| by \verb|roll|, written \verb|roll id - Zero|.
+The function \verb|subs| does
 similar rolling and unrolling, but also invokes subtraction
 (\verb|sub|).  Since \verb|sub| returns an algebra, the code uses
 \verb|cata| to coerce that to the function which accepts the
-subtrahend.
+subtrahend, written \verb|cata id id - sub h1 h2|, where the the coercion operator \verb|-| binds more tightly than application (i.e. the expression is parsed equivalently as \verb|(cata id id - sub) h1 h2|).
 
 Thanks to the restrictions imposed by Mendler-style algebras, these
 functions have the desirable property that they are guaranteed to
