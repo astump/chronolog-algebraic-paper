@@ -89,7 +89,7 @@ conversion of algebras to functions that recurse over data. To alleviate the
 burden of these extra operations, in this paper we propose to insert them
 automatically, using coercive subtyping. The type checker generates subtyping
 constraints, which are then solved with the help of a custom logic programming
-engined called Chronolog. The subtyping axioms are given to Chronolog as rules,
+engine called Chronolog. The subtyping axioms are given to Chronolog as rules,
 which uses them to solve the subtyping constraints. To avoid infinite
 applications of rules for unrolling signature functors, Chronolog provides a
 mechanism for suspending and resuming certain forms of constraints. The
@@ -1140,7 +1140,7 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
 
 Recall the examples from Section~\ref{sec:motivating-examples} where \texttt{sub} and \texttt{subs} were implemented algebraically.
 Explicit coercions using \texttt{unroll}, \texttt{roll}, and \texttt{cata} were required to operate with the representation of datatypes as fixed points of signature functors and the functional interpretation of algebras via a catamorphism.
-Now, with the machinery of coercive subtyping in place, we can write those examples without any coercions, as demonstrated in Figured~\ref{fig:example-subs-algebraic-without-coercions}.
+Now, with the machinery of coercive subtyping in place, we can write those examples without any coercions, as demonstrated in Figure~\ref{fig:example-subs-algebraic-without-coercions}.
 
 \begin{figure}[tb]
   \centering
