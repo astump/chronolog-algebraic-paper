@@ -850,7 +850,7 @@ This algorithm follows a straightforward algorithmic application of the rules in
 Each generated constraint corresponds to an implied application of the \IRule{Subtype} rule required to construct a valid typing derivation; furthermore, each constraint is implicitly localized to the specific subterm at which subsumption is mandated.
 % Within the framework of coercive subtyping, these subsumption steps are witnessed by coercions that provide computational evidence for the underlying subtyping relation.
 % Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
-We omit a rigorous formalization of the coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
+We omit a rigorous formalization of the coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
 
 \begin{figure}[tb]
   \centering
