@@ -1,47 +1,19 @@
-%Version 3.1 December 2024
-% See section 11 of the User Manual for version history
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.21 of 2022/01/12
 %
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%                                                                 %%
-%% Please do not use \input{...} to include other tex files.       %%
-%% Submit your LaTeX manuscript as one .tex document.              %%
-%%                                                                 %%
-%% All additional figures and files should be attached             %%
-%% separately and not embedded in the \TeX\ document itself.       %%
-%%                                                                 %%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-%%\documentclass[referee,sn-basic]{sn-jnl}% referee option is meant for double line spacing
-
-%%=======================================================%%
-%% to print line numbers in the margin use lineno option %%
-%%=======================================================%%
-
-%%\documentclass[lineno,pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
-
-%%=========================================================================================%%
-%% the documentclass is set to pdflatex as default. You can delete it if not appropriate.  %%
-%%=========================================================================================%%
-
-%%\documentclass[sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
-
-%%Note: the following reference styles support Namedate and Numbered referencing. By default the style follows the most common style. To switch between the options you can add or remove Numbered in the optional parenthesis.
-%%The option is available for: sn-basic.bst, sn-chicago.bst%
-
-%%\documentclass[pdflatex,sn-nature]{sn-jnl}% Style for submissions to Nature Portfolio journals
-%%\documentclass[pdflatex,sn-basic]{sn-jnl}% Basic Springer Nature Reference Style/Chemistry Reference Style
-\documentclass[pdflatex,sn-mathphys-num]{sn-jnl}% Math and Physical Sciences Numbered Reference Style
-%%\documentclass[pdflatex,sn-mathphys-ay]{sn-jnl}% Math and Physical Sciences Author Year Reference Style
-%%\documentclass[pdflatex,sn-aps]{sn-jnl}% American Physical Society (APS) Reference Style
-%%\documentclass[pdflatex,sn-vancouver-num]{sn-jnl}% Vancouver Numbered Reference Style
-%%\documentclass[pdflatex,sn-vancouver-ay]{sn-jnl}% Vancouver Author Year Reference Style
-%%\documentclass[pdflatex,sn-apa]{sn-jnl}% APA Reference Style
-%%\documentclass[pdflatex,sn-chicago]{sn-jnl}% Chicago-based Humanities Reference Style
-
-%%%% Standard Packages
-%%<additional latex packages if required can be included here>
+\documentclass[runningheads]{llncs}
+%
+\usepackage[T1]{fontenc}
+% T1 fonts will be used to generate the final print and online PDFs,
+% so please use T1 fonts in your manuscript whenever possible.
+% Other font encondings may result in incorrect characters.
+%
 
 \usepackage{graphicx}%
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
 \usepackage{multirow}%
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{amsthm}%
@@ -66,96 +38,66 @@
 
 \contourlength{1pt}
 
-%%%%
-
-%%%%%=============================================================================%%%%
-%%%%  Remarks: This template is provided to aid authors with the preparation
-%%%%  of original research articles intended for submission to journals published
-%%%%  by Springer Nature. The guidance has been prepared in partnership with
-%%%%  production teams to conform to Springer Nature technical requirements.
-%%%%  Editorial and presentation requirements differ among journal portfolios and
-%%%%  research disciplines. You may find sections in this template are irrelevant
-%%%%  to your work and are empowered to omit any such section if allowed by the
-%%%%  journal you intend to submit to. The submission guidelines and policies
-%%%%  of the journal take precedence. A detailed User Manual is available in the
-%%%%  template package for technical guidance.
-%%%%%=============================================================================%%%%
-
-%% as per the requirement new theorem styles can be included as shown below
-\theoremstyle{thmstyleone}%
-\newtheorem{theorem}{Theorem}%  meant for continuous numbers
-%%\newtheorem{theorem}{Theorem}[section]% meant for sectionwise numbers
-%% optional argument [theorem] produces theorem numbering sequence instead of independent numbers for Proposition
-\newtheorem{lemma}[theorem]{Lemma}%
-\newtheorem{proposition}[theorem]{Proposition}%
-%%\newtheorem{proposition}{Proposition}% to get separate numbers for theorem and proposition etc.
-
-\theoremstyle{thmstyletwo}%
-\newtheorem{example}{Example}%
-\newtheorem{remark}{Remark}%
-
-\theoremstyle{thmstylethree}%
-\newtheorem{definition}{Definition}%
+%
+% If you use the hyperref package, please uncomment the following two lines
+% to display URLs in blue roman font according to Springer's eBook style:
+%\usepackage{color}
+%\renewcommand\UrlFont{\color{blue}\rmfamily}
+%\urlstyle{rm}
+%
 
 \raggedbottom
 %%\unnumbered% uncomment this for unnumbered level heads
 
-
 \include{definitions}
 
 \begin{document}
-
-\title{Convenient Algebraic Programming with Coercive Subtyping}
-
-\author*[1]{\fnm{Henry} \sur{Blanchette}}
+%
+\title{Convenient Algebraic Programming With Coercive Subtyping}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{%
+Henry Blanchette\inst{1}\orcidID{0000-0002-9415-0944} \and
+Aaron Stump\inst{2}\orcidID{0000-0002-9720-0003}%
+}
+%
+% \authorrunning{F. Author et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{%
+University of Maryland, College Park MD 20742, USA \\
 \email{blancheh@umd.edu}
-
-\author*[2]{Aaron Stump}
-\email{stumpaa@bc.edu}
-
-\affil[1]{\orgname{University of Maryland}}
-\affil[2]{\orgname{Boston College}}
-
-% \begin{CCSXML}
-%   <ccs2012>
-%   <concept>
-%   <concept_id>10011007.10011006.10011008.10011009.10011012</concept_id>
-%   <concept_desc>Software and its engineering~Functional languages</concept_desc>
-%   <concept_significance>500</concept_significance>
-%   </concept>
-%   <concept>
-%   <concept_id>10011007.10011006.10011008.10011024.10011033</concept_id>
-%   <concept_desc>Software and its engineering~Recursion</concept_desc>
-%   <concept_significance>500</concept_significance>
-%   </concept>
-%   </ccs2012>
-% \end{CCSXML}
-
-% \ccsdesc[500]{Software and its engineering~Functional languages}
-% \ccsdesc[300]{Software and its engineering~Recursion}
+\\ \and
+Boston College, Chestnut Hill MA 02467, USA \\
+\email{aaron.stump@bc.edu}}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+This paper presents a system for more convenient algebraic
+programming, where datatypes are defined as least fixed points of covariant
+signature functors, and recursive functions are defined as homomorphisms from
+initial algebras. This approach requires rolling and unrolling fixed points, and
+conversion of algebras to functions that recurse over data. To alleviate the
+burden of these extra operations, in this paper we propose to insert them
+automatically, using coercive subtyping. The type checker generates subtyping
+constraints, which are then solved with the help of a custom logic programming
+engined called Chronolog. The subtyping axioms are given to Chronolog as rules,
+which uses them to solve the subtyping constraints. To avoid infinite
+applications of rules for unrolling signature functors, Chronolog provides a
+mechanism for suspending and resuming certain forms of constraints. The
+subtyping axioms presented to Chronolog are an equivalent algorithmic version of
+the usual declarative rules for algebraic programming.
 
 \keywords{termination, algebraic programming, coercive subtyping}
-
-\abstract{ This paper presents a system for more convenient algebraic
-  programming, where datatypes are defined as least fixed points of
-  covariant signature functors, and recursive functions are defined as
-  homomorphisms from initial algebras.
-  This approach requires rolling and unrolling fixed points,
-  and conversion of algebras to functions that recurse over data. To
-  alleviate the burden of these extra operations, in this paper we
-  propose to insert them automatically, using coercive subtyping. The
-  type checker generates subtyping constraints, which are then solved
-  with the help of a custom logic programming engined called
-  Chronolog. The subtyping axioms are given to Chronolog as rules,
-  which uses them to solve the subtyping constraints. To avoid
-  infinite applications of rules for unrolling signature functors,
-  Chronolog provides a mechanism for suspending and resuming certain
-  forms of constraints. The subtyping axioms presented to Chronolog are an
-  equivalent algorithmic version of the usual declarative rules for
-algebraic programming. }
-
-\maketitle
-
+\end{abstract}
+%
+%
+%
 \section{Introduction} % Aaron
 
 % Algebraic programming as an example of total functional programming (cite Turner)
@@ -1380,7 +1322,7 @@ involved (cf.~\cite{biernacki18}).
 
 % Richer patterns of recursion, as in POPL 2023 paper
 
-%\bibliographystyle{plain}
+\bibliographystyle{plain}
 \bibliography{paper.bib}
 
 \end{document}
