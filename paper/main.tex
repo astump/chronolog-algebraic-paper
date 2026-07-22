@@ -1234,7 +1234,19 @@ terminating functions, again based on categorical
 ideas~\cite{tofu10}.  Charity and Tofu both support coinductive
 datatypes, which we did not study here.
 
-% [TODO]: expand upon comparison to Tofu and Chaity?
+Folding and unfolding signature functors is reminiscent of folding and
+unfolding recursive types as presented, for example, by
+Pierce~\cite{pierce02}.  The situation here is much simpler, though,
+because we consider the signature functors nominally.  That is,
+recursive types $\sMu{D}$ and $\sMu{D'}$ are never related in our
+theory, even if names $D$ and $D'$ are associated with the same
+underlying signature functor.  In contrast, equirecursive types are
+treated extensionally, and this requires a greatest fixed-point
+algorithm to test equivalence.  It is not our purpose to handle this
+more general situation.  Rather, the goal is to handle standard
+inductive datatypes, which are usually treated nominally in functional
+programming.  For example, two copies of the list datatype are not
+considered interchangeable in languages like Haskell or OCaml.
 
 \section{Conclusion and future work} % Aaron
 
