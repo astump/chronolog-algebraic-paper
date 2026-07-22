@@ -291,7 +291,7 @@ recurse.  This is syntactically similar to making a recursive call in
 a standard functional programming language.
 
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{align*}
@@ -397,7 +397,7 @@ datatypes.
 \section{Motivating examples}
 \label{sec:motivating-examples}
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   % sub h1 expected type is μNatList -> μNatList
@@ -502,7 +502,7 @@ The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}
 }
 
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -584,7 +584,7 @@ are equivalent.  Then we can formulate the coercion typing rules.
     D \sAlg A \subtype \sMu{D} \sArr A
 }}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -665,7 +665,7 @@ would diverge with this rule.  We address this problem next.
     D \sAlg A \subtypeA B \sArr C
 }}
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -814,7 +814,7 @@ These rules exhibit an exact structural correspondence with the algorithmic subt
 This isomorphism enables a systematic, constructive translation from any valid subtyping derivation $A \subtypeA B$ to a coercion typing derivation $c : A \subtypeA B$.
 Consequently, this correspondence forms the foundation of our elaboration semantics, allowing us to infer and insert the explicit coercions necessary to translate a well-typed \lcataSub term into a valid \lcata term.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -901,7 +901,7 @@ Each generated constraint corresponds to an implied application of the \IRule{Su
 % Operationally, resolved constraints reify these coercions and can be inserted into a term as explicit constructions of $\sCoerce{c}{a}$, resulting in a well-typed term of \lcata.
 We omit a rigorous formalization of the coercion elaboration phase (the algorithmic insertion of coercions is fully realized in our implementation of type checking), however in order to reinforce that generated constraints correspond are linked to specific sub-terms, we highlight the sub-term and the linked generated constraint with the same color in the rules of Figure~\ref{fig:constraint-generation-rules}.
 
-\begin{figure}[htb]
+\begin{figure}[tb]
   \centering
 
   \begin{mathpar}
@@ -1058,7 +1058,7 @@ For the purposes of type checking, we only need to determine if \Func{Solve} res
 % To illustrate, certain coercions manifest as the identity function (for instance, when justifying a reflexive relation of the form $A \subtypeA A$) or are semantically equivalent to the identity (such as \textsyntax{roll} and \textsyntax{unroll}, which serve strictly as static typing markers and erase to identities dynamically).
 % Therefore, solutions that resolve constraints of the form $A \subtypeA A$ via distinct compositions of subtyping rules, or that employ \IRule{Roll} and \IRule{Unroll} in varying permutations, uniformly collapse into the same $\sim$-equivalence class.
 
-\begin{algorithm}[htb]
+\begin{algorithm}[tb]
   \caption{Constraint solving with Chronolog.}
   \label{alg:solver}
   \begin{algorithmic}[1]
@@ -1156,7 +1156,7 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
   The result follows since \Func{Solve} terminates by Lemma~\ref{lem:solver-termination}.
 \end{proof}
 
-\begin{algorithm}[htb]
+\begin{algorithm}[tb]
   \caption{Type checking for \lcataSub.}
   \label{alg:type-checker}
   \begin{algorithmic}[1]
@@ -1197,7 +1197,7 @@ Recall the examples from Section~\ref{sec:motivating-examples} where \texttt{sub
 Explicit coercions using \texttt{unroll}, \texttt{roll}, and \texttt{cata} were required to operate with the representation of datatypes as fixed points of signature functors and the functional interpretation of algebras via a catamorphism.
 Now, with the machinery of coercive subtyping in place, we can write those examples without any coercions, as demonstrated in Figured~\ref{fig:example-subs-algebraic-without-coercions}.
 
-\begin{figure}[H]
+\begin{figure}[tb]
   \centering
 
   \begin{verbatim}
