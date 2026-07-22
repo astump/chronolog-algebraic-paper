@@ -1000,6 +1000,7 @@ Suspending constraint of these forms prevents Chronolog from applying rules in a
 In particular, the only forms of constraints that have a type variable as one side of the relation that are not suspended are those were the other side of the relation is either $D \sAlg A$ or $A \sArr B$.
 Consequently, Chronolog may attempt to resolve constraints of the form $X \subtypeA A \sArr B$ utilizing either $\IRule{Arr}$ or $\IRule{Cata}$, or attempt to resolve constraints of the form $A \sAlg B \subtypeA X$ utilizing either $\IRule{Alg}$ or $\IRule{Cata}$.
 This overlapping applicability inherently renders Chronolog a nondeterministic algorithm.
+Search branches that reach states where \textit{no} rules may be applied are pruned with no backtracking.
 For the purposes of type checking, we only need to determine if \Func{Solve} results in zero or non-zero solutions.
 
 % This nondeterminism is subsequently inherited by \Func{Solve}, which may therefore yield multiple distinct solutions.
