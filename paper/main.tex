@@ -975,17 +975,29 @@ Each constraint is annotated with the particular sub-term of \texttt{subs} that 
   \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
 \end{proof}
 
-% [Henry] This actually is "completeness", right? Soundness would be something like "if there is a solution, then Generate will generate the constraint problem with that solution"
-\begin{lemma}[Completeness of \Func{Generate}]
-  \label{lem:generate-completeness}
-  % If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
-  If $\Gamma \vdash_{\lcata} a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+% \begin{lemma}[Completeness of \Func{Generate}]
+%   \label{lem:generate-completeness}
+%   % If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+%   If $\Gamma \vdash_{\lcata} a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
+% \end{lemma}
+% \begin{proof}
+%   The solution $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
+%   Use these derivations along with the rule \IRule{Subtype} to construct a derivation of $\Gamma \vdash_{\lcataSub} a : A$.
+%   Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}, as described in \ref{sec:typing-coercions}.
+% \end{proof}
+
+\begin{lemma}[Soundness of \Func{Generate}]
+  \label{lem:generate-soundness}
+  If $\sigma$ is a solution to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$, then $\Gamma \vdash_{\lcata} a : A$
 \end{lemma}
 \begin{proof}
-  The solution $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
+  Suppose that $\sigma$ is a solution to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$
+  Then $\sigma$ specifies a derivation for each constraint $A \subtypeA B$ in $\constraints$.
   Use these derivations along with the rule \IRule{Subtype} to construct a derivation of $\Gamma \vdash_{\lcataSub} a : A$.
   Then, replace each use of \IRule{Subtype} in this typing derivation with the corresponding derivation of \IRule{Coerce}, as described in \ref{sec:typing-coercions}.
 \end{proof}
+
+
 
 \subsection{Constraint solving with Chronolog}
 
