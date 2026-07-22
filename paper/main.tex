@@ -1071,13 +1071,18 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
     \\
     \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sMu{D}) \in \constraints ~\text{or}~ (\sMu{D} \in X) \in \constraints ~\text{else}
     \\
-    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X) \in \constraints
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X) \in \constraints ~\text{else}
     \\
-    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints ~\text{else}
+    \\
+    \{ X \mapsto Y \} ~\text{if}~ (X \subtypeA Y) \in \constraints
     % \\
     % \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \subtypeA X \in \constraints) \} ~\text{otherwise}
   \end{cases}
 \end{mathpar}
+
+This particular prioritization of refinements arises from case analysis of the various situations one can encounter at the end of a Chronolog run inside \Func{Solve}, where each suspended constraints is of the form specified by $S$ and we must choose a substitution of a single type variable that narrows the solutions the \textit{least} (for the sake of completeness) while also not introducing additional type variables (for the sake of termination).
+For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 % \Func{Refine}
