@@ -967,6 +967,7 @@ Each constraint is annotated with the particular sub-term of \texttt{subs} that 
   \Func{Generate} applies the rules of Figure~\ref{fig:constraint-generation-rules} structurally recursively on the structure of $a$.
 \end{proof}
 
+% [Henry] This actually is "completeness", right? Soundness would be something like "if there is a solution, then Generate will generate the constraint problem with that solution"
 \begin{lemma}[Completeness of \Func{Generate}]
   \label{lem:generate-completeness}
   % If $\Gamma \vdash a : A$, then there exists a solution $\sigma$ to the constraint problem $\constraints = \Func{Generate}(\Gamma, a, A)$.
@@ -1131,15 +1132,24 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
   \end{algorithmic}
 \end{algorithm}
 
-\begin{theorem}[Completeness of \Func{TypeCheck}]
-  \label{thm:type-checker-completeness}
-  If $\Gamma \vdash_{\lcataSub} a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
+% \begin{theorem}[Completeness of \Func{TypeCheck}]
+%   \label{thm:type-checker-completeness}
+%   If $\Gamma \vdash_{\lcataSub} a : A$, then $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}).
+% \end{theorem}
+% \begin{proof}
+%   Suppose $\Gamma \vdash_{\lcataSub} a : A$.
+%   $\Func{Generate}(\Gamma, a, A)$ terminates (by Lemma~\ref{lem:generate-termination}) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-completeness}).
+%   By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
+%   By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
+% \end{proof}
+
+\begin{theorem}[Soundness of \Func{TypeCheck}]
+  \label{thm:typecheck-soundness}
+  If $\Func{TypeCheck}(\Gamma, a, A) = \top$ (Algorithm~\ref{alg:type-checker}) then $\Gamma \vdash_{\lcataSub} a : A$
 \end{theorem}
 \begin{proof}
-  Suppose $\Gamma \vdash_{\lcataSub} a : A$.
-  $\Func{Generate}(\Gamma, a, A)$ terminates (by Lemma~\ref{lem:generate-termination}) and generates a set of constraints, $\constraints$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-completeness}).
-  By Theorem~\ref{thm:completeness}, there is a solution to $\constraints$ using the algorithmic subtyping rules presented in Figure~\ref{fig:algorithmic-subtyping-rules}.
-  By Theorem~\ref{lem:solver-completeness}, $\Func{Solve}(\constraints)$ terminates with at least one solution.
+  Suppose $\Func{TypeCheck}(\Gamma, a, A) = \top$.
+  Then there exists a solution to the set of constraints $\Func{Generate}(\Gamma, a, A)$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-soundness}).
 \end{proof}
 
 \section{Returning to the Examples} % Henry
@@ -1192,7 +1202,7 @@ terminating functions, again based on categorical
 ideas~\cite{tofu10}.  Charity and Tofu both support coinductive
 datatypes, which we did not study here.
 
-% [TODO] expand upon comparison to Tofu and Chaity?
+% [TODO]: expand upon comparison to Tofu and Chaity?
 
 \section{Conclusion and future work} % Aaron
 
