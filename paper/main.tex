@@ -139,7 +139,8 @@
 \abstract{ This paper presents a system for more convenient algebraic
   programming, where datatypes are defined as least fixed points of
   covariant signature functors, and recursive functions are defined as
-  algebras. This approach requires rolling and unrolling fixed points,
+  homomorphisms from initial algebras.
+  This approach requires rolling and unrolling fixed points,
   and conversion of algebras to functions that recurse over data. To
   alleviate the burden of these extra operations, in this paper we
   propose to insert them automatically, using coercive subtyping. The
@@ -198,7 +199,7 @@ signatures would, if handled naively, lead to diverging proof search.
 Instead, Chronolog provides a mechanism to indicate that certain
 problematic constraints should be suspended.  These suspended constraints may be
 resumed if they are instantiated during solving of other constraints.
-If not, an outer loop of our algorithm handles them specially.  
+If not, an outer loop of our algorithm handles them specially.
 
 Standard subtyping rules generally are not suitable for logic
 programming, due to the presence of a transitivity rule, which
@@ -218,13 +219,13 @@ summarize our contributions:
   \item We realize this approach with constraint-generating typing,
     and a constraint solver based on logic programming, modified
     to avoid infinite unrolling of functors. We prove termination of
-    our algorithm.  
+    our algorithm.
   \item We propose an algorithmic subtyping system, and prove it
     equivalent to the declarative one.
 \end{itemize}
 
 The implementation and proofs, respectively, are available at:
-\begin{tabular}{ll} 
+\begin{tabular}{ll}
 \ \ \ &  \url{https://github.com/rybla/algebraic-programming-with-coercive-subtyping} \\
 \ \ \ &  \url{https://github.com/astump/chronolog-algebraic-paper}
 \end{tabular}
@@ -511,33 +512,33 @@ The typing rules for \lcata are presented in Figure~\ref{fig:typing-rules-lcata}
     }{
       \Gamma \vdash x : A
     }
-    
+
     \inferrule[Con]{
       \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
       \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
     }{
       \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
     }
-    
+
     \inferrule[Lam]{
       \Gamma , (x : A) \vdash b : B
     }{
       \Gamma \vdash \lambda (x : A) . b : A \sArr B
     }
-    
+
     \inferrule[App]{
-      \Gamma \vdash f : A \sArr B \qquad 
+      \Gamma \vdash f : A \sArr B \qquad
       \Gamma \vdash a : A
     }{
       \Gamma \vdash f ~ a : B
     }
 
     \typingRuleGamma
-    
+
     \typingRuleOmega
-    
+
     \inferrule[Let]{
-      \Gamma, (x : A) \vdash b : B \qquad 
+      \Gamma, (x : A) \vdash b : B \qquad
       \Gamma \vdash a : A
     }{
       \Gamma \vdash \sLet{x}{A}{a}{b} : B
@@ -558,7 +559,7 @@ Because the signature functor abstracts over a single type parameter, \IRule{Gam
 The $\omega f(x) . b$ construct for introducing an algebra is typed by the \IRule{Omega} rule, which accounts for the introduction of a fresh abstract type $\sRecVar{f}$ into the local typing context of the body $b$.
 This type variable $\sRecVar{f}$ is linked to the specific syntactic binder, a dependency captured by its index $f$.
 Because \lcata purposely omits general polymorphism and type inference, this mechanism serves as a highly restricted form of scoped type abstraction tailored explicitly for modeling Mendler-style algebras.
-The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context. 
+The generative nature of the recursion type variable $\sRecVar{f}$ isolates it from all other types in the context.
 Analogous to the role of relational parametricity in standard Mendler encodings, this opacity strongly guarantees that the invocation $f$ can only ever be applied to sub-data of $x$.
 
 The explicit coercion construct, $\sCoerce{c}{a}$, is typed by the \IRule{Coerce} rule.
@@ -777,7 +778,7 @@ lemmas:
 
 \begin{lemma}[roll/unroll declarative/algorithmic]
   \
-  
+
   \begin{enumerate}
     \item If $A \subtype \sMu{D}$, then $\sFunctorApp{D}{A} \subtype \sMu{D}$.
 \item  If $\sMu{D} \subtype A$, then $\sMu{D} \subtype \sFunctorApp{D}{A}$.
@@ -817,11 +818,11 @@ Consequently, this correspondence forms the foundation of our elaboration semant
   \centering
 
   \begin{mathpar}
-    
+
     \inferrule[ReflDataCoe]{ }{
       \Gamma \vdash \sSubData{D} : \sCoerceSig{\sMu{D}}{\sMu{D}}
     }
-        
+
     \inferrule[RecVarCoe]{ }{
       \Gamma \vdash \sSubRecVar{\sRecVar{f}} : \sCoerceSig{\sRecVar{f}}{\sRecVar{f}}
     }
@@ -888,9 +889,9 @@ Let \lcataSub be the language that coincides with \lcata except in eliding the e
 The comprehensive typing rules for \lcataSub are compiled for reference in Appendix~\ref{app:typing-rules-lcataSub}
 We develop \lcataSub to be a version of \lcata where the burden of explicit coercions is alleviated by implicit inference of coercions.
 
-In this section, we formalize a constraint-based type-checking algorithm for \lcataSub. 
-Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference. 
-Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground. 
+In this section, we formalize a constraint-based type-checking algorithm for \lcataSub.
+Although type variables are introduced during constraint generation, their purpose is strictly confined to facilitating constraint resolution rather than enabling general type inference.
+Because both $\lambda$-abstractions and $\textsyntax{let}$-bindings mandate explicit type annotations, all surface-level types are guaranteed to be ground.
 The development of a full type inference mechanism is left to future work.
 
 The constraint generation algorithm, denoted $\Func{Generate}(\Gamma, a, A)$, generates a set of subtyping constraints necessary to check a term $a$ against an expected type $A$ under a typing context $\Gamma$.
@@ -1106,10 +1107,10 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
 \end{mathpar}
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
-% \Func{Refine} 
+% \Func{Refine}
 
 % Each iteration, a single suspended constraint is chosen to be processed by \Func{Refine}, resulting in a substitution that refines that suspended constraint (and may incidentally refine other suspended constraints).
-% Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$. 
+% Then \Func{Refine}, defined by the following cases in order of decreasing priority, determines a substitution that is guaranteed to refine at least one constraint among $\constraints$.
 % \begin{mathpar}
 %   \begin{array}{rlrll}
 %     && \Func{Refine}(\{ \dots, X &\subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \}) &:= \bot  \\
@@ -1121,11 +1122,11 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
 % \end{mathpar}
 
 % 1. types produce by the constraint-generating type rules always have disjoint sets of type variables
-% 2. if two constraints have the same type variable, then 
+% 2. if two constraints have the same type variable, then
 %   a. it occurs on the same side of the constraints, and not on the opposite side; and
 %   b. the sets of type variables for the opposite sides of those constraints are disjoint
 
-% These invariants seem to hold for the rules of Figure 4, although I would appreciate your confirmation.  
+% These invariants seem to hold for the rules of Figure 4, although I would appreciate your confirmation.
 
 % If so, then solving suspended goals should preserve invariant (2), I am thinking.  And this would mean that substituting with the result of Refine would indeed decrease the number of type variables.
 
@@ -1165,13 +1166,13 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
     % \State \quad \Case $[~] \Rightarrow \bot$
     % \State \quad \Case $\_ \Rightarrow \top$
     % \State \EndMatch
-    % 
+    %
     % \If{$\Func{Solve}(\constraints) = [~]$}
     % \State \Return $\bot$
-    % \Else 
+    % \Else
     % \State \Return $\top$
     % \EndIf
-    % 
+    %
     % \LineIf{$\Func{Solve}(\constraints) = [~]$}{\Return $\bot$}{\Return $\top$}
     % \State \Return \textbf{if} $\Func{Solve}(\constraints) = [~]$ \textbf{then} $\bot$ \textbf{else} $\top$
     \State \Return $\Func{Solve}(\constraints) \neq \varnothing$
@@ -1240,6 +1241,8 @@ terminating functions, again based on categorical
 ideas~\citep{tofu10}.  Charity and Tofu both support coinductive
 datatypes, which we did not study here.
 
+% [TODO] expand upon comparison to Tofu and Chaity?
+
 \section{Conclusion and future work} % Aaron
 
 Total algebraic programming can be made more feasible by inferring the
@@ -1293,33 +1296,33 @@ involved (cf.~\cite{biernacki18}).
 %   }{
 %     \Gamma \vdash x : A
 %   }
-  
+
 %   \inferrule[Con]{
 %     \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
 %     \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
 %   }{
 %     \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
 %   }
-  
+
 %   \inferrule[Lam]{
 %     \Gamma , (x : A) \vdash b : B
 %   }{
 %     \Gamma \vdash \lambda (x : A) . b : A \sArr B
 %   }
-  
+
 %   \inferrule[App]{
-%     \Gamma \vdash f : A \sArr B \qquad 
+%     \Gamma \vdash f : A \sArr B \qquad
 %     \Gamma \vdash a : A
 %   }{
 %     \Gamma \vdash f ~ a : B
 %   }
 
 %   \typingRuleGamma
-  
+
 %   \typingRuleOmega
-  
+
 %   \inferrule[Let]{
-%     \Gamma, (x : A) \vdash b : B \qquad 
+%     \Gamma, (x : A) \vdash b : B \qquad
 %     \Gamma \vdash a : A
 %   }{
 %     \Gamma \vdash \sLet{x}{A}{a}{b} : B
@@ -1339,33 +1342,33 @@ involved (cf.~\cite{biernacki18}).
   }{
     \Gamma \vdash x : A
   }
-  
+
   \inferrule[Con]{
     \langle D , \sSignatureFunctor{X}{\cdots + k(\sepBy{A_i}{~\times}) + \cdots} \rangle \in \datatypes \qquad
     \sepBy{\Gamma \vdash a_i : A_i[X \mapsto C]}{ }
   }{
     \Gamma \vdash k(\sepBy{a_i}{,}) : \sFunctorApp{D}{C}
   }
-  
+
   \inferrule[Lam]{
     \Gamma , (x : A) \vdash b : B
   }{
     \Gamma \vdash \lambda (x : A) . b : A \sArr B
   }
-  
+
   \inferrule[App]{
-    \Gamma \vdash f : A \sArr B \qquad 
+    \Gamma \vdash f : A \sArr B \qquad
     \Gamma \vdash a : A
   }{
     \Gamma \vdash f ~ a : B
   }
 
   \typingRuleGamma
-  
+
   \typingRuleOmega
-  
+
   \inferrule[Let]{
-    \Gamma, (x : A) \vdash b : B \qquad 
+    \Gamma, (x : A) \vdash b : B \qquad
     \Gamma \vdash a : A
   }{
     \Gamma \vdash \sLet{x}{A}{a}{b} : B
