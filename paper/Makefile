@@ -6,4 +6,4 @@ main.pdf: main.tex Makefile definitions.tex paper.bib
 	pdflatex -shell-escape main
 
 clean:
-	rm -f *.aux *.log *.pyg *.out *.bbl *.blg
+	rm -f *.aux *.log *.pyg *.out *.bbl *.blg main.pdf
