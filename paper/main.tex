@@ -391,7 +391,7 @@ of coercions are used.  The \verb|sub| function takes in the minuend \verb|m|
 and returns an algebra, which can be used to recurse through the
 subtrahend \verb|n|.  The code begins with \verb|ω sub'(n)|, which
 introduces the name \verb|sub'| for recursive calls, and the input value
-\verb|n|.  The code then matches on this \verb|n| with $\gamma$, 
+\verb|n|.  The code then matches on this \verb|n| with $\gamma$,
 returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
 case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
 algebras are Mendler-style, the type of \verb|sub'| is
@@ -1095,6 +1095,7 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
 
 This particular prioritization of refinements arises from case analysis of the various situations one can encounter at the end of a Chronolog run inside \Func{Solve}, where each suspended constraints is of the form specified by $S$ and we must choose a substitution of a single type variable that narrows the solutions the \textit{least} (for the sake of completeness) while also not introducing additional type variables (for the sake of termination).
 For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose to refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
+% [TODO]: HENRY: fix example since we dont have R <: muD
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 % \Func{Refine}
@@ -1125,6 +1126,7 @@ For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \tex
   $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
+  % [TODO]: Henry: use lexicographical order of (constraint size, number of variables)
   We show termination by demonstrating that the total size of typing constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
   Each iteration begins with an invocation of \Func{Chronolog}.
   If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
