@@ -1,0 +1,172 @@
+LOPSTR+PPDP '26 Paper #24 Reviews and Comments
+===========================================================================
+Paper #24 Convenient Algebraic Programming with Coercive Subtyping
+
+
+Review #24A
+===========================================================================
+
+Overall merit
+-------------
+4. Accept
+
+Reviewer expertise
+------------------
+3. Knowledgeable
+
+Paper summary
+-------------
+Total functional programming prohibits general recursive definitions, because they cannot be guaranteed to define total functions. Instead, the only recursions allowed are instances of certain fixed recursion patterns, which can be guaranteed to define total functions. In particular, this paper focusses on "folds" aka "catamorphisms", the unique homomorphism from an initial F-algebra to any other F-algebra for a given signature functor F. The aim seems to be to allow writing such functions in direct style, but to read them as instances of folds by implicitly unrolling and rerolling fixpoints and inserting recursive calls. The mechanism for this implicit transformation is to use subtype coercions, and to solve the resulting constraints using a logic programming language called Chronolog. Some proofs in Agda are claimed, but I believe these are neither included nor linked.
+
+The paper appears to be sound, although I confess I have merely skimmed the type rules and proofs. I am encouraged by the claimed existence of Agda proofs - but it is a bit cheeky (to say the least) not to give us access to those proofs. Many details are omitted, making the paper not really self-contained. Perhaps that is necessary given the 15pp limit - but the paper is not using the approved LNCS style (would that accommodate more explanation? certainly the title block would be more compact), and also includes a half-page appendix (which surely we would not count towards the page limit).
+
+Comments for authors
+--------------------
+If I didn't already know what Mendler-style algebras were, I would be able to follow this paper without first reading some of the references. Of course we expect that to be the case in general: a certain amount of well known background knowledge can be assumed. But I think Mendler-style algebras are not very well known. You should give a few sentences of explanation, eg based on [1].
+
+It's disappointing that the claimed Agda proofs are not described, nor even linked. If the paper is accepted, you must make them available.
+
+Why do you use Chronolog, not some other logic language such as Prolog or Datalog? I think the explanation is in S6.1. If you assert that use of Chronolog is important, then you should make more of this: what would break if you didn't have Chronolog? Conversely, if Chronolog is merely your preference, and it could be done reasonably well in other logic languages too, say so.
+
+The reworked examples in Fig 8 are roughly what you would write in Haskell:
+```
+> data Nat = Zero | Suc Nat
+
+> foldNat :: a -> (a->a) -> Nat -> a
+> foldNat e f Zero    = e
+> foldNat e f (Suc n) = f (foldNat e f n)
+
+> sub :: Nat -> Nat -> Nat
+> sub m n = foldNat m pred n where
+>   pred m = case m of 
+>     Zero   -> Zero
+>     Suc m' -> m'
+```
+except that you've made the `foldNat` implicit. So it is a bit hard to see from this what the payoff is. I think a more important consequence of your type system than convenient working programs is the prohibited non-working programs. You should show some of them, and show how the type system prohibits them.
+
+The "related work" in S8 is very skimpy! It's merely a list of other papers, with no proper discussion of how your approach differs or improves on them. Why isn't your work subsumed already by Charity and Tofu? Especially seeing as they also deal with coinductive types, whereas you do not.
+
+
+## Minor comments
+
+Abstract: it's an abuse to say that recursive functions are defined *as* algebras. The recursive function is a homomorphism *from* an initial algebra *to* some other algebra, not the algebra itself.
+
+p2: By eliding the (un-)rolling, do you end up effectively with equirecursive types, rather than the more usual isorecursive ones? See eg Abadi & Fiore (LICS 1996). Or maybe your coercions bridge the gap between the two? Maybe worth discussing this.
+
+p2: It's a bit brutal to leap straight into the syntax here! I suggest that the motivating examples (S3) should precede formal details (S2).
+
+p4: It's awkward that your figures often appear at the start of a section, between the heading and the first sentence; several times I had to hunt around for the right way to read the text. Is this really where LaTeX has chosen to put them? I think it would be better for them by and large to float to the top of a nearby page. You should be able to arrange for at most one figure per page for Figs 1-7 on pp3-10.
+
+p4: Worth saying that subs returns a list as long as the shorter argument, like Haskell's zip and zipWith.
+
+p6: What does it mean for type rules to be "not algorithmic"? I think your explanation is at the end of S5.1 - worth bringing that forward to the start of S5. 
+
+p7: I think you have typeset theorems, lemmas, proofs in small text. It's particularly egregious that all of p13 is small text. That is at best playing fast and loose with the submission rules.
+
+p15: As already noted, I think you could put the appendix after p15, leaving more space for addressing some of the issues above.
+
+
+## Typos etc (commendably few!)
+
+Abstract: "engined"
+
+p14: "Figured"
+
+p16: Capitalization of proper nouns [4,11,13]. Be consistent about sentence case (eg [8]) vs title case (eg [9]). If you're going to use title case, presumably the article "la" in French should not be capitalized, like "the" in English is not. In [11], I believe the family name is "Trancón y Widemann".
+
+
+
+Review #24B
+===========================================================================
+
+Overall merit
+-------------
+2. Weak reject
+
+Reviewer expertise
+------------------
+2. Some familiarity
+
+Paper summary
+-------------
+This paper proposes a small calculus with strictly positive functors and fixed points, structiral recursion and pattern matching on them (which define a special "algebra" function type) and explicit coercions that permit rearranging type fixed point operations and converting algebra functions to ordinary functions using subsumption.  Th epaper also proposes equivalent algorithmic and declarative subtyping judgments and introduces a version of the type system that uses ordinary subsumption and another version that collects subtyping constraints which if satisfiable, are intended to ensure that the expression can be typechecked using subsumption (and therefore also could be typechecked by introducing coercions).  The motivation for doing these things is that the explicit coercion language is (I believe though not proven here) terminating, but painful to use because of the need to synthesize coercions in many places, and so using implicit coercion/subsumption language plus constraint generation/checking, we can avoid having to write coercions explicitly but still know that the programs are terminating.
+
+Comments for authors
+--------------------
+Evaluation: 
+
+This is a nice idea but the paper doesn't feel completely finished to me.  For example:
+
+* the notion of equivalence/translatability from L_(|.|) (the coercion language) to L_(|.|)- (the implicit language) and back isn't stated/proved
+* completeness of the Generate, Solve, and TypeCheck algorithms is stated, but nto soundness; though the proof given for completeness of Generate appears actually to be showing what is needed for soundness (given a solution to the constraint problem, show that the corresponding typing judgment is derivable), not the stated completeness property
+
+While the contributed technical material is not (as far as I know) already studied, there is considerable work on declarative vs. algorithmic subtyping, implicit and explicit coercions, equi vs isorecursive types, and so on (see e.g. chapters 15, 20, 21 of Pierce's _Types and Programming Languages_).  I am fairly confident that the paper would benefit significantly from first familiarizing with this background.
+
+Detailed comments:
+
+p6.  I thought it was interesting that the only place in (declarative) subtyping where subtyping can become asymmetric, is in the Cata rule which relates algebra functions $D \Rightarrow A$ to ordinary functions $\mu D \to A$.  It was never entirely clear to me in fact why we need a separate function type here, as opposed to writing $\mu D \to B$ instead of $D \Rightarrow B$ in the OMEGA rule.  The only ramification of this simplification I can see is that such functions would be immediately allowed to appear as the first subterm of applications (rule APP); but they can always appear there anyway thanks to teh cata coercion/CATA rule.  
+
+I would appreciate a little more discussion of this point: I don't think it is wrong or harmful to have this separate function type, of course, (and I have seen systems where we want to track that certain functions are algebras); I am just curious whether there is a reason we **must** have it or it just seems good to have.  And if it is not truly necessary, then subtyping becomes really just type equivalence for equirecusive types, which is well-studied.
+
+
+p7. Rule ALG has $\mu D \Rightarrow A'$ in the RHS of its conclusion, but this is not allowed by the type syntax.  I think it is probably meant to be $\mu D \to A$.
+
+p9.  The intended form of equivalence between L_(|.|) and L_(|.|)- is not stated, but seems obvious: if something is L_(|.|) derivable, then the "erased" version of that term (with coercion applications removed) is L_(|.|)- derivable; whereas if something is  L_(|.|)- derivable then there must exist an "unerased" term that is L_(|.|) derivable (that is a term with explicit coercions that erases to the original implicit term).  Because L_(|.|)- allows subsumption everywhere, this seems obvious just by synthesizing an explicit coercion wherever we use subsumption.  
+
+OK.  But then we have the constraint generation system in figure 7 which traverses the term and kicks out constraints just at the point where there is something to check.  In e.g. Pierce ch. 16 there is a textbook presentation of an algorithmic system (not immediately using constraints) that is closer to this constraint system than L_(|.|)- is; consider essentially L_(|.|)- with subsumption restricted to just those places where the constraint generator judgment emits constraints.  This is one place where I suspect building on this kind of textbook presentation would be beneficial
+
+
+p10.  "correspond are linked to"
+
+p11.  The proof after lemma 9 seems to speak to soundness, not completeness; no claim of soundness is made and I think it should be too.
+
+p12.  In the discussion of the Solve procedure and use of the Chronolog approach as a subroutine, it wasn't clear to me how nondeterminsim factors in.  Clearly, if Chronolog() is nondeterministic, in any particular run, if we encounter failure, we cannot be sure that there wasn't some other run (with different ND outputs received from Chronolog()) that would succeed.  So to be complete (find a solution if there is one), we may need to backtrack.  Normally one expects backtracking may happen in a logic programming interpreter; but it isn't clear whether the Solve() procedure is also doing backtracking, or if it is "calling" Chronolog as a script such that separate calls are independent and no cross-call backtracking occurs.  From later discussion I believe Solve is implicitly performing backtracking (e.g. Chronolog implemented in Prolog using meta-interpretation and Solve is a top-level loop also in Prolog.)
+
+The other alternative that you might have in mind is that though Chronolog is nondeterministic, the nondeterminism doesn't matter, because of some confluence property, but there is no indication that that is what is going on.
+
+p13.  In the proof of completeness, for the D A case, OK since there is a solution you can conclude that A cannot be things like function types or other datatypes that would cause problems here.  Fine.  But there is no discussion of soundness, the reverse direction, where we probably need to show some soundness-like property that if a given constraint set C[X -> mu D] has a solution (where X <:: D A or D A <:: X is in C), then so does C itself.  Presumably this involves noting that C[X -> mu D] will contain mu D <:: D A or D A <:: mu D which in turn we can use to draw conclusions about A.  I think more needs to be spelled out here.
+
+
+
+Review #24C
+===========================================================================
+
+Overall merit
+-------------
+5. Strong accept
+
+Reviewer expertise
+------------------
+2. Some familiarity
+
+Paper summary
+-------------
+This work presents a novel take on total functional programming. Inductive types are often phrased as fixed points of positive functors, but when we have T = F T, deciding type equality can become difficult. This work instead has T isomorphic to F T, using explicit rolling and unrolling. However, to avoid the verbosity of these, the authors adapt coercive subtyping to work with inductive types. Rolling and unrolling still happen explicitly in the core language, but coercions between types are automatically inserted. To deduce these coercions, a novel method of logic programming is given, where certain constraints are postponed until a substitution refines them.
+
+Comments for authors
+--------------------
+Overall I found the paper quite strong. Total functional programming is well motivated, and the issues with equ-recursive types are infamous. The solution presented is novel, and is presented quite cleanly. The technical developments seem sound, with an Agda development to back them up. I found the explanation of Mendler algebras quite nice in particular, even if it's not a specific contribution of the paper.
+
+A broad question that the paper does not address is, how does this system compare with equi-recursive types (or the total functional programming equivalent)? In the given system, we have Mu D <: D (Mu D), but also D (Mu D) <: D. So subtyping isn't a partial order but a preorder with equivalence groups. The paper doesn't make it clear exactly what coercive subtyping does that couldn't be done by just having Mu D = D (Mu D). Is the main benefit having a separate type for algebras, that are more restricted than general functions?
+
+Some specific points for the authors to look at during revisions:
+
+Page 4: a few things here could use some extra explanation
+* It took me a while to figure out that in `sub' n . gamma n . ...` that the first one is binding n and the second one is pattern matching on it.
+* It would be nice to have the `-` notation explicitly flagged in the text as a coercion, since it doesn't really hint at a "direction".
+* Why is there an id coercion inserted? Is it just to show what the algorithm would insert, or does the type system actually require it?
+
+Page 6
+* The Roll and Unroll rules make the relation a preorder instead of a partial order, unless you're considering equivalence classes of types. But then if those types are "equal" why do we need explicit conversions between them?
+* [Cata] is the only non-structural subtyping rule that's actually directional, so it might deserve a little more explanation in the text.
+
+Page 9
+* It's mentioned, but a bit more explanation might help here, as to the type variables. My understanding is that they're necessary because, even though it's decidable if T1 <: T2, there are some places we have to choose a T2 to coerce to, and the resolution algorithms solves this.
+
+Page 11:
+* What is SLD resolution?
+
+Page 12:
+* I feel like the priority of Refine could use a bit more explanation, as to why that order makes things work.
+* My understanding is that every constraint that matches the given form will be suspended, and stays suspended until a substitution makes it not suspended. Is that correct?
+* A bit more explanation of why suspending those specific constraints avoids the looping, without eliminating solutions. might be helpful.
