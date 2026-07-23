@@ -389,7 +389,9 @@ the list (using Haskell syntax) $[1,2,3]$ from $[8,9,10]$ produces
 $[7,7,7]$, for example.  Let us see how the different kinds
 of coercions are used.  The \verb|sub| function takes in the minuend \verb|m|
 and returns an algebra, which can be used to recurse through the
-subtrahend \verb|n|.  The code matches (with $\gamma$) on \verb|n|,
+subtrahend \verb|n|.  The code begins with \verb|ω sub'(n)|, which
+introduces the name \verb|sub'| for recursive calls, and the input value
+\verb|n|.  The code then matches on this \verb|n| with $\gamma$, 
 returning \verb|m| in the \verb|Zero| case.  In the \verb|Suc(n')|
 case, we recursively subtract \verb|n'| (from \verb|m|).  Since our
 algebras are Mendler-style, the type of \verb|sub'| is
@@ -405,11 +407,14 @@ on unrolled \verb|sub' n'|, the code returns \verb|Zero|.
 Constructors' return types are applications of signature functors.
 Here, \verb|Zero| can be given type \verb|Nat (μ Nat)|, which is then
 coerced to \verb|μ Nat| by \verb|roll|, written \verb|roll id - Zero|.
+
 The function \verb|subs| does
 similar rolling and unrolling, but also invokes subtraction
 (\verb|sub|).  Since \verb|sub| returns an algebra, the code uses
 \verb|cata| to coerce that to the function which accepts the
 subtrahend, written \verb|cata id id - sub h1 h2|, where the the coercion operator \verb|-| binds more tightly than application (i.e. the expression is parsed equivalently as \verb|(cata id id - sub) h1 h2|).
+Note that \verb|subs| returns a list as long as the shorter of its inputs,
+similar to \verb|zip| in Haskell.
 
 Thanks to the restrictions imposed by Mendler-style algebras, these
 functions have the desirable property that they are guaranteed to
@@ -522,15 +527,16 @@ we must first consider the underlying subtyping relation.
 \label{sec:subtyping}
 
 We begin with the natural declarative subtyping rules.  These are not
-algorithmic when read from conclusions to premises due to the presence
-of the \IRule{Trans} rule, which introduces a new metavariable in its
-premises that does not appear in in its conclusion, and so can be
-applied ad infinitum.  So we next propose an algorithmic version,
-where all metavariables in the premises of the rule are already
-present in the conclusion, and the sizes of the constraints decrease.
-This ensures that SLD resolution will not diverge on ground constraints.
-We prove that the two sets of rules are equivalent.  Then we can
-formulate the coercion typing rules.
+algorithmic when read from conclusions to premises: they cannot be
+used directly as a logic programd. This is due to the \IRule{Trans}
+rule, which introduces a new metavariable in its premises that does
+not appear in in its conclusion, and so can be applied ad infinitum.
+So we next propose an algorithmic version, where all metavariables in
+the premises of the rule are already present in the conclusion, and
+the sizes of the constraints decrease.  This ensures that SLD
+resolution will not diverge on ground constraints.  We prove that the
+two sets of rules are equivalent.  Then we can formulate the coercion
+typing rules.
 
 \subsection{Declarative subtyping}
 
@@ -602,7 +608,7 @@ carriers $A$.  \IRule{Roll} and \IRule{Unroll} together express that
 $\sMu{F}$ is equivalent to $\sFunctorApp{F}{\sMu{F}}$.  \IRule{Cata} expresses that
 an algebra can be coerced to a function, namely the algebra's
 catamorphism.  Finally, there is the \IRule{Trans} rule, completing
-the definition of subtyping as a partial order.
+the definition of subtyping as a preorder.
 
 % [HENRY] This discussion was shortened and moved to beginning of section 5, as
 %         per reviewer A's suggestion
@@ -745,7 +751,7 @@ lemmas:
 \end{enumerate}
 \end{lemma}
 
-\begin{lemma}[partial order algorithmic]
+\begin{lemma}[preorder algorithmic]
   \
 
   \begin{enumerate}
@@ -1288,6 +1294,9 @@ and $a_2$ are semantically equivalent.  That is, inserting coercions
 in different places in the same term does not change it semantics.  We
 conjecture this is true, but proving this property can be technically
 involved (cf.~\cite{biernacki18}).
+
+\textbf{Acknowledgments.} Thanks to the anonymous reviews for very helpful
+detailed feedback, which has greatly improved the paper.
 
 \appendix
 
