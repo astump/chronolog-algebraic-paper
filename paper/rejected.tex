@@ -1,0 +1,31 @@
+
+\begin{figure}[tb]
+  \centering
+  \begin{subfigure}[t]{1.0\textwidth}
+  \begin{verbatim}
+divergent1 : Nat → μ Nat =
+  ω divergent1' (n) . divergent1' n
+
+divergent2 : Nat → μ Nat =
+  ω divergent2' (n) . divergent2' (Suc n)
+
+
+  \end{verbatim}
+  \end{subfigure}
+  \caption{TODO}
+  \label{fig:example-rejected}
+\end{figure}
+
+\begin{figure}[tb]
+  \centering
+  \begin{subfigure}[t]{1.0\textwidth}
+  \begin{verbatim}
+smallest : (μ Nat → μ Bool) → Nat ⇒ μ Nat =
+  λ p . ω smallest'(n) . γ p n
+    { True → n
+    | False → smallest' (Suc n) }
+  \end{verbatim}
+  \end{subfigure}
+  \caption{Rejected algebraic implementation of \texttt{smallest}, with explicit coercions.}
+  \label{fig:example-smallest}
+\end{figure}
