@@ -1204,6 +1204,14 @@ For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \tex
   Then there exists a solution to the set of constraints $\Func{Generate}(\Gamma, a, A)$, which are sufficient to demonstrate $\Gamma \vdash_{\lcata} a : A$ (by Lemma~\ref{lem:generate-soundness}).
 \end{proof}
 
+\begin{definition}[Erasure of terms from $\lcata$ to $\lcataSub$]
+  Let $a$ be a term of $\lcata$. Then $|a|$ is the \textit{erasure} of $a$ into $\lcataSub$, which is defined by structurally recursing on $a$ to replace each appearance of $\sCoerce{c}{a'}$ with $a'$.
+\end{definition}
+
+\begin{theorem}[Equivalence of $\lcata$ and $\lcataSub$]
+  $\Gamma \vdash_{\lcata} a : A \iff \Gamma \vdash_{\lcataSub} |a| : A$.
+\end{theorem}
+
 \section{Returning to the Examples} % Henry
 
 Recall the examples from Section~\ref{sec:motivating-examples} where \texttt{sub} and \texttt{subs} were implemented algebraically.
