@@ -1069,7 +1069,26 @@ For type checking, we only need to check whether \Func{Solve} results solutions 
 
 We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Func{Refine} to refine any suspended constraints left over each iteration, as show in Algorithm~\ref{alg:solver}.
 
-% [TODO]: new Refine details
+\Func{Refine} is defined by the following cases.
+When multiple cases of \Func{Refine} are matched, any case can be chosen arbitrarily.
+Why this arbitrary choice preserves completeness is explained in the proof of Lemma~\ref{lem:solver-completeness}.
+
+\begin{mathpar}
+  \Func{Refine}(\constraints) := \begin{cases}
+    \{ X \mapsto R \} ~\text{if}~ (X \subtypeA R) \in \constraints ~\text{or}~ (R \subtypeA X) \in \constraints
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sMu{D}) \in \constraints ~\text{or}~ (\sMu{D} \in X) \in \constraints
+    \\
+    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints
+    \\
+    \{ X \mapsto Y \} ~\text{if}~ (X \subtypeA Y) \in \constraints
+  \end{cases}
+\end{mathpar}
+
+\begin{lemma}[Decrease of \Func{Refine}]
+  \label{lem:refine-decreases}
+  The number of unique variables in $\Func{Refine}(\constraints)(\constraints)$ is less than the number of unique variables in $\constraints$.
+\end{lemma}
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 % \Func{Refine}
@@ -1123,9 +1142,8 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
   Suppose there exists a solution to $\constraints$.
   \Func{Chronolog} nondeterministically attempts every valid application of the algorithmic subtyping rules, which are complete by Theorem~\ref{thm:completeness}.
   \Func{Refine}'s handling of $X \subtypeA R$ and $R \subtypeA X$ constraints does not violate completeness since $R$ is unrelated to any other type.
-  \Func{Refine}'s handling of $X \subtypeA \sMu{D}$ and $\sMu{D} \subtypeA X$ constraints does not violate completeness since, after \Func{Refine} has already handled the previous cases, any other appearances of $X$, once substituted for $\sMu{D}$, may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy the constraints at those appearances.
-  \Func{Refine}'s handling of $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))})$ and $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X)$ constraints does not violate completeness since $X \mapsto \sMu{D}$ is the only solution to such constraints.
-  \Func{Refine}'s handling of $X \subtypeA \sFunctorApp{D}{A}$ and $\sFunctorApp{D}{A} \subtypeA X$ constraints does not violate completeness since, as there is an assumed solution to $\constraints$ and \Func{Refine} has already handled the previous cases, $A$ must be of the form $\sFunctorApp{D}{(\dots (\sFunctorApp{D}{Y}))}$ (where $Y$ is a distinct type variable from $X$) or $\sFunctorApp{D}{(\dots (\sMu{D}))}$, and so any other appearances of $X$ may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy any other relations to the constraints at those appearances.
+  \Func{Refine}'s handling of $X \subtypeA \sMu{D}$ and $\sMu{D} \subtypeA X$ constraints does not violate completeness since, any other appearances of $X$, once substituted for $\sMu{D}$, may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy the constraints at those appearances.
+  \Func{Refine}'s handling of $X \subtypeA \sFunctorApp{D}{A}$ and $\sFunctorApp{D}{A} \subtypeA X$ constraints does not violate completeness since, as there is an assumed solution to $\constraints$, $A$ must be of the form $\sFunctorApp{D}{(\dots (\sFunctorApp{D}{Y}))}$ (where $Y$ is a distinct type variable from $X$) or $\sFunctorApp{D}{(\dots (\sMu{D}))}$, and so any other appearances of $X$ may be rolled or unrolled by subsequent invocations of \Func{Chronolog} to satisfy any other relations to the constraints at those appearances.
   The result follows since \Func{Solve} terminates by Lemma~\ref{lem:solver-termination}.
 \end{proof}
 
