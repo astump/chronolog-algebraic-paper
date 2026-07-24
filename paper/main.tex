@@ -1093,6 +1093,11 @@ We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Fun
   \end{cases}
 \end{mathpar}
 
+\begin{lemma}[\Func{Refine} decreases number of unique variables]
+  \label{lem:refine-decreases}
+  The number of unique variables in $\Func{Refine}(\constraints)(\constraints)$ is less than the number of unique variables in $\constraints$.
+\end{lemma}
+
 This particular prioritization of refinements arises from case analysis of the various situations one can encounter at the end of a Chronolog run inside \Func{Solve}, where each suspended constraints is of the form specified by $S$ and we must choose a substitution of a single type variable that narrows the solutions the \textit{least} (for the sake of completeness) while also not introducing additional type variables (for the sake of termination).
 For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose to refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
 % [TODO]: HENRY: fix example since we dont have R <: muD
@@ -1126,12 +1131,19 @@ For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \tex
   $\Func{Solve}(\constraints)$ (Algorithm~\ref{alg:solver}) terminates.
 \end{lemma}
 \begin{proof}
-  % [TODO]: Henry: use lexicographical order of (constraint size, number of variables)
-  We show termination by demonstrating that the total size of typing constraints is a strictly decreasing metric over each iteration of the while loop in \Func{Solve}.
-  Each iteration begins with an invocation of \Func{Chronolog}.
+  Proof of termination proceeds by lexicographic induction on $(s, v)$, where $s$ is the size of $\constraints$ and $v$ is the number of unique variables in $\constraints$.
+  Each iteration of the \textbf{while}-loop in \Func{Solve} begins with an invocation of $\Func{Chronolog}(S, \constraints)$.
   If \Func{Chronolog} results in $\langle \text{``failure''} \rangle$ or $\langle \text{``success''} \rangle$, then we are done.
-  If \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, then by Lemma~\ref{lem:decrease} the leftover $\constraints'$ must be in total smaller than the original $\constraints$ from the beginning of this iteration.
-  The substitution resulting from $\Func{Refine}(\constraints)$ does not increase the total size of constraints in any case.
+  Otherwise, \Func{Chronolog} results in $\langle \text{``progress''}, \sigma', \constraints' \rangle$, in which case the new value assigned to $\constraints$ is $(\Func{Refine}(\constraints') \circ \sigma') (\constraints')$.
+  Let $(s', v')$ be the size and number of unique variables respectively in $(Func{Refine}(\constraints') \circ \sigma') (\constraints')$.
+  There are two cases:
+  \begin{enumerate}
+  \item
+    If $\Func{Chronolog}(S, \constraints)$ used \textit{no} rule applications, then it must have merely suspended all goals, so $\constraints' = \constraints$, $\sigma = \text{id}$, and $s' = s$.
+    The constraints $(\Func{Refine}(\constraints') \circ \sigma') (\constraints') = (\Func{Refine}(\constraints')) (\constraints')$ has fewer unique variables than $\constraints$ by Lemma~\ref{lem:refine-decreases}, so $v' < v$ and thus $(s', v') = (s, v') < (s, v)$.
+  \item
+    If $\Func{Chronolog}(S, \constraints)$ used \textit{some} rule applications, then $s' < s$ by Lemma~\ref{lem:decrease}, and so $(s', v') < (s, v)$.
+  \end{enumerate}
 \end{proof}
 
 \begin{lemma}[Completeness of \Func{Solve}]
