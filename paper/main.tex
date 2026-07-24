@@ -418,9 +418,10 @@ similar to \verb|zip| in Haskell.
 
 Thanks to the restrictions imposed by Mendler-style algebras, these
 functions have the desirable property that they are guaranteed to
-terminate on all inputs.  Nevertheless, we expect the reader will
-agree that the code is rather burdened with coercions.  This
-raises the question we address in this paper: can we support algebraic
+terminate on all inputs.  Nonterminating recursive calls are
+disallowed just by typing.  Nevertheless, we expect the reader will
+agree that the code is rather burdened with coercions.  This raises
+the question we address in this paper: can we support algebraic
 programming like this with lighter syntax?  We return with our
 positive answer for these examples in
 Figure~\ref{fig:example-subs-algebraic-without-coercions} below.
