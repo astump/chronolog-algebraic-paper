@@ -1068,39 +1068,8 @@ For type checking, we only need to check whether \Func{Solve} results solutions 
 \end{algorithm}
 
 We implement \Func{Solve} by repeatedly applying \Func{Chronolog} and using \Func{Refine} to refine any suspended constraints left over each iteration, as show in Algorithm~\ref{alg:solver}.
-\Func{Refine} is defined by the following cases, in order of decreasing priority.
-% \begin{itemize}
-%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{R} \}$ if $(X \subtypeA R) \in \constraints$ or $(R \subtypeA X) \in \constraints$.
-%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $X \subtypeA \sMu{D} \in \constraints$ or $(\sMu{D} \in X) \in \constraints$.
-%   \item $\Func{Refine}(\constraints) := \{ X \mapsto \sFunctorApp{D}{A} \}$ if $X \subtypeA \sFunctorApp{D}{A} \in \constraints$ or $(\sFunctorApp{D}{A} \in X) \in \constraints$.
-%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \}$ if $(X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints$ or $(\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X})) \subtypeA X) \in \constraints}$.
-%   % \item $\Func{Refine}(\constraints) := \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints \}$ otherwise.
-% \end{itemize}
 
-\begin{mathpar}
-  \Func{Refine}(\constraints) := \begin{cases}
-    \{ X \mapsto R \} ~\text{if}~ (X \subtypeA R) \in \constraints ~\text{or}~ (R \subtypeA X) \in \constraints ~\text{else}
-    \\
-    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sMu{D}) \in \constraints ~\text{or}~ (\sMu{D} \in X) \in \constraints ~\text{else}
-    \\
-    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{(\dots (\sFunctorApp{D}{X}))} \in X) \in \constraints ~\text{else}
-    \\
-    \{ X \mapsto \sMu{D} \} ~\text{if}~ (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \in X) \in \constraints ~\text{else}
-    \\
-    \{ X \mapsto Y \} ~\text{if}~ (X \subtypeA Y) \in \constraints
-    % \\
-    % \{ X \mapsto \sMu{D} \mid (X \subtypeA \sFunctorApp{D}{A}) \in \constraints ~\text{or}~ (\sFunctorApp{D}{A} \subtypeA X \in \constraints) \} ~\text{otherwise}
-  \end{cases}
-\end{mathpar}
-
-\begin{lemma}[\Func{Refine} decreases number of unique variables]
-  \label{lem:refine-decreases}
-  The number of unique variables in $\Func{Refine}(\constraints)(\constraints)$ is less than the number of unique variables in $\constraints$.
-\end{lemma}
-
-This particular prioritization of refinements arises from case analysis of the various situations one can encounter at the end of a Chronolog run inside \Func{Solve}, where each suspended constraints is of the form specified by $S$ and we must choose a substitution of a single type variable that narrows the solutions the \textit{least} (for the sake of completeness) while also not introducing additional type variables (for the sake of termination).
-For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \textit{must} choose to refine by $X \mapsto R$ since the other choice of $X \mapsto \sMu{D}$ (refined to $\sMu{D} <:: R$) would leave the constraint $X <:: R$ unsolvable.
-% [TODO]: HENRY: fix example since we dont have R <: muD
+% [TODO]: new Refine details
 
 % Constraint solving is accomplished by using Chronolog inside a loop that processes any suspended constraints left over after each iteration, as shown in Algorithm~\ref{alg:solver}.
 % \Func{Refine}
@@ -1209,7 +1178,7 @@ For example, if we have constraints $\{ X <:: R, X <:: \sMu{D} \}$, then we \tex
 \end{definition}
 
 \begin{theorem}[Equivalence of $\lcata$ and $\lcataSub$]
-  $\Gamma \vdash_{\lcata} a : A \iff \Gamma \vdash_{\lcataSub} |a| : A$.
+  $\Gamma \vdash_{\lcata} a : A \iff \Gamma \vdash_{\lcataSub} |a| : A$ and $a \equiv_{\beta \eta} |a|$.
 \end{theorem}
 
 \section{Returning to the Examples} % Henry
